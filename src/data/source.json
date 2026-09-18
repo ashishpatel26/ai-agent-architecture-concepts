@@ -1,0 +1,602 @@
+[
+  {
+    "id": 1,
+    "title": "Multi-Agent Orchestration",
+    "hindi": "कई एआई एजेंट्स को एक साथ काम पर लगाना और उनका मैनेजमेंट।",
+    "category": 0
+  },
+  {
+    "id": 2,
+    "title": "Directed Acyclic Graphs (DAGs)",
+    "hindi": "एजेंटों के काम करने का एक तय रास्ता (Workflow) डिज़ाइन करना।",
+    "category": 0
+  },
+  {
+    "id": 3,
+    "title": "Agentic State Machines",
+    "hindi": "एजेंट किस समय क्या सोच रहा है और अगला कदम क्या होगा, इसकी स्टेट ट्रैक करना।",
+    "category": 0
+  },
+  {
+    "id": 4,
+    "title": "Hierarchical Orchestration",
+    "hindi": "एक 'सुपरवाइजर' एजेंट जो बाकी छोटे 'वर्कर' एजेंट्स को काम बांटता है।",
+    "category": 0
+  },
+  {
+    "id": 5,
+    "title": "Dynamic Routing",
+    "hindi": "यूज़र के सवाल के हिसाब से तय करना कि कौन सा एजेंट सबसे सही जवाब देगा।",
+    "category": 0
+  },
+  {
+    "id": 6,
+    "title": "Asynchronous Agent Execution",
+    "hindi": "बैकग्राउंड में एजेंट का काम चलना ताकि यूज़र इंटरफेस (UI) अटका न रहे।",
+    "category": 0
+  },
+  {
+    "id": 7,
+    "title": "Agent Inter-communication (A2A)",
+    "hindi": "दो अलग-अलग एआई एजेंट्स का आपस में डेटा शेयर करना।",
+    "category": 0
+  },
+  {
+    "id": 8,
+    "title": "Plan-and-Execute Pattern",
+    "hindi": "एजेंट पहले पूरा推ला प्लान बनाता है, फिर एक-एक करके स्टेप्स लेता है।",
+    "category": 0
+  },
+  {
+    "id": 9,
+    "title": "ReAct Framework (Reasoning + Acting)",
+    "hindi": "एजेंट का पहले सोचना, फिर टूल इस्तेमाल करना, और रिस्पॉन्स देखना।",
+    "category": 0
+  },
+  {
+    "id": 10,
+    "title": "Reflection Loops",
+    "hindi": "एजेंट द्वारा अपने ही काम की कमियाँ ढूंढकर उसे खुद ही ठीक करना।",
+    "category": 0
+  },
+  {
+    "id": 11,
+    "title": "Tool Invocation & Function Calling",
+    "hindi": "एलएलएम द्वारा कोड या एपीआई को खुद से ट्रिगर करना।",
+    "category": 0
+  },
+  {
+    "id": 12,
+    "title": "State Persistence",
+    "hindi": "एजेंट की बातचीत की हिस्ट्री को डेटाबेस (जैसे Redis) में सुरक्षित रखना।",
+    "category": 0
+  },
+  {
+    "id": 13,
+    "title": "Sub-Goal Generation",
+    "hindi": "बड़े काम को छोटे-छोटे टास्क में तोड़ना।",
+    "category": 0
+  },
+  {
+    "id": 14,
+    "title": "Token-Aware Routing",
+    "hindi": "टोकन खर्च बचाने के लिए छोटे कामों को छोटे एजेंट्स पर भेजना।",
+    "category": 0
+  },
+  {
+    "id": 15,
+    "title": "Event-Driven Agent Triggers",
+    "hindi": "किसी डेटा के बदलते ही (जैसे बजट चेंज होने पर) एजेंट का खुद ही एक्टिव हो जाना।",
+    "category": 0
+  },
+  {
+    "id": 16,
+    "title": "Task Interruption & Resumption",
+    "hindi": "चलते हुए एजेंट को बीच में रोकना और वहीं से दोबारा शुरू करना।",
+    "category": 0
+  },
+  {
+    "id": 17,
+    "title": "Agent Lifespan Management",
+    "hindi": "काम खत्म होते ही एजेंट के प्रोसेस (Instance) को बंद करना ताकि मेमोरी बची रहे।",
+    "category": 0
+  },
+  {
+    "id": 18,
+    "title": "Semantic Condition Checking",
+    "hindi": "क्या काम सही हुआ? इसे टेक्स्ट के आधार पर आंकना।",
+    "category": 0
+  },
+  {
+    "id": 19,
+    "title": "Context Condensation",
+    "hindi": "पुरानी लंबी बातचीत को समेटकर छोटा करना ताकि एलएलएम की लिमिट पार न हो।",
+    "category": 0
+  },
+  {
+    "id": 20,
+    "title": "Deterministic Output Stripping",
+    "hindi": "एलएलएम के जवाब में से सिर्फ काम का कोड या डेटा निकालना।",
+    "category": 0
+  },
+  {
+    "id": 21,
+    "title": "Authorization-Aware RAG",
+    "hindi": "यूज़र के रोल (Role) के हिसाब से ही उसे एआई से डेटा मिलना।",
+    "category": 1
+  },
+  {
+    "id": 22,
+    "title": "Role-Based Access Control (RBAC)",
+    "hindi": "कंपनी के पदों के हिसाब से डेटा देखने की परमिशन तय करना।",
+    "category": 1
+  },
+  {
+    "id": 23,
+    "title": "Attribute-Based Access Control (ABAC)",
+    "hindi": "टाइम, लोकेशन या डिपार्टमेंट के आधार पर एआई एक्सेस देना।",
+    "category": 1
+  },
+  {
+    "id": 24,
+    "title": "Prompt Injection Mitigation",
+    "hindi": "यूज़र द्वारा एआई को हैक करने या सीक्रेट डेटा निकलवाने से रोकना।",
+    "category": 1
+  },
+  {
+    "id": 25,
+    "title": "Data PII Masking",
+    "hindi": "एआई के पास भेजने से पहले यूज़र का पर्सनल डेटा (नाम, सैलरी) छुपाना।",
+    "category": 1
+  },
+  {
+    "id": 26,
+    "title": "VPC Peering / Private Links",
+    "hindi": "डेटा को पब्लिक इंटरनेट पर न भेजकर प्राइवेट क्लाउड टनल में रखना।",
+    "category": 1
+  },
+  {
+    "id": 27,
+    "title": "Responsible AI Governance (ISO/IEC 42001)",
+    "hindi": "एआई के इस्तेमाल के ग्लोबल स्टैंडर्ड्स को फॉलो करना।",
+    "category": 1
+  },
+  {
+    "id": 28,
+    "title": "Deterministic Data Grounding",
+    "hindi": "एआई को सिर्फ और सिर्फ आधिकारिक डेटाबेस पर ही भरोसा करने के लिए मजबूर करना।",
+    "category": 1
+  },
+  {
+    "id": 29,
+    "title": "Output Jailbreaking Guardrails",
+    "hindi": "एआई द्वारा कोई अभद्र या गलत जवाब देने से रोकने वाला सुरक्षा घेरा।",
+    "category": 1
+  },
+  {
+    "id": 30,
+    "title": "Non-Repudiation Logs",
+    "hindi": "रिकॉर्ड रखना कि किस यूज़र के कहने पर एआई ने सिस्टम में क्या बदलाव किया।",
+    "category": 1
+  },
+  {
+    "id": 31,
+    "title": "LLM Evaluation Frameworks (TruLens/Ragas)",
+    "hindi": "एआई के जवाब कितने सही हैं, इसे ऑटोमैटिक चेक करना।",
+    "category": 1
+  },
+  {
+    "id": 32,
+    "title": "Model Bias Auditing",
+    "hindi": "यह चेक करना कि एआई किसी विभाग या डेटा के प्रति पक्षपाती तो नहीं है।",
+    "category": 1
+  },
+  {
+    "id": 33,
+    "title": "Token Rate Limiting",
+    "hindi": "एक यूज़र बहुत सारे प्रॉम्ट डालकर पूरा सिस्टम डाउन न कर दे, इसकी लिमिट लगाना।",
+    "category": 1
+  },
+  {
+    "id": 34,
+    "title": "Tenant Isolation",
+    "hindi": "एक कंपनी का डेटा दूसरी कंपनी के एआई मॉडल में मिक्स होने से रोकना।",
+    "category": 1
+  },
+  {
+    "id": 35,
+    "title": "Adversarial Prompt Testing",
+    "hindi": "खुद ही हैकर बनकर अपने एआई सिस्टम की मजबूती टेस्ट करना।",
+    "category": 1
+  },
+  {
+    "id": 36,
+    "title": "Watermarking AI Outputs",
+    "hindi": "एआई द्वारा बनाए गए डेटा पर एक अदृश्य पहचान छोड़ना।",
+    "category": 1
+  },
+  {
+    "id": 37,
+    "title": "Zero-Data Retention (ZDR) Contracts",
+    "hindi": "एलएलएम कंपनियों से एग्रीमेंट करना कि वो हमारा डेटा store नहीं करेंगी।",
+    "category": 1
+  },
+  {
+    "id": 38,
+    "title": "Data Lineage Tracking",
+    "hindi": "एआई ने यह जवाब किस फाइल या टेबल से उठाया, उसका पूरा रास्ता दिखाना।",
+    "category": 1
+  },
+  {
+    "id": 39,
+    "title": "Content Moderation API",
+    "hindi": "आपत्तिजनक इनपुट या आउटपुट को बीच में ही ब्लॉक करना।",
+    "category": 1
+  },
+  {
+    "id": 40,
+    "title": "Explainable AI (XAI)",
+    "hindi": "एआई से पूछना कि उसने यही फैसला या फोरकास्ट क्यों चुना (Reasoning)।",
+    "category": 1
+  },
+  {
+    "id": 41,
+    "title": "Idempotent Tool Execution",
+    "hindi": "एक ही रिक्वेस्ट दो बार जाने पर भी डेटा डुप्लीकेट न होना।",
+    "category": 2
+  },
+  {
+    "id": 42,
+    "title": "Circuit Breakers (Resilience4j)",
+    "hindi": "अगर कोई सर्विस डाउन है, तो एआई को बार-बार रिक्वेस्ट भेजने से रोकना।",
+    "category": 2
+  },
+  {
+    "id": 43,
+    "title": "Self-Correction Loops",
+    "hindi": "एरर आने पर एजेंट द्वारा खुद ही कोड या एपीआई पैरामीटर ठीक करना।",
+    "category": 2
+  },
+  {
+    "id": 44,
+    "title": "Human-in-the-Loop (HITL)",
+    "hindi": "बड़े बदलावों से पहले इंसानी मर्जी (Approval) लेना।",
+    "category": 2
+  },
+  {
+    "id": 45,
+    "title": "Graceful Degradation",
+    "hindi": "मुख्य एलएलएम फेल होने पर सिस्टम का बंद न होना, बल्कि छोटे मॉडल पर शिफ्ट हो जाना।",
+    "category": 2
+  },
+  {
+    "id": 46,
+    "title": "Max Iterations Fallback",
+    "hindi": "एजेंट अगर किसी लूप में फंस जाए, तो 3-4 बार के बाद उसे जबरदस्ती रोकना।",
+    "category": 2
+  },
+  {
+    "id": 47,
+    "title": "Fallback Prompt Strategies",
+    "hindi": "मुख्य प्रॉम्ट फेल होने पर आसान बैकअप प्रॉम्ट का इस्तेमाल करना।",
+    "category": 2
+  },
+  {
+    "id": 48,
+    "title": "Dead-Letter Queues (DLQ) for Agents",
+    "hindi": "जो काम एजेंट नहीं कर पाया, उसे एक अलग कतार में डालना ताकि इंजीनियर्स देख सकें।",
+    "category": 2
+  },
+  {
+    "id": 49,
+    "title": "Timeout Policies",
+    "hindi": "अगर एलएलएम 10 सेकंड में जवाब नहीं देता, तो रिक्वेस्ट कैंसिल करके बैकअप चलाना।",
+    "category": 2
+  },
+  {
+    "id": 50,
+    "title": "Exponential Backoff with Jitter",
+    "hindi": "फेल होने पर री-ट्राई करने के बीच का समय धीरे-धीरे बढ़ाना।",
+    "category": 2
+  },
+  {
+    "id": 51,
+    "title": "State Rollbacks",
+    "hindi": "एजेंट के फेल होने पर सिस्टम को पुरानी सही स्थिति (Previous State) में ले जाना।",
+    "category": 2
+  },
+  {
+    "id": 52,
+    "title": "Model Redundancy / Multi-Provider Failover",
+    "hindi": "OpenAI डाउन हो तो खुद-ब-खुद Anthropic पर स्विच हो जाना।",
+    "category": 2
+  },
+  {
+    "id": 53,
+    "title": "Health Check Endpoints for Agents",
+    "hindi": "लगातार चेक करते रहना कि क्या सारे एआई एजेंट्स 'ज़िंदा' हैं।",
+    "category": 2
+  },
+  {
+    "id": 54,
+    "title": "Memory Leak Mitigation in Long-Running Agents",
+    "hindi": "लंबे समय तक चलने वाले एजेंट्स की मेमोरी साफ़ करते रहना।",
+    "category": 2
+  },
+  {
+    "id": 55,
+    "title": "Distributed Tracing (OpenTelemetry)",
+    "hindi": "प्रॉम्ट से लेकर जवाब तक, रिक्वेस्ट किस-किस सर्वर से गुज़री, उसका ट्रैक रखना।",
+    "category": 2
+  },
+  {
+    "id": 56,
+    "title": "Load Balancing LLM Requests",
+    "hindi": "ट्रैफिक को अलग-अलग एआई मॉडल्स/सर्वर पर बराबर बांटना।",
+    "category": 2
+  },
+  {
+    "id": 57,
+    "title": "Crash-Safe Memory",
+    "hindi": "सर्वर क्रैश होने पर भी एजेंट की बातचीत की हिस्ट्री गायब न होना।",
+    "category": 2
+  },
+  {
+    "id": 58,
+    "title": "Partial Success Management",
+    "hindi": "अगर 5 में से 4 काम हो गए, तो उन्हें सेव करना और 1 फेल वाले को दोबारा ट्राई करना।",
+    "category": 2
+  },
+  {
+    "id": 59,
+    "title": "Cascade Failure Prevention",
+    "hindi": "एक एजेंट के फेल होने से पूरे अनप्लान सिस्टम को ठप होने से बचाना।",
+    "category": 2
+  },
+  {
+    "id": 60,
+    "title": "Chaos Engineering for AI",
+    "hindi": "जानबूझकर एआई नेटवर्क को स्लो करके सिस्टम की मजबूती जाँचना।",
+    "category": 2
+  },
+  {
+    "id": 61,
+    "title": "Semantic Caching (Redis/GPTCache)",
+    "hindi": "मिलते-जुलते सवालों के जवाब कैश से देना, लेटेंसी कम करना।",
+    "category": 3
+  },
+  {
+    "id": 62,
+    "title": "Hybrid Search (Dense + Sparse)",
+    "hindi": "कीवर्ड सर्च और मतलब (Meaning) आधारित सर्च दोनों को मिलाना।",
+    "category": 3
+  },
+  {
+    "id": 63,
+    "title": "Metadata Pre-Filtering",
+    "hindi": "सर्च करने से पहले ही अनचाहे डेटा को बाहर कर देना।",
+    "category": 3
+  },
+  {
+    "id": 64,
+    "title": "Parent-Child Chunking",
+    "hindi": "डेटा के छोटे टुकड़े सर्च के लिए रखना, लेकिन एलएलएम को पूरा पैराग्राफ भेजना।",
+    "category": 3
+  },
+  {
+    "id": 65,
+    "title": "Re-ranking (Cohere/Cross-Encoders)",
+    "hindi": "सर्च से आए 50 नतीजों में से टॉप 5 सबसे काम के नतीजे चुनना।",
+    "category": 3
+  },
+  {
+    "id": 66,
+    "title": "Query Deconstruction / Expansion",
+    "hindi": "एक कठिन सवाल को तोड़कर 3 अलग-अलग सर्च क्वेरी बनाना।",
+    "category": 3
+  },
+  {
+    "id": 67,
+    "title": "Graph RAG / Knowledge Graphs",
+    "hindi": "डेटा के बीच के रिश्तों (उदा: सेल्समैन -> रीजन -> प्रोडक्ट) को मैप करके सर्च करना।",
+    "category": 3
+  },
+  {
+    "id": 68,
+    "title": "Time-Weighted Vector Retrieval",
+    "hindi": "नए और ताज़ा डेटा को पुराने डेटा के मुकाबले ज़्यादा प्राथमिकता देना।",
+    "category": 3
+  },
+  {
+    "id": 69,
+    "title": "Vector Database Scaling (Pinecone/Milvus)",
+    "hindi": "करोड़ों वेक्टर्स को बिना स्पीड कम किए सर्च करने का इन्फ्रास्ट्रक्चर।",
+    "category": 3
+  },
+  {
+    "id": 70,
+    "title": "Dynamic Prompt Assembly",
+    "hindi": "डेटाबेस से आए नतीजों को प्रॉम्ट के अंदर सही तरीके से फिट करना।",
+    "category": 3
+  },
+  {
+    "id": 71,
+    "title": "Context Window Optimization",
+    "hindi": "एलएलएम की क्षमता के हिसाब से सिर्फ सबसे ज़रूरी डेटा ही प्रॉम्ट में भेजना।",
+    "category": 3
+  },
+  {
+    "id": 72,
+    "title": "Self-RAG / Self-Reflection",
+    "hindi": "एलएलएम द्वारा खुद चेक करना कि जो डेटा उसे मिला है, वह सवाल से मैच करता है या नहीं।",
+    "category": 3
+  },
+  {
+    "id": 73,
+    "title": "Cross-Lingual Retrieval",
+    "hindi": "सवाल हिंदी या किसी और भाषा में हो, तब भी इंग्लिश डेटाबेस से सही उत्तर ढूंढना।",
+    "category": 3
+  },
+  {
+    "id": 74,
+    "title": "Hypothetical Document Embeddings (HyDE)",
+    "hindi": "पहले एआई से एक काल्पनिक जवाब लिखवाना, फिर असली डेटाबेस में उसे सर्च करना।",
+    "category": 3
+  },
+  {
+    "id": 75,
+    "title": "Chunk Overlap Tuning",
+    "hindi": "पैराग्राफ काटते समय कुछ शब्द कॉमन रखना ताकि संदर्भ (Context) न टूटे।",
+    "category": 3
+  },
+  {
+    "id": 76,
+    "title": "Multi-Aspect Indexing",
+    "hindi": "एक ही डॉक्यूमेंट को अलग-अलग नजरियों (जैसे समरी, कीवर्ड्स) से इंडेक्स करना।",
+    "category": 3
+  },
+  {
+    "id": 77,
+    "title": "Real-time Vector Ingestion",
+    "hindi": "अनप्लान में डेटा बदलते ही नैनो-सेकंड में उसका वेक्टर अपडेट होना।",
+    "category": 3
+  },
+  {
+    "id": 78,
+    "title": "Lost in the Middle Mitigation",
+    "hindi": "एलएलएम प्रॉम्ट के बीच का डेटा भूल जाते हैं; ज़रूरी डेटा को शुरू या आखिर में रखना।",
+    "category": 3
+  },
+  {
+    "id": 79,
+    "title": "Embedding Model Fine-Tuning",
+    "hindi": "कंपनी की खास शब्दावली (जैसे Anaplan के मॉडल्स) के लिए एम्बेडिंग मॉडल को ट्रेन करना।",
+    "category": 3
+  },
+  {
+    "id": 80,
+    "title": "Token Pruning",
+    "hindi": "प्रॉम्ट में से फालतू के शब्द (जैसे please, thank you) हटाकर टोकन बचाना।",
+    "category": 3
+  },
+  {
+    "id": 81,
+    "title": "Dynamic Model Routing",
+    "hindi": "आसान काम सस्ते मॉडल को, कठिन काम महंगे मॉडल को सौंपना।",
+    "category": 4
+  },
+  {
+    "id": 82,
+    "title": "Small Language Models (SLMs) Deployment",
+    "hindi": "Llama-3-8B या Phi-3 जैसे छोटे मॉडल्स को खुद के सर्वर पर होस्ट करना।",
+    "category": 4
+  },
+  {
+    "id": 83,
+    "title": "Speculative Decoding",
+    "hindi": "एक बहुत छोटे मॉडल का उपयोग करके बड़े मॉडल की स्पीड को 2-3 गुना बढ़ाना।",
+    "category": 4
+  },
+  {
+    "id": 84,
+    "title": "Model Quantization (AWQ/GGUF)",
+    "hindi": "मॉडल का साइज़ छोटा करना ताकि वो कम रैम (VRAM) में तेज़ी से चल सके।",
+    "category": 4
+  },
+  {
+    "id": 85,
+    "title": "LLM Cold Start Optimization",
+    "hindi": "जब नया सर्वर चालू हो, तो एआई मॉडल को तुरंत मेमोरी में लोड करना।",
+    "category": 4
+  },
+  {
+    "id": 86,
+    "title": "Streaming LLM Responses",
+    "hindi": "पूरा जवाब एक साथ न दिखाकर एक-एक शब्द करके यूज़र को दिखाना (चैटजीपीटी की तरह)।",
+    "category": 4
+  },
+  {
+    "id": 87,
+    "title": "Batch Prompting",
+    "hindi": "कई यूज़र्स के सवालों को एक साथ मिलाकर एलएलएम के पास भेजना ताकि कॉस्ट कम हो।",
+    "category": 4
+  },
+  {
+    "id": 88,
+    "title": "vLLM / TensorRT-LLM Engines",
+    "hindi": "मॉडल्स को सुपर-फ़ास्ट स्पीड पर चलाने वाले इंफ्रास्ट्रक्चर इंजन।",
+    "category": 4
+  },
+  {
+    "id": 89,
+    "title": "Serverless LLM Architecture",
+    "hindi": "जितने प्रॉम्ट आएं, उतने ही सर्वर ऑटोमैटिक चालू और बंद होना।",
+    "category": 4
+  },
+  {
+    "id": 90,
+    "title": "LoRA / QLoRA Fine-Tuning",
+    "hindi": "कम खर्चे में बेस मॉडल को अपनी कंपनी के डेटा पर कस्टमाइज़ करना।",
+    "category": 4
+  },
+  {
+    "id": 91,
+    "title": "GPU Cluster Orchestration (Kubernetes/KServe)",
+    "hindi": "दर्जनों क्लाउड ग्राफिक्स कार्ड्स (Nvidia H100) का मैनेजमेंट।",
+    "category": 4
+  },
+  {
+    "id": 92,
+    "title": "Pre-Computing Embeddings",
+    "hindi": "फाइलों के वेक्टर्स पहले से बनाकर रखना ताकि लाइव यूज़र को इंतज़ार न करना पड़े।",
+    "category": 4
+  },
+  {
+    "id": 93,
+    "title": "Model Versioning and A/B Testing",
+    "hindi": "नए एआई मॉडल को 10% यूज़र्स पर टेस्ट करना और पुराने को 90% पर रखना।",
+    "category": 4
+  },
+  {
+    "id": 94,
+    "title": "Token Cost Allocation Tracking",
+    "hindi": "किस डिपार्टमेंट के एआई प्रॉम्ट्स पर कितना पैसा खर्च हो रहा है, उसका बिल बनाना।",
+    "category": 4
+  },
+  {
+    "id": 95,
+    "title": "Distributed Memory Architectures",
+    "hindi": "बहुत बड़े मॉडल्स को कई ग्राफिक्स कार्ड्स में बांटकर चलाना।",
+    "category": 4
+  },
+  {
+    "id": 96,
+    "title": "Semantic Similarity Analytics",
+    "hindi": "यूज़र्स के प्रॉम्ट्स के ट्रेंड को ट्रैक करना कि लोग ज़्यादातर क्या पूछ रहे हैं।",
+    "category": 4
+  },
+  {
+    "id": 97,
+    "title": "Hardware-Accelerated Guardrails",
+    "hindi": "सुरक्षा जांच को तेज़ी से करने के लिए सीपीयू/जीपीयू का सही तालमेल।",
+    "category": 4
+  },
+  {
+    "id": 98,
+    "title": "Local Model Ingress/Egress",
+    "hindi": "सिक्योरिटी के लिए कुछ संवेदनशील डेटा को केवल लोकल इन-हाउस मॉडल्स में प्रोसेस करना।",
+    "category": 4
+  },
+  {
+    "id": 99,
+    "title": "Context Caching (Anthropic/OpenAI Feature)",
+    "hindi": "लंबे प्रॉम्ट्स का बेस हिस्सा कैश में रखना ताकि बार-बार टोकन पैसे न लगें।",
+    "category": 4
+  },
+  {
+    "id": 100,
+    "title": "Asynchronous Fine-Tuning Pipelines",
+    "hindi": "बैकग्राउंड में रोज़ाना के नए डेटा से एआई को अपडेट/ट्रेन करते रहने का सिस्टम।",
+    "category": 4
+  }
+]
