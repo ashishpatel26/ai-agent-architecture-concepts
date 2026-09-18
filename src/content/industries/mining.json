@@ -1,0 +1,195 @@
+{
+  "slug": "mining",
+  "name": "Mining",
+  "sector": "Natural resources",
+  "icon": "pickaxe",
+  "title": "Mine maintenance and shift evidence desk",
+  "summary": "Combine equipment condition, inspection records, and shift constraints into supervisor-reviewed maintenance coordination.",
+  "situation": "Illustrative architecture: A mine operations team sees recurring haul-truck faults while production plans and workshop capacity change across shifts. Supervisors need to understand equipment evidence, open inspections, parts, and crew qualifications before assigning work. Agents prepare coordination packets without controlling vehicles, ventilation, blasting, or safety systems.",
+  "problem": "Fault codes can repeat after an unresolved repair, telemetry links may be intermittent, and shift handoffs lose context. Optimizing maintenance solely around production targets can obscure inspection requirements or assume equipment is available when it remains restricted.",
+  "whyAgents": "Condition, inspection, resource, and handoff specialists reconcile distinct operational records. Deterministic scheduling respects supervisor-approved constraints, and every proposal carries the equipment's authoritative restriction state.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Measure evidence readiness and task ownership before attributing changes in equipment availability. Physical maintenance and safety decisions remain with qualified operational teams, whose actions should be distinguishable from agent preparation in the record.",
+  "agents": [
+    {
+      "name": "Equipment evidence agent",
+      "responsibility": "Summarize fault history and operating context with telemetry quality flags.",
+      "tools": [
+        "Fleet historian",
+        "fault-code catalog"
+      ],
+      "boundary": "Cannot clear faults, command vehicles, or declare equipment fit for service."
+    },
+    {
+      "name": "Inspection reviewer",
+      "responsibility": "Retrieve outstanding inspections, restriction records, and approved maintenance procedures.",
+      "tools": [
+        "Maintenance system query",
+        "inspection repository"
+      ],
+      "boundary": "Cannot waive inspections or close safety findings."
+    },
+    {
+      "name": "Workshop planner",
+      "responsibility": "Match work scope to parts, bays, qualified crews, and approved windows.",
+      "tools": [
+        "Parts inventory",
+        "workshop scheduling simulator"
+      ],
+      "boundary": "Cannot commit unsafe work or override equipment restrictions."
+    },
+    {
+      "name": "Shift handoff agent",
+      "responsibility": "Prepare a concise packet of open tasks, evidence, and named ownership.",
+      "tools": [
+        "Shift log draft API",
+        "task status reader"
+      ],
+      "boundary": "Supervisors approve handoffs and work assignments."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Fleet and equipment systems",
+      "role": "Provide timestamped condition data and authoritative restriction status through read-only adapters."
+    },
+    {
+      "name": "Maintenance and inspection platform",
+      "role": "Owns work orders, approved procedures, inspection findings, and qualified signoffs."
+    },
+    {
+      "name": "Shift and resource planning systems",
+      "role": "Track workshop capacity, crew qualifications, parts reservations, and handoff acknowledgements."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Register recurring fault",
+      "description": "Deduplicate repeated messages while preserving count, asset identity, operating interval, and current restriction status."
+    },
+    {
+      "title": "Check evidence quality",
+      "description": "Identify stale telemetry and distinguish repeated historical codes from newly observed faults."
+    },
+    {
+      "title": "Review open obligations",
+      "description": "Retrieve unresolved inspections and previous repair evidence before proposing another maintenance action."
+    },
+    {
+      "title": "Evaluate workshop options",
+      "description": "Apply bay, parts, crew, and approved access constraints; retain restriction state as a hard planning condition."
+    },
+    {
+      "title": "Obtain supervisor review",
+      "description": "Present candidate work packages, missing evidence, and expected handoff ownership to the accountable supervisor."
+    },
+    {
+      "title": "Track approved execution",
+      "description": "Create the authorized work order and shift handoff, then await qualified completion evidence before changing operational availability."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Mine maintenance and shift evidence desk — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Mine maintenance and shift evidence desk\"]\n    N1[\"Equipment evidence agent\"]\n    N2[\"Inspection reviewer\"]\n    N3[\"Workshop planner\"]\n    N4[\"Shift handoff agent\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N0 --> N2\n    N1 --> N3\n    N2 --> N3\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Fleet and equipment systems\"\n    participant H as \"Accountable reviewer\"\nO->>S: Receive buffered truck fault events\n    S-->>O: Events predate completed repair\n    O->>H: Show historical evidence without new dispatch\n    H-->>O: Confirm current inspection requirement\n    O->>S: Save approved next-shift task",
+      "caption": "An offline truck sends old fault events after reconnecting. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "An offline truck sends old fault events after reconnecting.",
+      "detection": "Event timestamps and sequence numbers place the messages before the latest verified repair.",
+      "recovery": "Retain them as historical evidence and avoid reopening work solely from receipt order."
+    },
+    {
+      "scenario": "A shift handoff has no accepting supervisor.",
+      "detection": "The handoff remains unacknowledged beyond the configured shift transition window.",
+      "recovery": "Escalate to the duty manager and keep the previous owner accountable until acceptance is recorded."
+    }
+  ],
+  "controls": [
+    "Keep vehicle, blasting, ventilation, and safety-control interfaces outside agent authority.",
+    "Treat equipment restrictions and outstanding inspections as authoritative planning constraints.",
+    "Require qualified signoff before maintenance completion changes availability status.",
+    "Preserve event time and device sequence when telemetry reconnects after an outage.",
+    "Bind work assignments to current crew qualifications and approved procedures."
+  ],
+  "metrics": [
+    {
+      "name": "Handoff completeness",
+      "definition": "Open work items with evidence, owner, and acknowledged next shift divided by handed-off items."
+    },
+    {
+      "name": "Fault packet latency",
+      "definition": "Time from accepted new fault to supervisor-reviewable condition and maintenance context."
+    },
+    {
+      "name": "Stale event rejection",
+      "definition": "Historical reconnect events correctly excluded from new-fault triggers divided by audited stale events."
+    },
+    {
+      "name": "Work readiness",
+      "definition": "Approved packages with required parts, qualified crew, and current procedures divided by approved packages."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Offline-tolerant event handling",
+      "benefit": "Preserves evidence from remote equipment.",
+      "cost": "Requires event ordering and duplicate reconciliation after reconnects."
+    },
+    {
+      "decision": "Restriction-aware planning",
+      "benefit": "Keeps operational constraints visible.",
+      "cost": "Production-oriented schedules may be less flexible."
+    },
+    {
+      "decision": "Explicit handoff acceptance",
+      "benefit": "Reduces orphaned tasks across shifts.",
+      "cost": "Requires supervisor participation and escalation coverage."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Historical shift replay",
+      "acceptance": "Supervisors verify stale events, unresolved restrictions, and missing repair evidence across completed incidents."
+    },
+    {
+      "phase": "Shadow workshop pilot",
+      "acceptance": "One fleet group evaluates work readiness and handoff ownership without changing equipment status."
+    },
+    {
+      "phase": "Approved coordination launch",
+      "acceptance": "Work-order and handoff drafts launch after offline-reconnect and unaccepted-shift exercises pass."
+    }
+  ],
+  "related": [
+    12,
+    15,
+    28,
+    38,
+    44,
+    48,
+    58
+  ],
+  "references": [
+    {
+      "title": "OPC Foundation: Unified Architecture",
+      "url": "https://opcfoundation.org/about/opc-technologies/opc-ua/"
+    },
+    {
+      "title": "CloudEvents specification project",
+      "url": "https://cloudevents.io/"
+    },
+    {
+      "title": "Temporal: Workflow execution",
+      "url": "https://docs.temporal.io/workflow-execution"
+    }
+  ]
+}

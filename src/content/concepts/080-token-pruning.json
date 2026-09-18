@@ -1,0 +1,167 @@
+{
+  "id": 80,
+  "title": "Token Pruning",
+  "slug": "token-pruning",
+  "category": 3,
+  "summary": "Remove low-value prompt content under a measured quality constraint while preserving negation, identifiers, evidence, and instructions.",
+  "overview": [
+    "Token pruning reduces the text sent to a model by selecting or compressing information that contributes to the task. It can operate at document, sentence, or token level. Learned compressors estimate importance differently from simple truncation, but all pruning methods risk removing a condition or relationship the final answer needs.",
+    "Prompt-token pruning is distinct from pruning model weights or evicting attention-cache entries. Its success criterion is end-to-end task quality at a lower total cost, including the compressor itself. Exact quotations, code, structured records, numbers, and contractual language often require protected spans rather than aggressive token deletion."
+  ],
+  "production": {
+    "poc": "A prototype compares sentence selection, simple truncation, and a learned compressor on the same tasks.",
+    "production": "Production marks protected spans, retains source alignment, and evaluates factual and structural preservation at several compression ratios.",
+    "scale": "Enterprise scale routes only suitable workloads through compression and monitors quality drift, compressor latency, and total inference savings rather than token reduction alone."
+  },
+  "components": [
+    {
+      "name": "Budget controller",
+      "role": "Sets a target based on available context and the task’s tolerated information loss."
+    },
+    {
+      "name": "Importance scorer",
+      "role": "Ranks passages or tokens using a documented selection method."
+    },
+    {
+      "name": "Protected-span policy",
+      "role": "Preserves instructions, identifiers, negation, units, and exact-evidence requirements."
+    },
+    {
+      "name": "Compression stage",
+      "role": "Produces reduced context with links to original source ranges."
+    },
+    {
+      "name": "Quality gate",
+      "role": "Checks required facts and compares downstream performance with an uncompressed baseline."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Classify the task",
+      "description": "Determine whether the task permits lossy context or requires exact source wording."
+    },
+    {
+      "title": "Mark protected information",
+      "description": "Identify mandatory instructions, numbers, entity names, and evidence-critical conditions."
+    },
+    {
+      "title": "Select a compression level",
+      "description": "Choose an evaluated ratio that meets the latency and quality budget."
+    },
+    {
+      "title": "Prune with provenance",
+      "description": "Remove low-value content while retaining source mapping and protected spans."
+    },
+    {
+      "title": "Validate the result",
+      "description": "Check required fields, negation, and structure before sending the compressed prompt."
+    },
+    {
+      "title": "Measure total benefit",
+      "description": "Include compression overhead, generation cost, and error rates in the acceptance decision."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Compression with protected evidence",
+      "type": "flowchart",
+      "code": "flowchart LR\n C[\"Candidate context\"] --> P[\"Protected-span marking\"]\n P --> S[\"Importance scoring\"]\n S --> R[\"Budgeted pruning\"]\n R --> V[\"Fact and structure checks\"]\n V --> M[\"Reduced model request\"]\n V --> F[\"Fallback to original or smaller source set\"]",
+      "caption": "Compression may be rejected when required facts or structure cannot be preserved."
+    }
+  ],
+  "useCase": {
+    "industry": "Customer service analytics",
+    "title": "Summarizing repetitive contact logs",
+    "situation": "A service-quality agent reviews long contact logs containing repeated greetings, routing text, and issue updates.",
+    "problem": "Boilerplate consumes most of the prompt while a few resolution facts matter.",
+    "requirement": "Reduce context cost without losing the customer’s issue, promised action, or unresolved status.",
+    "architecture": "A compressor removes repetitive low-value spans and protects commitments, dates, and final disposition.",
+    "runtime": [
+      "The pipeline marks promised follow-up and resolution statements.",
+      "It compresses repeated routing chatter and checks that protected facts remain before summarization."
+    ],
+    "failure": "If pruning removes a negation that changes whether an issue was resolved, validation rejects the compressed version.",
+    "impact": "Measure commitment-retention accuracy and total processing cost; a smaller prompt is not an improvement when it changes the operational meaning."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Token-level compression",
+      "benefit": "Can achieve substantial input reduction.",
+      "cost": "May produce difficult-to-audit text and semantic loss."
+    },
+    {
+      "decision": "Sentence selection",
+      "benefit": "Preserves readable units.",
+      "cost": "May retain more redundant tokens."
+    },
+    {
+      "decision": "Protected spans",
+      "benefit": "Preserve high-value exact information.",
+      "cost": "Limit achievable compression."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Negation disappears",
+      "detection": "The compressed text reverses a status or condition.",
+      "recovery": "Protect logical operators and compare critical statements."
+    },
+    {
+      "scenario": "Compression costs more than it saves",
+      "detection": "Added model work exceeds avoided prefill cost.",
+      "recovery": "Bypass short or low-redundancy requests."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Optimizing compression ratio alone",
+      "fix": "Measure task quality and total latency."
+    },
+    {
+      "mistake": "Pruning mandatory instructions",
+      "fix": "Reserve protected policy and output-contract segments."
+    },
+    {
+      "mistake": "Losing source alignment",
+      "fix": "Retain original ranges so citations remain verifiable."
+    }
+  ],
+  "whenToUse": [
+    "Use for repetitive long context with clear evidence priorities.",
+    "Use when prefill cost is material.",
+    "Use when quality can be evaluated against an uncompressed baseline."
+  ],
+  "whenNotToUse": [
+    "Avoid exact quotation or code-transformation tasks without protected structure.",
+    "Do not compress already short requests by default.",
+    "Avoid pruning when required evidence cannot be identified."
+  ],
+  "checklist": [
+    "Distinguish prompt pruning from model compression.",
+    "Define protected spans.",
+    "Evaluate several compression levels.",
+    "Preserve source alignment.",
+    "Test negation and numeric fidelity.",
+    "Measure compressor overhead and downstream errors."
+  ],
+  "related": [
+    19,
+    70,
+    71,
+    75,
+    78,
+    84
+  ],
+  "keywords": [
+    "token pruning",
+    "prompt compression",
+    "protected spans",
+    "LLMLingua"
+  ],
+  "references": [
+    {
+      "title": "LLMLingua: Compressing Prompts for Accelerated Inference",
+      "url": "https://arxiv.org/abs/2310.05736"
+    }
+  ]
+}

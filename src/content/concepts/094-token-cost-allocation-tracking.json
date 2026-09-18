@@ -1,0 +1,176 @@
+{
+  "id": 94,
+  "title": "Token Cost Allocation Tracking",
+  "slug": "token-cost-allocation-tracking",
+  "category": 4,
+  "summary": "Attribute inference usage to the business work that caused it, including retries, caches, tools, and shared infrastructure.",
+  "overview": [
+    "Token cost allocation maps model usage to a tenant, team, workflow, or product feature. It requires more than multiplying a final response’s token count by a price: retries, planning calls, embedding requests, cache reads or writes, multimodal inputs, and failed attempts can all contribute. Self-hosted inference also needs infrastructure cost allocation rather than provider token billing alone.",
+    "The accounting system should distinguish estimated usage at admission from observed usage and reconciled billing. Prices and billing categories vary by provider, model, region, and contract, so a versioned rate catalog is essential. Allocation is an operational and financial measurement system; it should not expose sensitive prompt contents merely to identify ownership."
+  ],
+  "production": {
+    "poc": "A prototype tags every model call with a workflow and feature identifier and compares estimates with returned usage.",
+    "production": "Production records attempt-level usage, rate versions, cache categories, and unattributed cost exceptions.",
+    "scale": "Enterprise scale reconciles invoices, allocates shared capacity with documented rules, and connects budgets to admission without silently blocking essential workflows."
+  },
+  "components": [
+    {
+      "name": "Usage envelope",
+      "role": "Carries tenant, feature, workflow, and attempt identifiers through inference calls."
+    },
+    {
+      "name": "Provider usage adapter",
+      "role": "Normalizes model-specific reported usage while preserving original categories."
+    },
+    {
+      "name": "Rate catalog",
+      "role": "Stores effective prices and contractual dimensions by date and model."
+    },
+    {
+      "name": "Cost ledger",
+      "role": "Records immutable estimated, observed, and reconciled amounts."
+    },
+    {
+      "name": "Budget and reporting service",
+      "role": "Aggregates ownership and informs quotas, alerts, and capacity decisions."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Assign ownership",
+      "description": "Attach a stable cost center and workflow identity before any model or embedding call."
+    },
+    {
+      "title": "Estimate admission cost",
+      "description": "Use input size and output limits to reserve an approximate budget."
+    },
+    {
+      "title": "Record every attempt",
+      "description": "Capture provider, model, usage categories, cache behavior, and retry relationships."
+    },
+    {
+      "title": "Apply versioned rates",
+      "description": "Calculate observed cost using the rate effective for the actual usage event."
+    },
+    {
+      "title": "Reconcile totals",
+      "description": "Compare the ledger with provider billing or infrastructure allocation and investigate differences."
+    },
+    {
+      "title": "Report accepted-task economics",
+      "description": "Include failures and retries when comparing routes or product features."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Attempt-level usage to business allocation",
+      "type": "flowchart",
+      "code": "flowchart LR\n W[\"Workflow cost identity\"] --> A[\"Model and embedding attempts\"]\n A --> U[\"Observed usage events\"]\n R[\"Versioned rate catalog\"] --> L[\"Cost ledger\"]\n U --> L\n L --> C[\"Tenant and feature allocation\"]\n B[\"Provider bill or infrastructure cost\"] --> X[\"Reconciliation\"]\n L --> X\n X --> C",
+      "caption": "Estimated budgets, observed usage, and reconciled charges remain distinct records."
+    }
+  ],
+  "useCase": {
+    "industry": "Enterprise collaboration",
+    "title": "Allocating assistant spend across product features",
+    "situation": "A collaboration platform offers document summaries, meeting follow-ups, and workspace search to several business units.",
+    "problem": "Shared provider invoices cannot explain which features generate retries or expensive long-context work.",
+    "requirement": "Attribute complete accepted-task cost without logging private document text.",
+    "architecture": "Usage envelopes connect every inference attempt to feature and business-unit identifiers, and a ledger applies effective rates.",
+    "runtime": [
+      "A summary task records its planner, generation, and retry calls under one workflow.",
+      "Reports compare total cost with accepted results and reconcile unexplained provider charges."
+    ],
+    "failure": "If a provider omits final usage after a broken stream, the ledger retains an estimate and marks it pending reconciliation.",
+    "impact": "Measure unattributed spend, reconciliation variance, and cost per accepted task; a low reported average is misleading when failed attempts are excluded."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Fine-grained attribution",
+      "benefit": "Reveals costly workflow stages.",
+      "cost": "Increases event volume and ownership metadata management."
+    },
+    {
+      "decision": "Admission estimates",
+      "benefit": "Support proactive budget control.",
+      "cost": "Differ from actual generation and billing."
+    },
+    {
+      "decision": "Shared infrastructure allocation",
+      "benefit": "Enables self-hosted chargeback.",
+      "cost": "Requires an agreed rule for idle and reserved capacity."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Retry cost is double-counted or omitted",
+      "detection": "Ledger totals diverge from attempt records.",
+      "recovery": "Use unique usage-event IDs and explicit retry relationships."
+    },
+    {
+      "scenario": "Price change rewrites history",
+      "detection": "Historical reports change unexpectedly.",
+      "recovery": "Apply effective-dated rates and immutable reconciled entries."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Counting only final successful responses",
+      "fix": "Include all attempts and supporting model work."
+    },
+    {
+      "mistake": "Hardcoding current prices",
+      "fix": "Use a versioned provider and contract rate catalog."
+    },
+    {
+      "mistake": "Equating tokens with all infrastructure cost",
+      "fix": "Account for idle, storage, network, and accelerator allocation where relevant."
+    }
+  ],
+  "whenToUse": [
+    "Use for multi-tenant products and shared AI platforms.",
+    "Use when routing and caching decisions need economic evidence.",
+    "Use for budget alerts and documented chargeback."
+  ],
+  "whenNotToUse": [
+    "Avoid exposing raw prompts in accounting records.",
+    "Do not treat estimates as final invoices.",
+    "Avoid cost comparisons that ignore task acceptance quality."
+  ],
+  "checklist": [
+    "Tag every attempt before execution.",
+    "Preserve provider usage categories.",
+    "Version prices by effective date.",
+    "Deduplicate usage events.",
+    "Reconcile missing and unattributed charges.",
+    "Report cost per accepted task including retries."
+  ],
+  "related": [
+    14,
+    30,
+    33,
+    55,
+    81,
+    99
+  ],
+  "keywords": [
+    "token accounting",
+    "cost allocation",
+    "usage ledger",
+    "chargeback",
+    "reconciliation"
+  ],
+  "references": [
+    {
+      "title": "OpenTelemetry: Traces",
+      "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+    },
+    {
+      "title": "OpenAI API: Prompt caching",
+      "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+    },
+    {
+      "title": "Claude Platform: Prompt caching",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "id": 107,
+  "title": "Data Residency & Tenant Isolation",
+  "slug": "data-residency-tenant-isolation",
+  "category": 5,
+  "summary": "Control where tenant information is processed and retained, and prevent cross-tenant access across every derived artifact and operational surface.",
+  "overview": [
+    "Residency governs permitted locations for processing, storage, replication, and access under an organization's applicable obligations. Tenant isolation governs separation between customers or organizational units. They intersect but are not interchangeable: two tenants in one region still need isolation, while one tenant's logs or backups can cross a residency boundary accidentally.",
+    "Map the complete data path, including prompts, embeddings, caches, traces, evaluation samples, support exports, and disaster-recovery copies. A regional database setting alone does not constrain model endpoints or telemetry. The enforcement design must account for identity, routing, storage partitions, encryption keys, and operator access."
+  ],
+  "production": {
+    "poc": "A proof of concept should use synthetic tenants and document every processor and artifact rather than assuming deployment region covers the whole workflow.",
+    "production": "Production requires authenticated tenant context, location-aware routing, scoped retrieval, partitioned caches, controlled telemetry, and tested backup and failover behavior.",
+    "scale": "Enterprise scale adds per-tenant policy variants, regional capacity planning, key ownership, support-access controls, migration procedures, and evidence that derived stores honor the same boundaries."
+  },
+  "components": [
+    {
+      "name": "Tenant policy registry",
+      "role": "Defines allowed processing regions, service classes, retention rules, and isolation requirements."
+    },
+    {
+      "name": "Identity-bound router",
+      "role": "Derives tenant scope from authentication and selects only policy-compatible runtime and model endpoints."
+    },
+    {
+      "name": "Partitioned data services",
+      "role": "Enforce tenant scope in relational, object, vector, cache, and workflow stores."
+    },
+    {
+      "name": "Regional telemetry pipeline",
+      "role": "Applies minimization, access control, and permitted storage locations to traces and operational records."
+    },
+    {
+      "name": "Migration and recovery controller",
+      "role": "Validates that replicas, backups, failover targets, and export jobs remain within approved policy."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Resolve trusted tenant",
+      "description": "Bind the request to authenticated tenant identity and load the current policy version before retrieval or model selection."
+    },
+    {
+      "title": "Choose permitted execution",
+      "description": "Filter runtime, model, and tool endpoints by processing-location and isolation requirements, failing closed if none qualify."
+    },
+    {
+      "title": "Retrieve within boundaries",
+      "description": "Enforce tenant and resource predicates in every store, including caches and derived search indexes."
+    },
+    {
+      "title": "Process and record minimally",
+      "description": "Send only necessary data and route logs, traces, and artifacts through compatible regional pipelines."
+    },
+    {
+      "title": "Validate secondary paths",
+      "description": "Check backups, asynchronous jobs, evaluation exports, and operator access against the same tenant policy."
+    },
+    {
+      "title": "Handle movement explicitly",
+      "description": "Perform migrations or disaster recovery only through approved destinations with verified cleanup and policy transition records."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Policy spans primary and derived data",
+      "type": "flowchart",
+      "code": "flowchart LR\n    I[\"Authenticated tenant\"] --> P[\"Tenant location policy\"]\n    P --> R[\"Permitted execution router\"]\n    R --> M[\"Allowed model endpoint\"]\n    R --> D[\"Tenant-scoped data stores\"]\n    R --> T[\"Regional telemetry\"]\n    P --> B[\"Approved backup and failover\"]\n    D --> B\n    T --> B",
+      "caption": "The same tenant and location policy constrains models, retrieval, telemetry, and recovery targets."
+    }
+  ],
+  "useCase": {
+    "industry": "Enterprise software",
+    "title": "Regional customer support assistant",
+    "situation": "Illustrative architecture: A software provider serves customers whose approved processing regions and support-access rules differ.",
+    "problem": "The main database is regional, but shared embeddings, global logs, and a fallback model can move customer content outside the intended boundary.",
+    "requirement": "Apply the tenant's policy to every processing and derived-data path, including failure recovery.",
+    "architecture": "A policy router selects regional runtimes and model endpoints; all stores require authenticated tenant keys and telemetry remains in the permitted pipeline.",
+    "runtime": [
+      "Resolve tenant policy",
+      "choose compliant endpoint",
+      "retrieve scoped cases",
+      "generate minimized answer",
+      "store regional trace",
+      "reject incompatible fallback"
+    ],
+    "failure": "The preferred model endpoint fails; the router returns a controlled degraded response because the available alternative violates the tenant's location policy.",
+    "impact": "Measure blocked cross-boundary attempts, data-path coverage, policy-compatible availability, and isolation test results; architecture controls alone do not establish legal compliance."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Dedicated tenant infrastructure",
+      "benefit": "Provides a stronger operational separation boundary.",
+      "cost": "Raises cost and fleet-management overhead."
+    },
+    {
+      "decision": "Shared infrastructure with strict policy",
+      "benefit": "Improves utilization and standardization.",
+      "cost": "Requires comprehensive enforcement and careful noisy-neighbor management."
+    },
+    {
+      "decision": "Residency-constrained failover",
+      "benefit": "Preserves approved location boundaries during outages.",
+      "cost": "May reduce available recovery capacity or increase downtime."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A semantic cache key omits tenant and policy version.",
+      "detection": "Isolation tests return a cached answer derived from another tenant's material.",
+      "recovery": "Disable the affected cache, investigate exposure, and rebuild entries with enforced tenant-aware keys."
+    },
+    {
+      "scenario": "A disaster-recovery job targets an unapproved region.",
+      "detection": "Recovery preflight rejects the destination against tenant policy.",
+      "recovery": "Use an approved recovery target or report constrained availability without silently moving data."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Checking only the primary database region.",
+      "fix": "Inventory models, embeddings, logs, backups, support tools, and evaluation exports."
+    },
+    {
+      "mistake": "Trusting a tenant ID supplied in the prompt.",
+      "fix": "Derive tenant context from authenticated application claims and verify it downstream."
+    },
+    {
+      "mistake": "Assuming encryption replaces isolation.",
+      "fix": "Enforce access and partition boundaries even when all stored data is encrypted."
+    }
+  ],
+  "whenToUse": [
+    "A shared agent platform serves customers with different data-handling obligations.",
+    "Derived indexes and telemetry contain sensitive tenant information.",
+    "Availability planning must respect location and access constraints during failures."
+  ],
+  "whenNotToUse": [
+    "All processed content is public and there is no meaningful tenant or location policy.",
+    "The proposed dependency cannot meet the required processing boundary.",
+    "A region label would be used as a substitute for legal and contractual assessment."
+  ],
+  "checklist": [
+    "Inventory every primary, derived, operational, and recovery data path.",
+    "Bind tenant context to authenticated identity and propagate it through tools.",
+    "Constrain model and tool routing by current tenant policy.",
+    "Partition caches and indexes with enforced tenant and permission semantics.",
+    "Test cross-tenant reads, writes, exports, and noisy-neighbor behavior.",
+    "Verify backup, support-access, migration, and failover destinations.",
+    "Document policy-compatible degradation when no permitted endpoint is available."
+  ],
+  "related": [
+    21,
+    23,
+    25,
+    26,
+    34,
+    37,
+    52,
+    61,
+    69,
+    98
+  ],
+  "keywords": [
+    "tenant isolation",
+    "data residency",
+    "regional routing",
+    "derived data",
+    "failover",
+    "privacy"
+  ],
+  "references": [
+    {
+      "title": "Kubernetes: Multi-tenancy",
+      "url": "https://kubernetes.io/docs/concepts/security/multi-tenancy/"
+    },
+    {
+      "title": "NIST SP 800-207: Zero Trust Architecture",
+      "url": "https://csrc.nist.gov/pubs/sp/800/207/final"
+    },
+    {
+      "title": "NIST Privacy Framework",
+      "url": "https://www.nist.gov/privacy-framework"
+    }
+  ]
+}

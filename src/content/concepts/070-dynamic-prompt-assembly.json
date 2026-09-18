@@ -1,0 +1,171 @@
+{
+  "id": 70,
+  "title": "Dynamic Prompt Assembly",
+  "slug": "dynamic-prompt-assembly",
+  "category": 3,
+  "summary": "Build each model request from versioned policy, authorized evidence, task state, and a deliberate token allocation.",
+  "overview": [
+    "Dynamic prompt assembly constructs a request from several sources at runtime rather than concatenating a fixed template with a user message. The assembler selects relevant instructions, tool definitions, conversation state, retrieved evidence, and output constraints. Its architectural role is to preserve priority and provenance while adapting context to the task.",
+    "Assembly is a trust boundary. Retrieved documents and tool results are data even when they contain imperative language. Policy instructions must remain application-controlled, and user-supplied text must not be promoted into a privileged instruction slot. A manifest of selected segments makes requests reproducible without storing unrestricted sensitive payloads in general logs."
+  ],
+  "production": {
+    "poc": "A prototype separates instruction templates from user and retrieval data and records prompt versions.",
+    "production": "Production applies authorization before inclusion, token budgeting, structured delimiters, and deterministic segment ordering.",
+    "scale": "Enterprise scale adds policy-version rollout, prompt manifests, locale-specific templates, and evaluation of assembly changes across task and data classes."
+  },
+  "components": [
+    {
+      "name": "Template registry",
+      "role": "Stores reviewed instruction and output-contract versions."
+    },
+    {
+      "name": "Context selector",
+      "role": "Chooses task-relevant history and authorized source evidence."
+    },
+    {
+      "name": "Policy resolver",
+      "role": "Determines applicable tenant, data, and tool restrictions."
+    },
+    {
+      "name": "Token budgeter",
+      "role": "Reserves room for output and allocates context by priority."
+    },
+    {
+      "name": "Prompt manifest",
+      "role": "Records segment identities, versions, trust levels, and exclusion reasons."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Resolve task contract",
+      "description": "Determine requested output, model capability, and applicable policy."
+    },
+    {
+      "title": "Collect candidate segments",
+      "description": "Load instructions, conversation state, evidence, and tool schemas with provenance."
+    },
+    {
+      "title": "Enforce trust and access",
+      "description": "Reject unauthorized evidence and keep untrusted content in clearly bounded data fields."
+    },
+    {
+      "title": "Allocate tokens",
+      "description": "Reserve output capacity and choose segments according to task value and required constraints."
+    },
+    {
+      "title": "Serialize deterministically",
+      "description": "Render stable instructions first and changing task data in consistent locations."
+    },
+    {
+      "title": "Validate and trace",
+      "description": "Check size and schema, then record the manifest and evaluate the response against its contract."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Prompt assembly with explicit trust levels",
+      "type": "flowchart",
+      "code": "flowchart TD\n P[\"Reviewed policy templates\"] --> A[\"Prompt assembler\"]\n T[\"Task and output contract\"] --> A\n E[\"Authorized evidence\"] --> B[\"Data segment boundary\"]\n H[\"Selected conversation state\"] --> B\n B --> A\n A --> K[\"Token and schema validation\"]\n K --> M[\"Model request and manifest\"]",
+      "caption": "Evidence contributes facts without acquiring the authority of application instructions."
+    }
+  ],
+  "useCase": {
+    "industry": "Human resources",
+    "title": "Answering region-specific leave questions",
+    "situation": "An employee assistant uses company policies, regional addenda, and the employee’s selected locale.",
+    "problem": "A single oversized prompt mixes irrelevant regions and sometimes includes obsolete policy fragments.",
+    "requirement": "Assemble only applicable evidence while preserving access limits and a consistent answer format.",
+    "architecture": "The policy resolver selects the region, the retriever supplies authorized active documents, and the assembler creates a versioned manifest.",
+    "runtime": [
+      "The task requests a leave-policy explanation for one region.",
+      "The assembler includes the active regional addendum and reserves room for citations and uncertainty."
+    ],
+    "failure": "If mandatory policy text cannot fit, assembly fails explicitly or chooses a supported larger-context route instead of silently dropping it.",
+    "impact": "Track assembly failures, excluded evidence, token use, and policy-citation accuracy; reproducible manifests help explain behavior changes."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Task-specific context",
+      "benefit": "Reduces irrelevant tokens.",
+      "cost": "Requires selection logic and evaluation."
+    },
+    {
+      "decision": "Deterministic ordering",
+      "benefit": "Supports reproducibility and possible prefix reuse.",
+      "cost": "Can constrain adaptive placement strategies."
+    },
+    {
+      "decision": "Detailed manifests",
+      "benefit": "Improve auditability.",
+      "cost": "Need privacy-aware storage and retention."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Untrusted source becomes instruction",
+      "detection": "Injected document text changes tool behavior.",
+      "recovery": "Preserve data boundaries and enforce tool authorization outside the model."
+    },
+    {
+      "scenario": "Mandatory segment silently truncated",
+      "detection": "Responses ignore a required policy constraint.",
+      "recovery": "Validate segment retention and reject oversized assemblies."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Concatenating everything into one string",
+      "fix": "Use typed segments with explicit trust and provenance."
+    },
+    {
+      "mistake": "Dropping instructions to meet token limits",
+      "fix": "Reserve mandatory policy capacity before optional evidence."
+    },
+    {
+      "mistake": "Logging complete prompts indiscriminately",
+      "fix": "Store restricted manifests and governed payload references."
+    }
+  ],
+  "whenToUse": [
+    "Use for tasks with changing evidence and policy context.",
+    "Use when several tools or output schemas are selected dynamically.",
+    "Use when prompt reproducibility matters operationally."
+  ],
+  "whenNotToUse": [
+    "Avoid elaborate assembly for a stable tiny classifier.",
+    "Do not let model output set privileged instruction content.",
+    "Do not include data merely because capacity remains."
+  ],
+  "checklist": [
+    "Version instruction templates.",
+    "Label segment trust and provenance.",
+    "Authorize evidence before inclusion.",
+    "Reserve output and mandatory-policy tokens.",
+    "Record assembly manifests.",
+    "Evaluate prompt changes across representative task slices."
+  ],
+  "related": [
+    19,
+    24,
+    28,
+    63,
+    71,
+    99
+  ],
+  "keywords": [
+    "prompt assembly",
+    "context manifest",
+    "instruction hierarchy",
+    "token budget"
+  ],
+  "references": [
+    {
+      "title": "Lost in the Middle: How Language Models Use Long Contexts",
+      "url": "https://arxiv.org/abs/2307.03172"
+    },
+    {
+      "title": "OpenAI API: Prompt caching",
+      "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+    }
+  ]
+}

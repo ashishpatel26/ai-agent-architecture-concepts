@@ -1,0 +1,196 @@
+{
+  "slug": "enterprise-software",
+  "name": "Enterprise Software",
+  "sector": "Information services",
+  "icon": "code",
+  "title": "Tenant-scoped incident and change assistant",
+  "summary": "Combine tenant symptoms, release history, and bounded diagnostics into engineer-approved incident recovery.",
+  "situation": "Illustrative architecture: A software provider sees intermittent failures for a subset of enterprise tenants after a release. Support and engineering need to connect customer reports, telemetry, feature flags, and recent changes without exposing one tenant's data to another. Agents investigate and propose actions while on-call engineers retain production authority.",
+  "problem": "Shared infrastructure makes correlation difficult: a noisy tenant can dominate aggregate metrics, and sensitive payloads may leak through logs. A guessed rollback or unrestricted diagnostic query can worsen the incident or cross tenant boundaries.",
+  "whyAgents": "Tenant-context, telemetry, change-analysis, and runbook specialists operate with explicit scopes. A deterministic incident coordinator sets diagnostic budgets, correlates release versions, and requires approval for consequential remediation.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Evaluate investigation quality and containment as well as restoration time. The workflow should reduce repetitive evidence gathering while keeping production authority, customer boundaries, and uncertain causal explanations explicit.",
+  "agents": [
+    {
+      "name": "Tenant context agent",
+      "responsibility": "Map authorized support cases to tenant configuration and recorded symptoms.",
+      "tools": [
+        "Support case API",
+        "tenant configuration reader"
+      ],
+      "boundary": "Cannot access another tenant's records or infer customer data from shared caches."
+    },
+    {
+      "name": "Telemetry analyst",
+      "responsibility": "Inspect scoped error rates, traces, and resource saturation.",
+      "tools": [
+        "Observability query gateway",
+        "metric calculator"
+      ],
+      "boundary": "Cannot run unrestricted production queries or retrieve secret-bearing payloads."
+    },
+    {
+      "name": "Release investigator",
+      "responsibility": "Compare deployments, feature flags, and schema changes with affected cohorts.",
+      "tools": [
+        "Deployment history",
+        "configuration diff API"
+      ],
+      "boundary": "Cannot roll back releases or alter flags independently."
+    },
+    {
+      "name": "Recovery coordinator",
+      "responsibility": "Draft a bounded diagnostic or remediation plan with rollback conditions.",
+      "tools": [
+        "Runbook repository",
+        "incident draft tool"
+      ],
+      "boundary": "Production mutations require on-call approval and gateway enforcement."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Support and tenant registry",
+      "role": "Own customer assignments, tenant identifiers, entitlements, and incident communication scope."
+    },
+    {
+      "name": "Observability and deployment systems",
+      "role": "Provide redacted traces, aggregate metrics, release manifests, and configuration history."
+    },
+    {
+      "name": "Production action gateway",
+      "role": "Enforces approved tenant and resource scope, preconditions, operation keys, and rollback receipts."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Register incident scope",
+      "description": "Bind support cases and telemetry signals to an incident, affected tenants, service versions, and on-call owner."
+    },
+    {
+      "title": "Collect bounded evidence",
+      "description": "Run approved queries with row limits and redaction, preserving query versions and source freshness."
+    },
+    {
+      "title": "Compare cohorts",
+      "description": "Separate affected and unaffected tenants by release, configuration, and infrastructure placement without asserting causality from correlation alone."
+    },
+    {
+      "title": "Propose discriminating checks",
+      "description": "Select diagnostics that distinguish hypotheses and fit the incident's time, cost, and resource budget."
+    },
+    {
+      "title": "Review recovery action",
+      "description": "Present exact targets, expected effects, rollback prerequisites, and unresolved evidence for on-call approval."
+    },
+    {
+      "title": "Execute and verify",
+      "description": "Apply the approved action through the gateway, compare service indicators against declared checks, and stop on unexpected cohort expansion."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Tenant-scoped incident and change assistant — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Tenant-scoped incident and change assistant\"]\n    N1[\"Tenant context agent\"]\n    N2[\"Telemetry analyst\"]\n    N3[\"Release investigator\"]\n    N4[\"Recovery coordinator\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N1 --> N2\n    N0 --> N3\n    N2 --> N4\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Support and tenant registry\"\n    participant H as \"Accountable reviewer\"\nO->>S: Load authorized affected tenant set\n    O->>H: Present bounded flag rollback\n    H-->>O: Approve exact cohort\n    O->>S: Revalidate evaluated targets\n    S-->>O: Target set expanded\n    O->>H: Block mutation and request scope review",
+      "caption": "A diagnostic query omits its tenant predicate. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A diagnostic query omits its tenant predicate.",
+      "detection": "Gateway policy rejects the query before execution.",
+      "recovery": "Return a structured scope error and require a corrected query; do not fall back to a broad shared search."
+    },
+    {
+      "scenario": "A feature-flag rollback affects more tenants than approved.",
+      "detection": "Target-set comparison detects a larger evaluated cohort.",
+      "recovery": "Block the mutation and ask the engineer to review the exact expanded scope."
+    }
+  ],
+  "controls": [
+    "Derive tenant scope from authenticated incident context, never model-supplied free text alone.",
+    "Redact credentials and customer payloads before observability data reaches agents.",
+    "Bound diagnostic queries by time range, tenant set, rows, and execution budget.",
+    "Require on-call approval for deployments, flags, schema changes, and customer communications.",
+    "Verify post-action indicators and halt on unexpected blast-radius expansion."
+  ],
+  "metrics": [
+    {
+      "name": "Incident evidence latency",
+      "definition": "Time from incident declaration to a scoped, source-backed hypothesis packet."
+    },
+    {
+      "name": "Diagnostic discrimination",
+      "definition": "Executed checks that eliminate or confirm a hypothesis divided by executed checks."
+    },
+    {
+      "name": "Tenant boundary violations",
+      "definition": "Unauthorized cross-tenant data returns, measured separately from correctly blocked attempts."
+    },
+    {
+      "name": "Recovery verification time",
+      "definition": "Elapsed time from approved action receipt to completed declared service checks or escalation."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Scoped observability gateway",
+      "benefit": "Limits exposure and expensive production queries.",
+      "cost": "Requires maintained query templates and tenant-aware telemetry."
+    },
+    {
+      "decision": "Cohort comparison",
+      "benefit": "Helps distinguish release effects from tenant-specific behavior.",
+      "cost": "Small cohorts and sparse events can reduce statistical confidence."
+    },
+    {
+      "decision": "Gateway-controlled remediation",
+      "benefit": "Makes action scope inspectable and enforceable.",
+      "cost": "Adds integration work for every supported production action."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Synthetic incident replay",
+      "acceptance": "Engineers validate tenant predicates, redaction, release correlation, and action-scope checks."
+    },
+    {
+      "phase": "Read-only on-call pilot",
+      "acceptance": "One service permits bounded diagnostics and measures usefulness without production mutations."
+    },
+    {
+      "phase": "Approved runbook execution",
+      "acceptance": "A narrow action set launches after expanded-cohort, timeout, and failed-verification exercises pass."
+    }
+  ],
+  "related": [
+    23,
+    24,
+    34,
+    41,
+    44,
+    55,
+    59,
+    93
+  ],
+  "references": [
+    {
+      "title": "Kubernetes: Multi-tenancy",
+      "url": "https://kubernetes.io/docs/concepts/security/multi-tenancy/"
+    },
+    {
+      "title": "OpenTelemetry: Traces",
+      "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+    },
+    {
+      "title": "NIST SP 800-207: Zero Trust Architecture",
+      "url": "https://csrc.nist.gov/pubs/sp/800/207/final"
+    }
+  ]
+}

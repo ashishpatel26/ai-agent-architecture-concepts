@@ -1,0 +1,167 @@
+{
+  "id": 19,
+  "title": "Context Condensation",
+  "slug": "context-condensation",
+  "category": 0,
+  "summary": "Compress accumulated context into a versioned working summary that preserves commitments, evidence pointers, unresolved questions, and recovery-critical facts.",
+  "overview": [
+    "Context condensation reduces a long interaction or execution history into a smaller representation for subsequent model calls. It is a lossy transformation and should be treated like one. A useful summary distinguishes verified facts, user preferences, completed actions, unresolved assumptions, and next steps rather than blending everything into fluent narrative.",
+    "Keep authoritative records outside the summary. Transaction identifiers, exact amounts, approvals, and source documents should remain recoverable through structured state and evidence references. Condensation reduces prompt load; it does not replace durable persistence or establish that the summarized facts were correct."
+  ],
+  "production": {
+    "poc": "A prototype can summarize old messages when a context threshold is reached. Compare later task performance against full-history runs before choosing a compression ratio.",
+    "production": "Production uses a summary schema, protected fields, provenance references, and versioned compaction boundaries. Preserve recent turns and exact tool outcomes needed for the next action.",
+    "scale": "At scale, hierarchical summaries and retrieval can manage long cases, but repeated summary-of-summary passes amplify omissions. Periodically rebuild from authoritative artifacts and measure factual retention rather than summary readability alone."
+  },
+  "components": [
+    {
+      "name": "Context meter",
+      "role": "Detects when prompt growth threatens reserved output or mandatory evidence capacity."
+    },
+    {
+      "name": "Condensation worker",
+      "role": "Produces a structured summary under task-specific preservation requirements."
+    },
+    {
+      "name": "Protected-state store",
+      "role": "Retains exact commitments, identifiers, approvals, and completed operations independently."
+    },
+    {
+      "name": "Evidence index",
+      "role": "Maps summarized claims to original messages, documents, and tool artifacts."
+    },
+    {
+      "name": "Retention evaluator",
+      "role": "Tests whether required facts and unresolved issues survive compression."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Choose boundary",
+      "description": "Identify stable older context that can be condensed while retaining recent active exchanges."
+    },
+    {
+      "title": "Extract protected facts",
+      "description": "Preserve exact identifiers, constraints, commitments, and unresolved operations outside free-form prose."
+    },
+    {
+      "title": "Generate summary",
+      "description": "Separate verified facts, assumptions, user preferences, completed work, and open questions."
+    },
+    {
+      "title": "Validate retention",
+      "description": "Compare mandatory facts and evidence references against the source material before accepting the summary."
+    },
+    {
+      "title": "Assemble next context",
+      "description": "Combine the summary, protected state, relevant retrieved evidence, and recent turns within budget."
+    },
+    {
+      "title": "Refresh responsibly",
+      "description": "Version the compaction and rebuild from originals when repeated condensation degrades fidelity."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Condensation with recoverable evidence",
+      "type": "flowchart",
+      "code": "flowchart LR\n H[\"Conversation and tool history\"] --> B[\"Compaction boundary\"]\n B --> S[\"Structured summary\"]\n B --> P[\"Protected exact state\"]\n H --> E[\"Original evidence archive\"]\n S --> V[\"Retention validation\"]\n P --> V\n V --> C[\"Next prompt assembly\"]\n E --> R[\"Targeted evidence retrieval\"]\n R --> C\n N[\"Recent turns\"] --> C",
+      "caption": "The summary saves context while exact state and source evidence remain independently recoverable."
+    }
+  ],
+  "useCase": {
+    "industry": "Enterprise support",
+    "title": "Maintaining a multi-week incident investigation",
+    "situation": "A software vendor investigates an intermittent integration failure across many support exchanges and diagnostic sessions.",
+    "problem": "Appending every message makes prompts expensive and causes important customer constraints to disappear in a long context window.",
+    "requirement": "The assistant must remember verified diagnostics, prohibited changes, and outstanding questions while preserving source evidence.",
+    "architecture": "A structured summary holds the investigation state, and protected records retain ticket identifiers, tested versions, and approved maintenance windows.",
+    "runtime": [
+      "After a stable investigation phase, older exchanges are condensed and checked against a required-facts list.",
+      "A later engineer asks about a failed experiment; the assistant retrieves the original diagnostic artifact rather than trusting a compressed sentence alone."
+    ],
+    "failure": "If condensation omits a customer restriction, validation rejects the summary and retains the previous context representation.",
+    "impact": "Track retained critical facts, retrieval frequency after compaction, prompt size, and repeated troubleshooting steps to quantify whether compression helps the investigation."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Smaller prompts",
+      "benefit": "Model calls use less context and may focus better.",
+      "cost": "Compression can remove qualifications that change interpretation."
+    },
+    {
+      "decision": "Structured summaries",
+      "benefit": "Important categories are easier to validate.",
+      "cost": "A rigid schema may miss unusual but relevant details."
+    },
+    {
+      "decision": "Original evidence retention",
+      "benefit": "Lost details remain recoverable.",
+      "cost": "Storage, access control, and retrieval infrastructure are still required."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A hypothesis becomes a stated fact",
+      "detection": "Comparison finds uncertainty markers missing from the summary.",
+      "recovery": "Restore the distinction and invalidate dependent conclusions."
+    },
+    {
+      "scenario": "Repeated compaction drops an old commitment",
+      "detection": "Retention tests fail on protected obligations.",
+      "recovery": "Rebuild from source history and protected state."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Deleting original evidence after summarization",
+      "fix": "Retain recoverable sources under an explicit policy."
+    },
+    {
+      "mistake": "Summarizing exact financial values approximately",
+      "fix": "Store exact values in typed state."
+    },
+    {
+      "mistake": "Measuring only compression ratio",
+      "fix": "Evaluate downstream correctness and repeated-work rates."
+    }
+  ],
+  "whenToUse": [
+    "Long interactions exceed practical prompt budgets.",
+    "Critical facts can be enumerated and preserved separately.",
+    "Original evidence remains available for targeted retrieval."
+  ],
+  "whenNotToUse": [
+    "Exact full-text context is required for every decision.",
+    "The history is already short and stable.",
+    "No validation can detect loss of critical constraints."
+  ],
+  "checklist": [
+    "Define protected facts before compaction.",
+    "Preserve uncertainty and unresolved questions.",
+    "Keep source references in summaries.",
+    "Retain recent active turns verbatim where needed.",
+    "Version every compaction boundary.",
+    "Test repeated summary-of-summary degradation."
+  ],
+  "related": [
+    12,
+    14,
+    70,
+    71,
+    78
+  ],
+  "keywords": [
+    "context condensation",
+    "summary fidelity",
+    "protected state",
+    "compaction",
+    "evidence retrieval"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: persistence",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    }
+  ]
+}

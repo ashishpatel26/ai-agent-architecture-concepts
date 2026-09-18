@@ -1,0 +1,167 @@
+{
+  "id": 87,
+  "title": "Batch Prompting",
+  "slug": "batch-prompting",
+  "category": 4,
+  "summary": "Amortize work across independent items while preserving item identity, isolation, validation, and retry boundaries.",
+  "overview": [
+    "Batch prompting places several logically separate items into one model request and asks for an item-indexed response. It can amortize repeated instructions for small homogeneous tasks, but it shares context and failure fate across the items. A malformed response, truncated output, or adversarial item can affect the whole batch.",
+    "This differs from server-side inference batching, where an engine schedules independent requests together, and from asynchronous batch APIs, which submit many independent requests for deferred processing. Those mechanisms need not combine user data into one prompt. Architects should choose the appropriate batching layer before accepting the isolation and reliability costs of prompt-level packing."
+  ],
+  "production": {
+    "poc": "A prototype compares one-item calls with small homogeneous prompt batches and checks item-level accuracy.",
+    "production": "Production assigns stable item IDs, caps input and output budgets, and validates that every expected item appears exactly once.",
+    "scale": "At scale, separate tenant and policy scopes, use adaptive batch sizing, and retry only failed items while monitoring head-of-line delay and cross-item contamination."
+  },
+  "components": [
+    {
+      "name": "Batch builder",
+      "role": "Groups compatible items under shared task, policy, and deadline constraints."
+    },
+    {
+      "name": "Prompt envelope",
+      "role": "Separates item data and specifies an item-indexed output schema."
+    },
+    {
+      "name": "Token estimator",
+      "role": "Bounds total input and expected output before dispatch."
+    },
+    {
+      "name": "Result demultiplexer",
+      "role": "Maps model outputs back to stable item IDs and detects omissions or duplicates."
+    },
+    {
+      "name": "Retry queue",
+      "role": "Resubmits failed items independently without repeating accepted results."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Choose the batching layer",
+      "description": "Decide whether prompt packing, engine batching, or deferred independent requests fit the workload."
+    },
+    {
+      "title": "Group compatible items",
+      "description": "Require the same task contract and permitted data-sharing scope."
+    },
+    {
+      "title": "Assign identities and budget",
+      "description": "Give every item a stable ID and reserve sufficient output capacity."
+    },
+    {
+      "title": "Execute the batch",
+      "description": "Submit the bounded prompt and retain the batch-to-item mapping."
+    },
+    {
+      "title": "Validate each result",
+      "description": "Check schema, coverage, duplicate IDs, and task acceptance per item."
+    },
+    {
+      "title": "Retry selectively",
+      "description": "Split or resubmit only missing or failed items with preserved identity."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Prompt-level batching with item accounting",
+      "type": "flowchart",
+      "code": "flowchart LR\n I[\"Compatible input items\"] --> B[\"Bounded batch builder\"]\n B --> P[\"One item-indexed prompt\"]\n P --> M[\"Model response\"]\n M --> D[\"Demultiplex and validate IDs\"]\n D --> S[\"Accepted item results\"]\n D --> R[\"Retry missing or invalid items\"]\n R --> B",
+      "caption": "Prompt packing shares one generation, so item-level validation is essential before any batch is called complete."
+    }
+  ],
+  "useCase": {
+    "industry": "Media operations",
+    "title": "Tagging a catalog of short descriptions",
+    "situation": "A media team classifies thousands of short program descriptions into a stable editorial taxonomy.",
+    "problem": "Single-item requests repeat long instructions, while oversized batches omit items near the end.",
+    "requirement": "Reduce repeated prompt overhead without losing item-level accountability.",
+    "architecture": "The batch builder groups similar short descriptions and requires one structured result per catalog ID.",
+    "runtime": [
+      "A bounded group is sent with a fixed taxonomy and explicit IDs.",
+      "The demultiplexer accepts valid tags and retries only omitted descriptions."
+    ],
+    "failure": "If one item contains instruction-like text, it remains data and cannot alter the batch taxonomy; contaminated results are rejected.",
+    "impact": "Measure cost per accepted item, omission rate, batch latency, and contamination; aggregate response success does not mean every catalog record was processed."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Larger prompt batches",
+      "benefit": "Amortize repeated instructions.",
+      "cost": "Increase truncation and shared-failure risk."
+    },
+    {
+      "decision": "Small homogeneous groups",
+      "benefit": "Simplify validation and estimation.",
+      "cost": "Leave some potential efficiency unused."
+    },
+    {
+      "decision": "Independent deferred requests",
+      "benefit": "Preserve request isolation.",
+      "cost": "May have different latency and service limits."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Output omits item IDs",
+      "detection": "Expected and returned item sets differ.",
+      "recovery": "Retry missing items in smaller groups."
+    },
+    {
+      "scenario": "One item changes another result",
+      "detection": "Cross-item leakage appears in labeled evaluation.",
+      "recovery": "Separate prompts or use independent request batching."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Calling all batching prompt packing",
+      "fix": "Distinguish prompt, engine, and asynchronous API layers."
+    },
+    {
+      "mistake": "Mixing unrelated tenants",
+      "fix": "Enforce a common authorized data scope."
+    },
+    {
+      "mistake": "Retrying an entire accepted batch",
+      "fix": "Track and retry only unsuccessful items."
+    }
+  ],
+  "whenToUse": [
+    "Use for small homogeneous classification or extraction items.",
+    "Use when shared instructions dominate request cost.",
+    "Use when per-item validation is reliable."
+  ],
+  "whenNotToUse": [
+    "Avoid prompt packing across incompatible privacy scopes.",
+    "Avoid large variable-length outputs with unpredictable budgets.",
+    "Do not use it for items requiring independent conversational reasoning."
+  ],
+  "checklist": [
+    "Choose the correct batching layer.",
+    "Assign stable item IDs.",
+    "Cap input and output tokens.",
+    "Validate exact item coverage.",
+    "Test cross-item contamination.",
+    "Retry failed items independently."
+  ],
+  "related": [
+    6,
+    41,
+    58,
+    88,
+    89,
+    94
+  ],
+  "keywords": [
+    "batch prompting",
+    "request batching",
+    "item identity",
+    "demultiplexing"
+  ],
+  "references": [
+    {
+      "title": "NVIDIA Triton: TensorRT-LLM backend",
+      "url": "https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html"
+    }
+  ]
+}

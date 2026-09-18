@@ -1,0 +1,171 @@
+{
+  "id": 47,
+  "title": "Fallback Prompt Strategies",
+  "slug": "fallback-prompt-strategies",
+  "category": 2,
+  "summary": "Use evaluated alternate prompt strategies for specific recoverable failure classes while preserving policy, evidence requirements, and response contracts.",
+  "overview": [
+    "Fallback prompt strategies change how a task is presented when the primary prompt fails in a recognizable way. Examples include a simpler extraction prompt after formatting failure, a narrower evidence question after an overbroad answer, or a clarification request when required input is absent. Fallback is a controlled branch with its own evaluation, not an improvised attempt to bypass a refusal.",
+    "Keep mandatory constraints invariant across prompts. Authorization, sensitive-data rules, required citations, and factual uncertainty cannot disappear because a shorter prompt seems more likely to succeed. Classify the failure first: service outages call for operational recovery, while missing evidence calls for retrieval or abstention rather than different wording."
+  ],
+  "production": {
+    "poc": "A prototype can compare one alternate prompt against the primary on a known defect set. Include normal cases to detect regressions introduced by the fallback.",
+    "production": "Production maintains a versioned prompt registry, explicit trigger conditions, bounded attempts, and shared output validation. Record which strategy actually produced the accepted result.",
+    "scale": "At scale, monitor fallback frequency and total cost. A fallback that handles most traffic may indicate that it should become the primary, while a low-success branch should be removed rather than retained as ritual complexity."
+  },
+  "components": [
+    {
+      "name": "Failure classifier",
+      "role": "Identifies formatting, ambiguity, coverage, or other explicitly recoverable prompt-level defects."
+    },
+    {
+      "name": "Prompt registry",
+      "role": "Stores approved primary and fallback templates with versions and invariant constraints."
+    },
+    {
+      "name": "Strategy selector",
+      "role": "Chooses a tested alternative for the observed failure class."
+    },
+    {
+      "name": "Shared validator",
+      "role": "Applies the same required schema, evidence, and policy checks to every strategy."
+    },
+    {
+      "name": "Outcome recorder",
+      "role": "Measures branch usage, recovery success, added cost, and introduced regressions."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Run primary strategy",
+      "description": "Execute the normal prompt with the task's evidence and required constraints."
+    },
+    {
+      "title": "Inspect failure",
+      "description": "Determine whether the defect can plausibly be repaired through a different prompting approach."
+    },
+    {
+      "title": "Select approved fallback",
+      "description": "Choose the mapped strategy without weakening policy or inventing missing data."
+    },
+    {
+      "title": "Reassemble context",
+      "description": "Preserve essential evidence and constraints while simplifying irrelevant instructions."
+    },
+    {
+      "title": "Validate alternative",
+      "description": "Apply the same acceptance tests used for the primary result."
+    },
+    {
+      "title": "Stop or promote result",
+      "description": "Accept the supported output or terminate after the bounded strategy budget is exhausted."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Fallback prompts share one acceptance boundary",
+      "type": "flowchart",
+      "code": "flowchart LR\n P[\"Primary prompt\"] --> V[\"Shared acceptance validator\"]\n V --> A[\"Accepted result\"]\n V --> C[\"Failure classification\"]\n C --> F[\"Approved fallback prompt\"]\n C --> H[\"Clarification or escalation\"]\n F --> V\n I[\"Invariant policy and evidence requirements\"] --> P\n I --> F\n B[\"Strategy attempt budget\"] --> C",
+      "caption": "The fallback changes task presentation while acceptance and policy remain constant."
+    }
+  ],
+  "useCase": {
+    "industry": "Logistics documentation",
+    "title": "Extracting fields from an unusual bill of lading",
+    "situation": "A freight forwarder's assistant extracts shipment fields from documents with inconsistent layouts and multilingual notes.",
+    "problem": "The primary prompt occasionally mixes explanatory prose into a strict structured result or confuses optional fields with required ones.",
+    "requirement": "The assistant must recover formatting and scope errors without guessing missing shipment identifiers.",
+    "architecture": "A failure classifier selects a field-by-field extraction prompt only for known schema or coverage defects, using the same source passages.",
+    "runtime": [
+      "The primary output fails a required-field schema check; the fallback asks for each field with a supporting span or explicit unknown.",
+      "The shared validator accepts the corrected structure only when values remain supported by the document."
+    ],
+    "failure": "If the shipment identifier is absent, the fallback returns unknown and requests clarification instead of manufacturing a plausible number.",
+    "impact": "Track fallback recovery by defect class, unsupported values, additional tokens, and document-type coverage. Prompt changes are justified by measured recovery rather than stylistic preference."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Simpler alternate prompts",
+      "benefit": "Specific formatting or focus defects can recover.",
+      "cost": "Additional calls increase latency and spend."
+    },
+    {
+      "decision": "Shared validation",
+      "benefit": "Alternate strategies preserve the same correctness contract.",
+      "cost": "Some useful partial outputs still require explicit separate contracts."
+    },
+    {
+      "decision": "Versioned strategies",
+      "benefit": "Behavior remains testable and attributable.",
+      "cost": "Too many branches become difficult to evaluate and maintain."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Fallback drops a mandatory citation requirement",
+      "detection": "Invariant checks find missing evidence support.",
+      "recovery": "Reject the output and repair the template before reuse."
+    },
+    {
+      "scenario": "A service outage triggers repeated prompt changes",
+      "detection": "Error classification identifies transport failure rather than content failure.",
+      "recovery": "Use timeout and failover policy instead."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Using fallback to bypass policy refusals",
+      "fix": "Preserve policy and distinguish legitimate clarification from evasion."
+    },
+    {
+      "mistake": "Trying many prompts without a budget",
+      "fix": "Limit strategy attempts and reserve finalization capacity."
+    },
+    {
+      "mistake": "Treating missing facts as a wording problem",
+      "fix": "Retrieve evidence or return unknown."
+    }
+  ],
+  "whenToUse": [
+    "A known prompt-level defect has a tested alternate strategy.",
+    "All strategies can share clear acceptance criteria.",
+    "Recovery benefit exceeds the added latency and cost."
+  ],
+  "whenNotToUse": [
+    "The failure is missing authority or unavailable evidence.",
+    "Alternate prompts weaken mandatory controls.",
+    "No evaluation demonstrates improved accepted outcomes."
+  ],
+  "checklist": [
+    "Classify fallback triggers explicitly.",
+    "Version primary and alternate templates.",
+    "Preserve invariant policy and evidence rules.",
+    "Use shared acceptance validation.",
+    "Cap total strategy attempts.",
+    "Measure recovery and regression by defect class."
+  ],
+  "related": [
+    20,
+    28,
+    43,
+    45,
+    46
+  ],
+  "keywords": [
+    "fallback prompt",
+    "prompt registry",
+    "failure classification",
+    "invariant constraints",
+    "strategy evaluation"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: workflows and agents",
+      "url": "https://docs.langchain.com/oss/python/langgraph/workflows-agents"
+    },
+    {
+      "title": "JSON Schema: understanding JSON Schema",
+      "url": "https://json-schema.org/understanding-json-schema/"
+    }
+  ]
+}

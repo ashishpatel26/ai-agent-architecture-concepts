@@ -1,0 +1,195 @@
+{
+  "slug": "nonprofits",
+  "name": "Nonprofits",
+  "sector": "Public and social services",
+  "icon": "hand-heart",
+  "title": "Grant delivery and beneficiary evidence desk",
+  "summary": "Coordinate restricted funding, program evidence, and reporting obligations while staff retain funding and beneficiary decisions.",
+  "situation": "Illustrative architecture: A nonprofit runs community programs funded by several restricted grants. Program staff need to connect delivery records, approved budgets, and reporting requirements without exposing beneficiary information unnecessarily. Agents prepare grant evidence and exception packets; accountable staff approve spending, eligibility, and external reports.",
+  "problem": "The same activity can serve multiple programs but must not be counted twice in a grant report. Narrative records may contain sensitive personal circumstances, and donor restrictions can differ by award amendment. A fluent summary can hide missing evidence or unsupported impact claims.",
+  "whyAgents": "Grant-rule, expenditure, program-evidence, and reporting specialists work within funding and privacy boundaries. Deterministic allocation services reconcile amounts, while staff decide acceptable evidence and professional judgments about program delivery.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Measure staff preparation and reporting accuracy while preserving dignity and privacy. Social outcomes require separate evaluation design and evidence; the agent workflow should not convert activity counts into invented claims of impact.",
+  "agents": [
+    {
+      "name": "Grant requirement agent",
+      "responsibility": "Retrieve award terms, reporting dates, and approved amendments.",
+      "tools": [
+        "Grant repository",
+        "requirement checklist"
+      ],
+      "boundary": "Cannot interpret disputed restrictions as legal advice or authorize spending."
+    },
+    {
+      "name": "Expenditure reconciler",
+      "responsibility": "Match transactions to approved budget lines and identify possible double allocation.",
+      "tools": [
+        "Finance ledger read API",
+        "allocation calculator"
+      ],
+      "boundary": "Cannot post journals, move funds, or approve expenses."
+    },
+    {
+      "name": "Program evidence agent",
+      "responsibility": "Link delivered activities to verified attendance or service records with minimum personal data.",
+      "tools": [
+        "Program management query",
+        "evidence manifest"
+      ],
+      "boundary": "Cannot infer beneficiary eligibility or fabricate impact outcomes."
+    },
+    {
+      "name": "Report preparation agent",
+      "responsibility": "Draft source-backed reporting sections and unresolved questions for program leaders.",
+      "tools": [
+        "Reporting draft workspace",
+        "approved metric catalog"
+      ],
+      "boundary": "Cannot submit reports, contact donors, or publish beneficiary stories without approval."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Grant and finance systems",
+      "role": "Own award versions, restrictions, budgets, transactions, and approved allocations."
+    },
+    {
+      "name": "Program delivery platform",
+      "role": "Retains activity evidence, consent context, and responsible service staff."
+    },
+    {
+      "name": "Reporting and donor workspace",
+      "role": "Tracks deadlines, reviewed report revisions, authorized submissions, and donor acknowledgements."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Open reporting period",
+      "description": "Bind the packet to grant, reporting interval, award amendment version, and accountable program owner."
+    },
+    {
+      "title": "Retrieve requirements",
+      "description": "Map approved reporting obligations and budget restrictions without assuming terms carry across different awards."
+    },
+    {
+      "title": "Reconcile expenditure",
+      "description": "Calculate eligible candidate allocations using deterministic rules and flag overlaps for finance review."
+    },
+    {
+      "title": "Assemble delivery evidence",
+      "description": "Link activities to verified records, aggregate beneficiary information where possible, and retain missing evidence explicitly."
+    },
+    {
+      "title": "Review report claims",
+      "description": "Present program and finance leaders with supported metrics, proposed narrative, unresolved restrictions, and any consent gaps."
+    },
+    {
+      "title": "Submit approved record",
+      "description": "Publish only the reviewed report through the authorized workflow and preserve submission receipts and follow-up obligations."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Grant delivery and beneficiary evidence desk — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Grant delivery and beneficiary evidence desk\"]\n    N1[\"Grant requirement agent\"]\n    N2[\"Expenditure reconciler\"]\n    N3[\"Program evidence agent\"]\n    N4[\"Report preparation agent\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N0 --> N2\n    N0 --> N3\n    N1 --> N4\n    N2 --> N4\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Grant and finance systems\"\n    participant H as \"Accountable reviewer\"\nO->>S: Read grant activity allocations\n    S-->>O: Activity appears in incompatible award totals\n    O->>H: Hold affected report sections\n    H-->>O: Approve corrected allocation\n    O->>S: Save reviewed reporting manifest",
+      "caption": "One activity is counted in two incompatible grant totals. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "One activity is counted in two incompatible grant totals.",
+      "detection": "Cross-award allocation checks find duplicated activity identifiers beyond approved sharing rules.",
+      "recovery": "Hold both affected report sections and ask program and finance owners to reconcile the allocation."
+    },
+    {
+      "scenario": "A beneficiary story lacks appropriate publication permission.",
+      "detection": "Consent metadata does not cover the intended audience or report channel.",
+      "recovery": "Remove identifiable content and request an approved aggregate alternative or valid permission through staff procedures."
+    }
+  ],
+  "controls": [
+    "Keep beneficiary eligibility and service decisions with accountable program staff.",
+    "Separate observed delivery metrics from claimed social impact or causal conclusions.",
+    "Validate grant-specific allocation rules and prevent duplicate unsupported reporting.",
+    "Minimize beneficiary identity in model prompts and restrict original service records.",
+    "Require program and finance approval before spending commitments or donor submissions."
+  ],
+  "metrics": [
+    {
+      "name": "Evidence coverage",
+      "definition": "Reported delivery metrics linked to verified activity records divided by reported metrics."
+    },
+    {
+      "name": "Allocation exception rate",
+      "definition": "Candidate expenditure lines requiring finance correction divided by lines reviewed."
+    },
+    {
+      "name": "Reporting preparation time",
+      "definition": "Time from period close to a leader-reviewable grant packet with unresolved items identified."
+    },
+    {
+      "name": "Consent coverage",
+      "definition": "Identifiable stories or assets with permission matching the intended use divided by proposed identifiable items."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Cross-grant reconciliation",
+      "benefit": "Exposes duplicate allocation and reporting risks.",
+      "cost": "Requires shared identifiers across finance and program records."
+    },
+    {
+      "decision": "Aggregated beneficiary evidence",
+      "benefit": "Reduces unnecessary personal-data exposure.",
+      "cost": "Some grant audits require separately authorized access to originals."
+    },
+    {
+      "decision": "Source-backed narratives",
+      "benefit": "Makes claims easier to verify.",
+      "cost": "Incomplete field records limit what a report can responsibly assert."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Archived grant exercise",
+      "acceptance": "Program and finance staff verify amendments, duplicate allocations, and unsupported impact claims."
+    },
+    {
+      "phase": "Shadow reporting pilot",
+      "acceptance": "One grant cycle evaluates evidence packets and beneficiary-data minimization without donor submission."
+    },
+    {
+      "phase": "Approved report integration",
+      "acceptance": "Controlled submission drafts launch after consent-scope, award-amendment, and duplicate-activity tests pass."
+    }
+  ],
+  "related": [
+    21,
+    25,
+    28,
+    30,
+    38,
+    41,
+    44
+  ],
+  "references": [
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    },
+    {
+      "title": "NIST SP 800-207: Zero Trust Architecture",
+      "url": "https://csrc.nist.gov/pubs/sp/800/207/final"
+    },
+    {
+      "title": "Temporal: Workflow execution",
+      "url": "https://docs.temporal.io/workflow-execution"
+    }
+  ]
+}

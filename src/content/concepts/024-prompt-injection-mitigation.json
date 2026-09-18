@@ -1,0 +1,173 @@
+{
+  "id": 24,
+  "title": "Prompt Injection Mitigation",
+  "slug": "prompt-injection-mitigation",
+  "category": 1,
+  "summary": "Constrain untrusted instructions at data boundaries and prevent retrieved content from acquiring tool authority, secrets, or control over the agent workflow.",
+  "overview": [
+    "Prompt injection occurs when untrusted content attempts to redirect a model away from its intended task or policy. The content may arrive in a user message, retrieved page, document, image, or tool result. Because instructions and data share a model context, delimiters and warnings alone cannot establish a complete security boundary.",
+    "Design around consequences. Keep secrets out of model context, constrain tool capabilities, validate outputs, and enforce authorization outside the model. A retrieved document may contain useful facts and malicious instructions simultaneously; the architecture must preserve evidence utility without treating the document as a source of authority."
+  ],
+  "production": {
+    "poc": "A prototype should include malicious documents and tool responses in its test corpus, even when all tools are read-only.",
+    "production": "Production separates trusted configuration from retrieved data, limits outbound destinations, scopes credentials, and requires confirmation for specified consequential actions. Detectors provide signals rather than guarantees.",
+    "scale": "At scale, maintain adversarial regression suites, provenance-aware traces, and incident containment. Evaluate successful unauthorized effects and data exposure, not merely whether the model repeated suspicious text."
+  },
+  "components": [
+    {
+      "name": "Trust-aware prompt assembler",
+      "role": "Labels source provenance and prevents external text from replacing trusted configuration."
+    },
+    {
+      "name": "Capability gateway",
+      "role": "Enforces narrow tool permissions and rejects unauthorized operations independently of model output."
+    },
+    {
+      "name": "Content detector",
+      "role": "Flags suspicious instruction patterns and risky payloads for policy handling."
+    },
+    {
+      "name": "Egress controller",
+      "role": "Restricts destinations, data classes, and request shapes that tools can transmit."
+    },
+    {
+      "name": "Adversarial evaluator",
+      "role": "Tests indirect injection paths and verifies actual boundary enforcement."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Classify sources",
+      "description": "Mark user input, retrieved evidence, tool output, and trusted configuration by provenance."
+    },
+    {
+      "title": "Minimize exposure",
+      "description": "Remove unnecessary secrets and limit the data and capabilities available for the task."
+    },
+    {
+      "title": "Inspect content",
+      "description": "Apply detection and normalization while retaining the distinction between evidence and instructions."
+    },
+    {
+      "title": "Generate proposal",
+      "description": "Allow the model to use evidence but require structured action requests."
+    },
+    {
+      "title": "Enforce boundaries",
+      "description": "Validate authorization, arguments, destinations, and approval requirements before any effect."
+    },
+    {
+      "title": "Verify outcome",
+      "description": "Check public output and audit traces for leakage or unauthorized actions, then quarantine compromised sources."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Untrusted evidence cannot authorize tools",
+      "type": "flowchart",
+      "code": "flowchart LR\n D[\"External document\"] --> T[\"Provenance and inspection\"]\n T --> M[\"Model context\"]\n C[\"Trusted task configuration\"] --> M\n M --> G[\"Independent capability gateway\"]\n P[\"Authorization and egress policy\"] --> G\n G --> A[\"Approved business API\"]\n G --> X[\"Denied action and audit event\"]\n M --> V[\"Output validation\"]",
+      "caption": "Prompt handling reduces exposure, while the capability gateway prevents unauthorized effects."
+    },
+    {
+      "title": "Contain a malicious retrieval result",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant D as External document\n participant M as Model\n participant G as Tool gateway\n participant P as Egress policy\n participant A as Audit record\n D->>M: Evidence containing hostile instructions\n M->>G: Proposed upload of internal notes\n G->>P: Check destination and data authority\n P-->>G: Denied outside approved scope\n G-->>M: Unauthorized action rejected\n G->>A: Record source provenance and denied effect",
+      "caption": "The control remains effective even when the model proposes the attacker-requested action."
+    }
+  ],
+  "useCase": {
+    "industry": "Enterprise procurement",
+    "title": "Reading supplier proposals containing hostile instructions",
+    "situation": "A procurement assistant reviews supplier PDFs and can retrieve internal evaluation templates.",
+    "problem": "A supplier inserts text instructing the assistant to upload evaluation notes to an external endpoint disguised as a verification service.",
+    "requirement": "The assistant must extract proposal facts without allowing the supplier document to control internal tools or data sharing.",
+    "architecture": "Documents enter as untrusted evidence; the agent has no arbitrary network tool, and outbound actions pass through an allowlisted gateway.",
+    "runtime": [
+      "The PDF is parsed with source provenance, and suspicious instruction content is recorded for review.",
+      "The model's attempted external upload is rejected because neither the task nor the caller authorizes that destination or data transfer."
+    ],
+    "failure": "If a detector misses the payload, capability and egress controls still prevent the upload; the proposal can be quarantined based on the denied action.",
+    "impact": "Measure unauthorized-action success, sensitive-data exposure, benign-document false positives, and containment time across realistic attack variants."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Narrow capabilities",
+      "benefit": "Injection has fewer harmful actions available.",
+      "cost": "Some useful flexible workflows require additional adapters."
+    },
+    {
+      "decision": "Content detection",
+      "benefit": "Known attack patterns can be flagged early.",
+      "cost": "Obfuscation and novel payloads can evade classifiers."
+    },
+    {
+      "decision": "Strict egress policy",
+      "benefit": "Exfiltration paths are reduced independently of model behavior.",
+      "cost": "Integrations need deliberate destination and data approvals."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Malicious text is hidden in a tool result",
+      "detection": "Provenance trace shows the instruction originated outside trusted configuration.",
+      "recovery": "Reject unauthorized actions and isolate the affected source."
+    },
+    {
+      "scenario": "A safety classifier approves an attack",
+      "detection": "Adversarial tests still observe an attempted prohibited effect.",
+      "recovery": "Strengthen the execution boundary instead of trusting classifier confidence."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Treating delimiters as a security boundary",
+      "fix": "Enforce authority in tools and data services."
+    },
+    {
+      "mistake": "Putting reusable secrets in prompts",
+      "fix": "Use scoped credentials outside model-visible context."
+    },
+    {
+      "mistake": "Testing only direct user attacks",
+      "fix": "Include retrieval, files, images, and tool-response injection."
+    }
+  ],
+  "whenToUse": [
+    "Agents consume content from users or external systems.",
+    "Tools can access private data or perform actions.",
+    "Retrieved evidence shares context with trusted instructions."
+  ],
+  "whenNotToUse": [
+    "No model or instruction-following component processes the content.",
+    "A proposed control relies solely on perfect attack detection.",
+    "The workflow requires unrestricted secret-bearing execution."
+  ],
+  "checklist": [
+    "Map every untrusted content entry point.",
+    "Keep credentials outside model context.",
+    "Restrict tool scope and outbound destinations.",
+    "Test indirect injection with realistic artifacts.",
+    "Measure unauthorized effects rather than refusals alone.",
+    "Define quarantine and incident-response paths."
+  ],
+  "related": [
+    11,
+    20,
+    29,
+    35,
+    98
+  ],
+  "keywords": [
+    "prompt injection",
+    "trust boundary",
+    "indirect injection",
+    "egress control",
+    "least privilege"
+  ],
+  "references": [
+    {
+      "title": "OWASP: LLM prompt injection prevention",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html"
+    }
+  ]
+}

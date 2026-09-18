@@ -1,0 +1,171 @@
+{
+  "id": 40,
+  "title": "Explainable AI (XAI)",
+  "slug": "explainable-ai-xai",
+  "category": 1,
+  "summary": "Provide audience-appropriate explanations grounded in actual evidence, rules, and execution records without presenting generated rationales as faithful internal reasoning.",
+  "overview": [
+    "Explainable AI helps people understand a system's outputs, relevant evidence, operating limits, and appropriate use. In agent systems, explanations can show retrieved sources, tool observations, applicable rules, decision factors, and unresolved uncertainty. The explanation should match the user's task: an operator diagnosing a failure needs different detail from a customer contesting an outcome.",
+    "A language model can generate a plausible rationale that does not faithfully describe how its output was produced. Do not equate that rationale with causal explanation or private reasoning. Build explanations from recorded facts and validated decision logic, and assess whether they are accurate, understandable, and useful for the intended audience."
+  ],
+  "production": {
+    "poc": "A prototype can expose citations and simple decision factors, then ask users whether those help them detect incorrect outputs.",
+    "production": "Production separates factual evidence, deterministic rules, model judgments, and limitations. Preserve the records needed to support an explanation and provide a route to correction or review.",
+    "scale": "At scale, evaluate explanation fidelity and usefulness by audience and language. Avoid exposing sensitive attributes, confidential source material, or exploitable security details in the name of transparency."
+  },
+  "components": [
+    {
+      "name": "Decision evidence store",
+      "role": "Retains relevant inputs, sources, tool outcomes, and rule results for the actual execution."
+    },
+    {
+      "name": "Explanation builder",
+      "role": "Produces structured reasons from recorded evidence rather than invented retrospective narratives."
+    },
+    {
+      "name": "Audience policy",
+      "role": "Selects the detail and data that the recipient is authorized and able to use."
+    },
+    {
+      "name": "Fidelity evaluator",
+      "role": "Checks whether explanations accurately represent supported factors and known limitations."
+    },
+    {
+      "name": "Review interface",
+      "role": "Lets users inspect evidence, challenge errors, and request accountable reconsideration."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Identify audience need",
+      "description": "Determine whether the explanation supports understanding, debugging, review, or contesting an outcome."
+    },
+    {
+      "title": "Collect actual evidence",
+      "description": "Load the sources, rule results, and execution records associated with the decision."
+    },
+    {
+      "title": "Separate factor types",
+      "description": "Distinguish verified facts, deterministic conditions, model judgments, and unresolved uncertainty."
+    },
+    {
+      "title": "Construct explanation",
+      "description": "Summarize supported factors with source links and appropriate detail."
+    },
+    {
+      "title": "Validate fidelity and access",
+      "description": "Check the explanation against records and remove unauthorized information."
+    },
+    {
+      "title": "Enable response",
+      "description": "Provide a correction or review path and measure whether users can act on the explanation."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Explanations built from recorded evidence",
+      "type": "flowchart",
+      "code": "flowchart LR\n F[\"Verified facts\"] --> B[\"Explanation builder\"]\n R[\"Deterministic rule results\"] --> B\n T[\"Tool and retrieval evidence\"] --> B\n U[\"Known uncertainty\"] --> B\n B --> V[\"Fidelity and access checks\"]\n A[\"Audience needs\"] --> V\n V --> E[\"Inspectable explanation\"]\n E --> H[\"Correction or review\"]",
+      "caption": "The explanation distinguishes evidence and rules from model judgment, then supports meaningful user action."
+    }
+  ],
+  "useCase": {
+    "industry": "Insurance operations",
+    "title": "Explaining a claim document requirement",
+    "situation": "An insurer's assistant identifies additional documents needed to complete a commercial claim review.",
+    "problem": "Customers receive vague requests and cannot tell whether the requirement comes from policy wording, missing evidence, or a model inference.",
+    "requirement": "The assistant must explain each requested document using the actual case record and approved requirements.",
+    "architecture": "An explanation builder combines missing-field checks, policy references, and reviewer notes with an audience-specific disclosure policy.",
+    "runtime": [
+      "The system identifies a missing repair estimate and cites the corresponding case requirement and relevant policy reference.",
+      "The customer sees what is missing, why it is requested, and how to correct an error; staff can inspect the underlying execution evidence."
+    ],
+    "failure": "If a reason cannot be linked to a verified requirement, it is not presented as authoritative and the case is routed for review.",
+    "impact": "Measure explanation accuracy, customer correction success, reviewer usefulness, and unauthorized-detail exposure. An understandable explanation does not by itself validate the underlying decision."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Detailed evidence",
+      "benefit": "Users can inspect and challenge specific claims.",
+      "cost": "Excess detail can overwhelm or expose restricted information."
+    },
+    {
+      "decision": "Generated summaries",
+      "benefit": "Complex records become easier to understand.",
+      "cost": "Fluency can conceal unsupported causal stories."
+    },
+    {
+      "decision": "Audience-specific views",
+      "benefit": "Explanations become more useful and appropriately scoped.",
+      "cost": "Multiple views require consistent source-of-truth management."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A rationale names a factor never used",
+      "detection": "Fidelity checks find no supporting execution record.",
+      "recovery": "Remove the claim and explain only recorded evidence."
+    },
+    {
+      "scenario": "An explanation reveals another party's private data",
+      "detection": "Access validation identifies unauthorized source detail.",
+      "recovery": "Provide a permitted summary or review route without disclosure."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Requesting a persuasive post-hoc rationale",
+      "fix": "Construct reasons from actual evidence and rules."
+    },
+    {
+      "mistake": "Equating feature importance with causation",
+      "fix": "State the method's limits and validate interpretation."
+    },
+    {
+      "mistake": "Using one explanation for every audience",
+      "fix": "Design views around concrete user needs."
+    }
+  ],
+  "whenToUse": [
+    "Users need to understand or challenge consequential outputs.",
+    "Operators require evidence to diagnose agent behavior.",
+    "Actual decision records can support faithful explanations."
+  ],
+  "whenNotToUse": [
+    "The explanation would be invented without supporting records.",
+    "Disclosure would expose unauthorized private information.",
+    "A persuasive narrative is being used to hide uncertainty."
+  ],
+  "checklist": [
+    "Define audience and explanation purpose.",
+    "Retain actual decision evidence.",
+    "Separate facts, rules, and judgments.",
+    "Validate explanation fidelity.",
+    "Apply source-level access controls.",
+    "Provide correction and review mechanisms."
+  ],
+  "related": [
+    27,
+    28,
+    30,
+    31,
+    32
+  ],
+  "keywords": [
+    "XAI",
+    "explanation fidelity",
+    "decision evidence",
+    "transparency",
+    "contestability"
+  ],
+  "references": [
+    {
+      "title": "NIST: Four Principles of Explainable Artificial Intelligence",
+      "url": "https://www.nist.gov/publications/four-principles-explainable-artificial-intelligence"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

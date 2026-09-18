@@ -1,0 +1,171 @@
+{
+  "id": 46,
+  "title": "Max Iterations Fallback",
+  "slug": "max-iterations-fallback",
+  "category": 2,
+  "summary": "Terminate agent loops predictably when iteration, time, cost, or progress limits are reached, returning an honest partial outcome and a controlled next step.",
+  "overview": [
+    "A maximum-iterations fallback prevents an agent from continuing indefinitely when it repeats actions, cannot resolve uncertainty, or never emits a valid completion signal. Count the events that consume meaningful work: model turns, tool attempts, sub-agent calls, and repair loops may need separate counters. One global counter should still bound the complete parent task.",
+    "An iteration ceiling is a final containment mechanism, not a quality strategy. Combine it with elapsed-time, token, cost, and progress checks. When the limit is reached, stop starting new work, reconcile in-flight effects, and produce a defined terminal state rather than inventing a successful answer from incomplete evidence."
+  ],
+  "production": {
+    "poc": "A prototype should have a small explicit ceiling and log why runs stop. Examine trajectories that hit the limit before increasing it.",
+    "production": "Production reserves budget for finalization, cancellation, and safe result delivery. Nested agents and correction loops must consume inherited parent budgets rather than resetting their own unlimited counters.",
+    "scale": "At scale, tune limits by task class using observed success curves and marginal quality gains. Repeated limit exhaustion may reveal a broken tool, ambiguous objective, or routing error rather than unusually difficult work."
+  },
+  "components": [
+    {
+      "name": "Budget counter",
+      "role": "Tracks iterations, tool attempts, tokens, cost, and elapsed time across the full task tree."
+    },
+    {
+      "name": "Progress detector",
+      "role": "Identifies repeated actions, unchanged evidence, and unresolved requirements without improvement."
+    },
+    {
+      "name": "Loop admission gate",
+      "role": "Decides whether another step may start while reserving finalization capacity."
+    },
+    {
+      "name": "Termination handler",
+      "role": "Cancels optional work and reconciles any in-flight side effects."
+    },
+    {
+      "name": "Fallback response",
+      "role": "Reports completed work, missing evidence, stop reason, and an appropriate next action."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Initialize limits",
+      "description": "Assign task-class ceilings and reserve resources for finalization and recovery."
+    },
+    {
+      "title": "Charge every step",
+      "description": "Increment counters consistently across model calls, tools, retries, and delegated work."
+    },
+    {
+      "title": "Check progress",
+      "description": "Compare new evidence and unresolved requirements to detect ineffective repetition."
+    },
+    {
+      "title": "Deny further work",
+      "description": "Stop admission when any hard limit or no-progress condition is met."
+    },
+    {
+      "title": "Reconcile activity",
+      "description": "Cancel safe optional tasks and determine outcomes of already-started commands."
+    },
+    {
+      "title": "Return terminal result",
+      "description": "Publish a partial, failed, or review-required state with verified artifacts and a clear reason."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "A shared budget contains nested loops",
+      "type": "flowchart",
+      "code": "flowchart LR\n T[\"Task limits and reserve\"] --> G[\"Next-step admission\"]\n G --> A[\"Model or tool step\"]\n A --> P[\"Progress and usage update\"]\n P --> G\n G --> F[\"Limit reached\"]\n F --> R[\"Cancel and reconcile\"]\n R --> O[\"Partial result or review\"]\n D[\"Delegated child usage\"] --> P",
+      "caption": "Every branch consumes the parent budget, and termination preserves resources for an honest final outcome."
+    }
+  ],
+  "useCase": {
+    "industry": "Enterprise IT",
+    "title": "Bounding a configuration investigation",
+    "situation": "An IT assistant investigates why a business application cannot connect to an approved database endpoint.",
+    "problem": "A missing permission causes repeated discovery calls, and the model keeps rephrasing the same query without obtaining new evidence.",
+    "requirement": "The assistant must stop predictably and hand an administrator the useful diagnostics already collected.",
+    "architecture": "A loop governor tracks tool fingerprints, evidence changes, and the shared iteration and time budget.",
+    "runtime": [
+      "The agent verifies network reachability and retrieves a permission error, then repeats an equivalent lookup.",
+      "The no-progress detector stops further investigation and prepares a package containing confirmed checks and the unresolved access requirement."
+    ],
+    "failure": "If a diagnostic task is still running, it is cancelled where supported; any completed administrative action is reconciled before final status is reported.",
+    "impact": "Measure limit-hit rate, repeated calls, useful partial results, and completion probability by allowed iteration count. Raising ceilings should require evidence of additional value."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Hard ceilings",
+      "benefit": "Cost and runtime exposure become bounded.",
+      "cost": "Some difficult legitimate tasks stop before completion."
+    },
+    {
+      "decision": "Progress-based stopping",
+      "benefit": "Wasteful repetition can end earlier than the hard cap.",
+      "cost": "Progress is difficult to measure for some exploratory tasks."
+    },
+    {
+      "decision": "Reserved finalization budget",
+      "benefit": "The system can explain and reconcile a stopped run.",
+      "cost": "Less budget remains for primary investigation."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A child loop resets its counter repeatedly",
+      "detection": "Parent accounting shows missing delegated consumption.",
+      "recovery": "Charge child steps to inherited budgets and reject untracked work."
+    },
+    {
+      "scenario": "The limit fires after a command begins",
+      "detection": "Tool outcome remains pending when the loop stops.",
+      "recovery": "Reconcile the command instead of declaring all work cancelled."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Returning a confident answer after forced termination",
+      "fix": "Mark missing evidence and partial completion explicitly."
+    },
+    {
+      "mistake": "Counting only model turns",
+      "fix": "Include tools, retries, and delegated work."
+    },
+    {
+      "mistake": "Increasing limits without trajectory review",
+      "fix": "Diagnose repeated failure patterns first."
+    }
+  ],
+  "whenToUse": [
+    "Agents can iterate or delegate dynamically.",
+    "Cost and completion time need hard upper bounds.",
+    "Partial results or escalation are meaningful outcomes."
+  ],
+  "whenNotToUse": [
+    "A fixed acyclic workflow already has a known bounded path.",
+    "The fallback would misrepresent incomplete work as success.",
+    "The design cannot reconcile in-flight side effects."
+  ],
+  "checklist": [
+    "Define counters for every work type.",
+    "Share budgets across child tasks.",
+    "Reserve finalization capacity.",
+    "Detect repeated actions and stagnant evidence.",
+    "Reconcile commands before terminal status.",
+    "Review limit-hit trajectories by task class."
+  ],
+  "related": [
+    8,
+    9,
+    13,
+    43,
+    49
+  ],
+  "keywords": [
+    "iteration limit",
+    "loop budget",
+    "termination",
+    "no progress",
+    "partial outcome"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: workflows and agents",
+      "url": "https://docs.langchain.com/oss/python/langgraph/workflows-agents"
+    },
+    {
+      "title": "LangGraph: persistence",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    }
+  ]
+}

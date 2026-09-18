@@ -1,0 +1,171 @@
+{
+  "id": 66,
+  "title": "Query Deconstruction / Expansion",
+  "slug": "query-deconstruction-expansion",
+  "category": 3,
+  "summary": "Turn complex or underspecified questions into bounded retrieval plans while preserving the original intent and evidence requirements.",
+  "overview": [
+    "Query deconstruction separates a compound question into answerable subquestions. Query expansion adds useful synonyms, abbreviations, or alternative phrasing to improve recall. They solve different problems: decomposition organizes dependencies, while expansion broadens the wording used to search. Both should remain traceable to the original request.",
+    "Unconstrained rewriting can change a date, erase a negation, invent an entity, or multiply searches without improving evidence. A retrieval planner should preserve hard constraints, cap fan-out, and distinguish exploratory terms from factual premises. The final answer must reconcile sub-results rather than concatenate potentially conflicting fragments."
+  ],
+  "production": {
+    "poc": "A prototype logs original questions and rewrites so an evaluator can identify intent drift.",
+    "production": "Production validates entities and constraints, caps subqueries, and tracks which evidence answers each original requirement.",
+    "scale": "At scale, cache safe expansions, allocate retrieval budgets by uncertainty, and evaluate multi-hop questions separately from simple lookups."
+  },
+  "components": [
+    {
+      "name": "Intent parser",
+      "role": "Extracts entities, dates, comparison dimensions, and hard constraints."
+    },
+    {
+      "name": "Retrieval planner",
+      "role": "Chooses decomposition, expansion, or an unchanged query."
+    },
+    {
+      "name": "Budget controller",
+      "role": "Caps subqueries, parallelism, and total retrieval cost."
+    },
+    {
+      "name": "Evidence matrix",
+      "role": "Maps each requirement to retrieved supporting or conflicting passages."
+    },
+    {
+      "name": "Synthesis validator",
+      "role": "Checks that the final response covers the original question without unsupported bridging claims."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Extract constraints",
+      "description": "Identify exact names, time periods, exclusions, and requested comparisons."
+    },
+    {
+      "title": "Choose transformation",
+      "description": "Decompose only when separate evidence needs exist; expand terminology when wording is the main obstacle."
+    },
+    {
+      "title": "Validate subqueries",
+      "description": "Check that each query retains relevant constraints and contributes a distinct evidence objective."
+    },
+    {
+      "title": "Retrieve within budget",
+      "description": "Run independent queries in parallel and dependent queries only after needed entities resolve."
+    },
+    {
+      "title": "Reconcile evidence",
+      "description": "Deduplicate passages and record missing or contradictory support by requirement."
+    },
+    {
+      "title": "Answer the original task",
+      "description": "Synthesize against the initial question and disclose unresolved portions explicitly."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "A bounded comparison plan",
+      "type": "flowchart",
+      "code": "flowchart TD\n Q[\"Compare two retention policies\"] --> P[\"Constraint-preserving planner\"]\n P --> A[\"Policy A retention and exceptions\"]\n P --> B[\"Policy B retention and exceptions\"]\n A --> E[\"Evidence matrix\"]\n B --> E\n E --> C[\"Resolve dates and contradictions\"]\n C --> S[\"Answer original comparison\"]",
+      "caption": "Each branch has an evidence objective and the same temporal scope as the original request."
+    }
+  ],
+  "useCase": {
+    "industry": "Records management",
+    "title": "Comparing regional retention rules",
+    "situation": "A records team asks how two approved regional policies differ for the same document class.",
+    "problem": "One broad query retrieves general policy summaries but misses exceptions and effective dates.",
+    "requirement": "Build a comparison with separate support for each region and exception.",
+    "architecture": "A planner creates bounded region-specific queries and an evidence matrix keyed by retention, exceptions, and date.",
+    "runtime": [
+      "The system retrieves each region’s active policy and exception section.",
+      "A validator refuses to fill a missing comparison cell with a plausible model assumption."
+    ],
+    "failure": "If a rewrite changes the document class, constraint validation rejects it before retrieval.",
+    "impact": "Measure requirement coverage, rewrite drift, and search fan-out; more queries are useful only when they close identifiable evidence gaps."
+  },
+  "tradeoffs": [
+    {
+      "decision": "More expansions",
+      "benefit": "Improve vocabulary coverage.",
+      "cost": "Increase irrelevant candidates and retrieval cost."
+    },
+    {
+      "decision": "Explicit decomposition",
+      "benefit": "Makes missing evidence visible.",
+      "cost": "Adds planning latency and reconciliation complexity."
+    },
+    {
+      "decision": "Parallel subqueries",
+      "benefit": "Reduce independent lookup time.",
+      "cost": "Can create burst load and redundant searches."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Rewrite drops negation",
+      "detection": "Subquery semantics conflict with the original exclusion.",
+      "recovery": "Preserve hard constraints in structured fields and reject the rewrite."
+    },
+    {
+      "scenario": "Expansion invents an entity",
+      "detection": "Search results follow an unsupported name.",
+      "recovery": "Validate entity references against the request or retrieved evidence."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Rewriting every simple query",
+      "fix": "Use transformation only when evaluation shows benefit."
+    },
+    {
+      "mistake": "Unlimited recursive decomposition",
+      "fix": "Set depth, subquery, and token budgets."
+    },
+    {
+      "mistake": "Treating subanswers as independent truth",
+      "fix": "Reconcile sources and effective dates before synthesis."
+    }
+  ],
+  "whenToUse": [
+    "Use for comparisons and multi-part evidence questions.",
+    "Use when domain abbreviations reduce lexical recall.",
+    "Use when retrieval misses can be traced to query wording."
+  ],
+  "whenNotToUse": [
+    "Avoid transformations for exact identifiers already retrieving correctly.",
+    "Do not let expansion modify authorization scope.",
+    "Avoid decomposing inseparable mathematical or causal claims into unsupported pieces."
+  ],
+  "checklist": [
+    "Preserve hard constraints structurally.",
+    "Limit subquery count and recursion.",
+    "Record original-to-rewrite mappings.",
+    "Deduplicate expanded results.",
+    "Track evidence per requirement.",
+    "Evaluate intent drift and coverage together."
+  ],
+  "related": [
+    2,
+    13,
+    62,
+    65,
+    67,
+    74
+  ],
+  "keywords": [
+    "query expansion",
+    "decomposition",
+    "retrieval planning",
+    "intent preservation"
+  ],
+  "references": [
+    {
+      "title": "Milvus: Multi-vector hybrid search",
+      "url": "https://milvus.io/docs/multi-vector-search.md"
+    },
+    {
+      "title": "Precise Zero-Shot Dense Retrieval without Relevance Labels",
+      "url": "https://arxiv.org/abs/2212.10496"
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "id": 63,
+  "title": "Metadata Pre-Filtering",
+  "slug": "metadata-pre-filtering",
+  "category": 3,
+  "summary": "Restrict the searchable evidence set using trusted metadata before semantic ranking, while validating the store’s actual filtering behavior.",
+  "overview": [
+    "Metadata pre-filtering narrows candidate documents by tenant, access rights, language, time, or business scope before or within nearest-neighbor search. It improves relevance and can enforce an important retrieval boundary, but its security depends on the provenance and enforcement of the filter. A model-generated tenant identifier is not an authorization decision.",
+    "Vector stores differ in how filtering interacts with approximate indexes. Some apply scalar filters first; others combine filtering with iterative search or specialized indexes. Very selective predicates can affect latency and recall. Architects must evaluate their chosen implementation and recheck access when fetching the underlying text."
+  ],
+  "production": {
+    "poc": "A prototype adds explicit tenant and document-type metadata and tests retrieval with intentionally similar cross-tenant content.",
+    "production": "Production derives filters from authenticated identity, validates metadata at ingestion, and tests permission revocation.",
+    "scale": "Enterprise scale requires group-expansion strategies, high-cardinality filter indexes, selective-query benchmarks, and consistent authorization across search, cache, and source fetch."
+  },
+  "components": [
+    {
+      "name": "Identity resolver",
+      "role": "Obtains trusted tenant and group membership from the application security context."
+    },
+    {
+      "name": "Policy compiler",
+      "role": "Builds an allowed metadata predicate independent of model suggestions."
+    },
+    {
+      "name": "Metadata catalog",
+      "role": "Stores validated ownership, classification, validity, and document-version fields."
+    },
+    {
+      "name": "Filtered search engine",
+      "role": "Combines the trusted predicate with vector retrieval."
+    },
+    {
+      "name": "Source fetch gate",
+      "role": "Revalidates access before exposing the matched document body."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Authenticate the request",
+      "description": "Resolve principal identity and the relevant policy revision."
+    },
+    {
+      "title": "Compile allowed scope",
+      "description": "Construct a mandatory filter and combine optional user preferences without weakening it."
+    },
+    {
+      "title": "Validate predicate",
+      "description": "Reject missing ownership fields, unsupported operators, or excessively broad expansions."
+    },
+    {
+      "title": "Execute filtered retrieval",
+      "description": "Run vector search using the store’s supported filtering mode and bounded candidate parameters."
+    },
+    {
+      "title": "Recheck source access",
+      "description": "Authorize the final document fetch against current access state."
+    },
+    {
+      "title": "Record evidence scope",
+      "description": "Retain policy and source revisions for investigation without logging sensitive document content."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Trusted scope around retrieval",
+      "type": "flowchart",
+      "code": "flowchart TD\n I[\"Authenticated identity\"] --> P[\"Policy compiler\"]\n U[\"User search preferences\"] --> P\n P --> F[\"Mandatory metadata predicate\"]\n Q[\"Query embedding\"] --> V[\"Filtered vector search\"]\n F --> V\n V --> A[\"Source access recheck\"]\n A --> C[\"Authorized evidence\"]",
+      "caption": "User preferences may narrow the mandatory scope but must never broaden it."
+    }
+  ],
+  "useCase": {
+    "industry": "Legal services",
+    "title": "Searching client matter documents",
+    "situation": "A law firm assistant searches documents across many client matters with overlapping terminology.",
+    "problem": "Semantic similarity alone retrieves highly relevant documents belonging to another client.",
+    "requirement": "Retrieve only evidence allowed for the current lawyer and matter.",
+    "architecture": "A policy compiler resolves matter permissions and passes immutable scope to search and document fetch.",
+    "runtime": [
+      "The lawyer asks about a clause within a selected matter.",
+      "The service applies the permitted matter set before retrieval and rechecks each final document."
+    ],
+    "failure": "If a document’s access changes after indexing, source fetch denies it and the answer proceeds with remaining authorized evidence or reports insufficient coverage.",
+    "impact": "Measure denied-fetch events, revocation lag, and selective-filter recall; an empty authorized result is preferable to a plausible unauthorized answer."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Early filtering",
+      "benefit": "Reduces irrelevant or unauthorized candidates.",
+      "cost": "Selective predicates may stress approximate-search behavior."
+    },
+    {
+      "decision": "Access recheck",
+      "benefit": "Catches stale indexed permissions.",
+      "cost": "Adds source-policy lookup latency."
+    },
+    {
+      "decision": "Rich metadata",
+      "benefit": "Supports precise scope and diagnostics.",
+      "cost": "Increases ingestion validation and index maintenance."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Missing tenant metadata",
+      "detection": "New records appear outside expected partitions.",
+      "recovery": "Reject or quarantine records lacking mandatory ownership fields."
+    },
+    {
+      "scenario": "Stale group membership",
+      "detection": "A removed user still matches cached access filters.",
+      "recovery": "Expire policy caches and invalidate affected retrieval sessions."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Letting the model choose tenant scope",
+      "fix": "Derive mandatory scope from authenticated context."
+    },
+    {
+      "mistake": "Filtering only after top-k retrieval",
+      "fix": "Use supported constrained search and measure recall under selective predicates."
+    },
+    {
+      "mistake": "Assuming index ACLs are always current",
+      "fix": "Reauthorize final source access and monitor update lag."
+    }
+  ],
+  "whenToUse": [
+    "Use for multi-tenant or access-controlled retrieval.",
+    "Use when documents have meaningful time or business partitions.",
+    "Use to constrain searches to an explicit task scope."
+  ],
+  "whenNotToUse": [
+    "Do not trust unvalidated ingestion metadata.",
+    "Avoid treating similarity thresholds as access controls.",
+    "Do not add arbitrary filters without understanding their recall cost."
+  ],
+  "checklist": [
+    "Require ownership metadata at ingestion.",
+    "Compile filters outside model control.",
+    "Test cross-tenant near-duplicate documents.",
+    "Benchmark highly selective predicates.",
+    "Recheck final source access.",
+    "Measure permission-revocation propagation."
+  ],
+  "related": [
+    21,
+    22,
+    23,
+    34,
+    61,
+    69
+  ],
+  "keywords": [
+    "metadata filtering",
+    "authorization",
+    "tenant isolation",
+    "filtered ANN"
+  ],
+  "references": [
+    {
+      "title": "Milvus: Filtered search",
+      "url": "https://milvus.io/docs/filtered-search.md"
+    }
+  ]
+}

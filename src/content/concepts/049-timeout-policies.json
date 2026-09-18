@@ -1,0 +1,177 @@
+{
+  "id": 49,
+  "title": "Timeout Policies",
+  "slug": "timeout-policies",
+  "category": 2,
+  "summary": "Allocate end-to-end deadlines across queueing, inference, tools, retries, and finalization so work stops predictably and uncertain side effects are reconciled.",
+  "overview": [
+    "Timeout policies bound how long a caller waits for an operation; deadlines express when the overall task must finish. Use both deliberately. A per-call timeout that resets at every layer can exceed the user's total budget, especially when retries, queueing, and nested agent calls accumulate.",
+    "Distinguish connection establishment, response headers, idle streaming, and total execution time. A timeout does not prove that the remote operation stopped or failed. For commands, the result may be unknown even after the caller gives up, so preserve operation identity and reconcile before retrying. Cancellation is cooperative unless the remote system offers stronger guarantees."
+  ],
+  "production": {
+    "poc": "A prototype should set explicit model and tool timeouts and record actual latency distributions. Include slow connections and long silent streams in tests.",
+    "production": "Production propagates a parent deadline, allocates remaining time to each stage, and reserves finalization capacity. Retry decisions must account for whether another attempt can finish usefully before the deadline.",
+    "scale": "At scale, tune by task class and dependency percentiles, including network and queue delay. Watch false timeouts and abandoned downstream work because overly aggressive limits can amplify load through retries."
+  },
+  "components": [
+    {
+      "name": "Deadline context",
+      "role": "Carries the task's remaining time through workers, tools, and delegated agents."
+    },
+    {
+      "name": "Stage budget allocator",
+      "role": "Divides available time among required work, retries, and finalization."
+    },
+    {
+      "name": "Timeout adapter",
+      "role": "Applies connection, idle, and total-call limits supported by each client library."
+    },
+    {
+      "name": "Cancellation coordinator",
+      "role": "Stops optional work and propagates cooperative cancellation when the task expires."
+    },
+    {
+      "name": "Outcome reconciler",
+      "role": "Determines whether timed-out commands actually committed before further action."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Set task deadline",
+      "description": "Derive the allowed completion window from the user-facing service contract."
+    },
+    {
+      "title": "Charge elapsed time",
+      "description": "Include queue wait, prior stages, and delegation overhead in the remaining budget."
+    },
+    {
+      "title": "Allocate call limit",
+      "description": "Choose a timeout no longer than the useful remaining task window after reserves."
+    },
+    {
+      "title": "Execute and observe",
+      "description": "Distinguish connection, idle, and total timeout reasons in telemetry."
+    },
+    {
+      "title": "Handle expiry",
+      "description": "Stop new work, cancel where supported, and classify commands as uncertain until reconciled."
+    },
+    {
+      "title": "Finalize honestly",
+      "description": "Return complete, partial, deferred, or failed status with the known operation outcome."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "One deadline across multiple stages",
+      "type": "flowchart",
+      "code": "flowchart LR\n D[\"Parent deadline\"] --> Q[\"Queue wait\"]\n Q --> R[\"Remaining-time check\"]\n R --> M[\"Bounded model call\"]\n M --> T[\"Bounded tool call\"]\n T --> F[\"Reserved finalization\"]\n R --> X[\"Deadline exhausted\"]\n M --> X\n T --> X\n X --> C[\"Cancel and reconcile\"]\n C --> O[\"Explicit terminal status\"]",
+      "caption": "Every stage consumes the same end-to-end allowance, and timeout recovery distinguishes waiting from actual remote completion."
+    },
+    {
+      "title": "Timeout does not cancel a committed command",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant A as Agent\n participant T as Remote command service\n participant R as Reconciler\n A->>T: Command with stable operation key\n T->>T: Commit effect\n Note over A: Caller deadline expires\n A->>R: Record uncertain outcome\n R->>T: Query original operation key\n T-->>R: Confirm committed result\n R-->>A: Update durable operation status",
+      "caption": "The user-visible wait can end before the remote effect is known; reconciliation resolves that uncertainty without duplication."
+    }
+  ],
+  "useCase": {
+    "industry": "Travel management",
+    "title": "Handling an uncertain reservation hold",
+    "situation": "A corporate travel assistant checks availability and places a temporary reservation hold after user confirmation.",
+    "problem": "The booking service can accept a hold while its response is delayed beyond the client timeout.",
+    "requirement": "The assistant must respect the interactive deadline without placing duplicate holds or falsely reporting failure.",
+    "architecture": "A parent deadline covers search, confirmation, and hold creation; the command uses a stable operation key and reconciliation endpoint.",
+    "runtime": [
+      "The assistant spends part of its budget on availability, then allocates only the remaining safe window to hold creation.",
+      "If the call times out, the interface reports a pending outcome while reconciliation checks the original operation key."
+    ],
+    "failure": "A confirmed existing hold is returned to the user; no new hold is created merely because the first response was late.",
+    "impact": "Track timeout reason, false-timeout rate, downstream work after cancellation, and time to reconcile uncertain holds."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Short timeouts",
+      "benefit": "User waits and occupied resources are bounded.",
+      "cost": "Healthy slow requests may be abandoned and retried unnecessarily."
+    },
+    {
+      "decision": "End-to-end deadlines",
+      "benefit": "Nested work cannot silently exceed the service budget.",
+      "cost": "Some stages must skip optional work or return partial results."
+    },
+    {
+      "decision": "Detailed timeout types",
+      "benefit": "Operators can distinguish connection and processing problems.",
+      "cost": "Client libraries differ in what their settings actually cover."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A timeout excludes DNS or TLS setup",
+      "detection": "Observed wall-clock duration exceeds the configured request limit.",
+      "recovery": "Verify client semantics and apply a true total deadline."
+    },
+    {
+      "scenario": "Each retry receives the original full timeout",
+      "detection": "Total elapsed time exceeds the parent contract.",
+      "recovery": "Recompute limits from remaining time before every attempt."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Assuming timeout means no side effect occurred",
+      "fix": "Reconcile commands using stable operation identity."
+    },
+    {
+      "mistake": "Ignoring queue delay in the budget",
+      "fix": "Charge time from accepted request to final delivery."
+    },
+    {
+      "mistake": "Using one timeout for all task classes",
+      "fix": "Tune against dependency behavior and user expectations."
+    }
+  ],
+  "whenToUse": [
+    "Requests depend on remote or variable-latency services.",
+    "Users need predictable completion or explicit deferred status.",
+    "Retries and nested calls could exceed total budgets."
+  ],
+  "whenNotToUse": [
+    "The operation is intentionally unbounded with no useful deadline.",
+    "A timeout would be interpreted as guaranteed remote cancellation.",
+    "The system cannot represent uncertain command outcomes."
+  ],
+  "checklist": [
+    "Define end-to-end service deadlines.",
+    "Include queue and connection time.",
+    "Reserve finalization and reconciliation capacity.",
+    "Propagate remaining time to children.",
+    "Test cancellation and late responses.",
+    "Separate timeout reasons in telemetry."
+  ],
+  "related": [
+    6,
+    16,
+    41,
+    42,
+    50
+  ],
+  "keywords": [
+    "timeout",
+    "deadline propagation",
+    "cancellation",
+    "uncertain outcome",
+    "latency budget"
+  ],
+  "references": [
+    {
+      "title": "AWS: timeouts, retries, and backoff with jitter",
+      "url": "https://d1.awsstatic.com/builderslibrary/pdfs/timeouts-retries-and-backoff-with-jitter.pdf"
+    },
+    {
+      "title": "Amazon EC2: ensuring idempotency",
+      "url": "https://docs.aws.amazon.com/ec2/latest/devguide/ec2-api-idempotency.html"
+    }
+  ]
+}

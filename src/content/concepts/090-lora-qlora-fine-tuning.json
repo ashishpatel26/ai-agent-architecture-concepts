@@ -1,0 +1,182 @@
+{
+  "id": 90,
+  "title": "LoRA / QLoRA Fine-Tuning",
+  "slug": "lora-qlora-fine-tuning",
+  "category": 4,
+  "summary": "Adapt a base model through low-rank trainable updates, optionally over a quantized frozen base, with explicit compatibility and evaluation controls.",
+  "overview": [
+    "LoRA trains low-rank update matrices for selected model layers while keeping the base weights frozen. This can reduce trainable parameter and optimizer-state requirements compared with full fine-tuning. QLoRA combines low-rank adaptation with a quantized frozen base to reduce training memory further; it does not mean that all model parameters are trained in low-bit form.",
+    "Adapters are dependent artifacts. Their meaning depends on the base model revision, target modules, tokenizer, and training configuration. Fine-tuning changes behavior and task fit; it is usually a poor substitute for retrieval when the main requirement is frequently updated factual knowledge. Adapter training still requires governed data and careful held-out evaluation."
+  ],
+  "production": {
+    "poc": "A prototype compares prompting and retrieval baselines with a small adapter trained on clean task examples.",
+    "production": "Production versions data, base weights, adapter settings, and evaluation results, then validates the exact serving configuration.",
+    "scale": "Enterprise scale handles many adapters, tenant isolation, loading latency, reproducible training, and rollback of both behavior and deployment artifacts."
+  },
+  "components": [
+    {
+      "name": "Training dataset",
+      "role": "Contains reviewed task demonstrations with rights, provenance, and leakage controls."
+    },
+    {
+      "name": "Frozen base model",
+      "role": "Provides the pretrained representation under a pinned revision."
+    },
+    {
+      "name": "Low-rank adapter trainer",
+      "role": "Optimizes selected update matrices with recorded rank and target modules."
+    },
+    {
+      "name": "Evaluation suite",
+      "role": "Measures task quality, safety behavior, and regressions beyond training examples."
+    },
+    {
+      "name": "Adapter registry and server",
+      "role": "Stores compatible artifacts and loads or merges them according to supported runtime behavior."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Confirm adaptation need",
+      "description": "Show that prompting, retrieval, or schema controls do not adequately solve the behavior gap."
+    },
+    {
+      "title": "Prepare governed examples",
+      "description": "Clean demonstrations and split evaluation by source or time to avoid leakage."
+    },
+    {
+      "title": "Configure the adapter",
+      "description": "Choose target modules, rank, precision, and training settings within the hardware budget."
+    },
+    {
+      "title": "Train reproducibly",
+      "description": "Record base revision, tokenizer, data lineage, and checkpoints."
+    },
+    {
+      "title": "Evaluate the served artifact",
+      "description": "Test the adapter with the exact quantization and runtime intended for deployment."
+    },
+    {
+      "title": "Promote gradually",
+      "description": "Canary the model-adapter pair and retain the previous approved pair for rollback."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Low-rank adaptation with a frozen base",
+      "type": "flowchart",
+      "code": "flowchart TD\n B[\"Pinned frozen base model\"] --> T[\"Adapter training\"]\n D[\"Reviewed task examples\"] --> T\n Q[\"Optional quantized base for QLoRA\"] --> T\n T --> A[\"Versioned low-rank adapter\"]\n A --> E[\"Held-out and regression evaluation\"]\n B --> S[\"Compatible serving bundle\"]\n E --> S\n S --> C[\"Canary release\"]",
+      "caption": "The adapter is promoted with its compatible base and runtime rather than as a standalone model."
+    },
+    {
+      "title": "Adapter release eligibility",
+      "type": "state",
+      "code": "stateDiagram-v2\n [*] --> Training\n Training --> Candidate: Artifact recorded\n Candidate --> Evaluating\n Evaluating --> Rejected: Critical regression\n Evaluating --> Canary: Gates pass\n Canary --> Approved: Live checks pass\n Canary --> RolledBack: Regression detected\n Approved --> [*]\n Rejected --> [*]\n RolledBack --> [*]",
+      "caption": "A trained adapter becomes a candidate before it becomes an approved serving bundle."
+    }
+  ],
+  "useCase": {
+    "industry": "Document processing",
+    "title": "Adapting a correspondence extraction style",
+    "situation": "A business-services team needs consistent extraction of a specialized correspondence schema.",
+    "problem": "Prompt examples improve results but remain inconsistent on recurring domain phrasing.",
+    "requirement": "Learn the extraction behavior while keeping changing reference facts in retrieval.",
+    "architecture": "A LoRA adapter trains on reviewed examples and is evaluated against unseen source organizations.",
+    "runtime": [
+      "The training pipeline records base and dataset revisions.",
+      "The served adapter is tested for exact schema validity and field accuracy before a small rollout."
+    ],
+    "failure": "If the adapter improves common fields but harms rare exception fields, promotion stops until the data or training configuration is corrected.",
+    "impact": "Measure field-level accuracy, invalid-output rate, and total training plus serving cost; fewer trainable parameters do not remove evaluation obligations."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Low-rank adaptation",
+      "benefit": "Reduces training-state requirements.",
+      "cost": "May have limited capacity for some behavior changes."
+    },
+    {
+      "decision": "Quantized frozen base",
+      "benefit": "Further reduces training memory.",
+      "cost": "Adds precision and serving-compatibility considerations."
+    },
+    {
+      "decision": "Multiple adapters",
+      "benefit": "Support specialized behaviors on one base.",
+      "cost": "Complicate routing, isolation, and artifact management."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Adapter loaded on wrong base",
+      "detection": "Quality degrades or tensor compatibility checks fail.",
+      "recovery": "Enforce exact base and tokenizer lineage before loading."
+    },
+    {
+      "scenario": "Training examples leak into evaluation",
+      "detection": "Scores rise without generalization.",
+      "recovery": "Split by source lineage and audit near duplicates."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Using fine-tuning to refresh volatile facts",
+      "fix": "Use retrieval for changing knowledge."
+    },
+    {
+      "mistake": "Evaluating only training loss",
+      "fix": "Measure held-out task and regression performance."
+    },
+    {
+      "mistake": "Assuming adapter portability",
+      "fix": "Validate base, target modules, precision, and runtime compatibility."
+    }
+  ],
+  "whenToUse": [
+    "Use for stable task behavior and specialized output patterns.",
+    "Use when clean demonstrations are available.",
+    "Use when full fine-tuning exceeds the justified resource budget."
+  ],
+  "whenNotToUse": [
+    "Avoid adaptation for facts that change frequently.",
+    "Do not train on unreviewed sensitive feedback automatically.",
+    "Avoid deployment without exact serving-bundle evaluation."
+  ],
+  "checklist": [
+    "Establish prompting and retrieval baselines.",
+    "Record dataset rights and provenance.",
+    "Pin base model and tokenizer.",
+    "Version rank and target modules.",
+    "Evaluate the final serving precision.",
+    "Retain a complete rollback bundle."
+  ],
+  "related": [
+    79,
+    82,
+    84,
+    93,
+    95,
+    100
+  ],
+  "keywords": [
+    "LoRA",
+    "QLoRA",
+    "adapter",
+    "low-rank adaptation",
+    "fine-tuning"
+  ],
+  "references": [
+    {
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "url": "https://arxiv.org/abs/2106.09685"
+    },
+    {
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+      "url": "https://arxiv.org/abs/2305.14314"
+    },
+    {
+      "title": "Hugging Face PEFT quantization guide",
+      "url": "https://huggingface.co/docs/peft/developer_guides/quantization"
+    }
+  ]
+}

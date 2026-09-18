@@ -1,89 +1,127 @@
-# Architect Atlas
+# Top 100 AI Agent Architecture Design Concepts
 
-A complete, responsive learning website for the 100 topics in `Anaplan_AI_Architect_Top_100_Topics.md`.
+Architect Atlas 2.0.0 is an enterprise architecture reference with **100 canonical lessons, 12 advanced extensions, 28 industry blueprints, and 190 Mermaid diagrams**.
 
-Live website: **https://ashishpatel26.github.io/ai-agent-architecture-concepts/**
+[Open the website](https://ashishpatel26.github.io/ai-agent-architecture-concepts/).
+
+The canonical numbering, titles, and five domains come from the supplied `Anaplan_AI_Architect_Top_100_Topics.md`. That original file remains unchanged. Published source summaries and the downloadable curriculum use vendor-neutral terminology; the download is an adapted edition, not an identical copy of the original.
+
+## Explore the reference
+
+Every lesson explains the concept, its progression from proof of concept to enterprise scale, components, runtime flow, an illustrative industry case, architecture diagrams, tradeoffs, failures and recovery, common mistakes, selection guidance, a production checklist, related concepts, and primary references.
+
+- **Canonical collection:** all 100 original topics, with a complete home-page index and five domain pages containing 20 topics each.
+- **Advanced collection:** extensions 101–112 cover MCP, evaluation, durable execution, sandboxing, delegated authorization, event sourcing, residency, multimodal pipelines, budgets, memory lifecycle, human handoffs, and supply chain security.
+- **Industry library:** 28 blueprints define specialist agents, tools, authority limits, enterprise integrations, runtime and failure paths, controls, measurement definitions, tradeoffs, and rollout acceptance criteria.
+- **Architecture studio:** choose an industry, inspect its agents, step through its workflow, examine failures, and compare two industries. This is a deterministic educational walkthrough; it does not execute live agents or enterprise actions.
+- **Search and navigation:** global full-text search covers all 140 guides, including prose, components, keywords, and use cases. Catalogs support domain filters, sorting, and grid/list views. Lessons provide section links and sequential navigation.
+- **Learning tools:** four curated learning paths, bookmarks, self-assessed completion and practice, persistent checklists, progress export, and light/dark themes.
+- **Diagram tools:** lazy rendering, accessible titles and captions, source view and copy, zoom/reset, fullscreen where supported, and SVG download.
+
+Industry examples are illustrative reference designs, not reports of company deployments or measured business improvements. The 28 sectors provide broad coverage rather than an exhaustive enumeration of every economic subsector. Consequential clinical, legal, financial, safety, and operational decisions remain with the appropriate accountable people in the examples.
 
 ## Run locally
 
+Use a maintained Node.js release; Node.js 22 is used for this project.
+
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173/ai-agent-architecture-concepts/` (or the local URL printed by Vite).
+Open the project URL printed by Vite, typically `http://localhost:5173/ai-agent-architecture-concepts/`. The development command prepares the catalog and public content before starting the server. File watching uses polling for the Windows-mounted WSL workspace.
 
 ```sh
-npm run build    # TypeScript checks and production build
-npm run preview  # Preview the production build
+npm run build
+npm run preview
 ```
 
-## What is included
+The production build prepares structured content, checks TypeScript, builds assets into `dist/`, and generates readable HTML for each route. The app requires no model credentials or backend service.
 
-- All 100 original topic titles and Hindi explanations, organized into the five source domains.
-- Original English explanations, topic-specific conceptual flows, design tradeoffs, and interview questions for every topic.
-- An interactive multi-agent architecture on the overview, 100 step-through topic diagrams, and a searchable diagram library.
-- Topic search, domain and difficulty filters, grid/list views, and incremental catalog loading.
-- Three curated learning paths, topic completion tracking, bookmarks, and self-assessed interview practice.
-- Persistent progress in browser local storage, a JSON progress export, and a download of the original curriculum.
-- Light/dark themes, English/Hindi explanation switching, keyboard search (`Ctrl/Cmd + K`), responsive navigation, and reduced-motion support.
-
-## Structure
+## Content and application structure
 
 ```text
 src/
-  App.tsx           # Navigation, pages, search, persistent learning state
-  components.tsx    # Interactive diagrams and shared visual components
-  styles.css        # Design system, themes, responsive layouts
+  content/
+    concepts/              # 112 independently maintained lesson JSON files
+    industries/            # 28 independently maintained blueprint JSON files
   data/
-    source.json     # All 100 original source topics, imported without editing
-    topics.ts       # English guides, diagram steps, paths, domain references
+    source.json            # Ordered canonical titles and neutral Hindi summaries
+    domains.ts             # Five domains, learning paths, and lifecycle
+    catalog.json           # Generated summaries for navigation and search fallback
+  lib/
+    content-types.ts       # Concept, Industry, Diagram, and Reference contracts
+  pages/                   # Welcome, guides, catalogs, studio, and learning pages
+  ui/                      # Shared documentation and Mermaid components
+  styles.css               # Responsive light/dark design system
 public/
-  curriculum.md     # Downloadable copy of the original curriculum
-  favicon.svg
+  content/                 # Generated per-guide JSON and full-text search index
+  curriculum.md            # Generated vendor-neutral canonical curriculum
+  licenses/                # Bundled font licenses
+scripts/
+  prepare-content.mjs      # Generate catalog, public JSON, search, and download
+  render-pages.mjs         # Generate route HTML, metadata, and sitemap
+  validate-content.mjs     # Validate authored and generated content
+  validate-diagrams.mjs    # Browser rendering checks for diagram definitions
+  verify-pages.mjs         # Validate generated routes, metadata, links, and assets
+  qa.mjs                   # Interactive browser regression checks
 ```
 
-React, TypeScript, Vite, and Lucide icons. The application runs entirely in the browser. Hash-based routes work on static hosting without rewrite rules. Deploy the `dist/` directory after building. Set Vite's `base` if hosting under a subdirectory.
+Edit the individual files under `src/content/`, following [the content schema](src/lib/content-types.ts). Preserve canonical IDs 1–100, their titles, and category assignments. Advanced lessons use category 5. Regenerate derived files after content changes:
 
-## GitHub Pages deployment
+```sh
+node scripts/prepare-content.mjs
+npm test
+```
 
-Repository: `ashishpatel26/ai-agent-architecture-concepts`.
+Do not hand-edit generated catalog entries, public guide copies, the search index, or built HTML. Primary-reference links document the underlying standards, research, and implementation guidance. [The research map](planning/industry-research.md) explains how those sources relate to the illustrative architectures.
 
-GitHub Pages publishes the committed `docs/` folder on `main`. The Vite base path is `/ai-agent-architecture-concepts/`, so JavaScript, styles, fonts, downloads, and direct topic links work under the project URL. `.nojekyll` keeps the generated files unchanged.
+## Static routes and GitHub Pages
 
-To prepare an update:
+The build generates **155 actual HTML routes**, including all concept and industry pages. Each guide has complete static prose, embedded initial content data, its own title and description, canonical URL, Open Graph metadata, keywords, and a sitemap entry. Lesson text remains readable without JavaScript; interactive search, learning tools, the studio, and Mermaid rendering use JavaScript. Legacy hash links from the first edition resolve to the corresponding current routes.
+
+The five canonical domain routes are:
+
+- `/agentic-frameworks/`
+- `/security-governance/`
+- `/resilience-reliability/`
+- `/rag-data-architecture/`
+- `/model-optimization-infrastructure/`
+
+GitHub Pages publishes the committed `docs/` folder on `main` in `ashishpatel26/ai-agent-architecture-concepts`. Assets and internal links use the project base path `/ai-agent-architecture-concepts/`; `.nojekyll` preserves the generated files.
 
 ```sh
 npm ci
 npm run build:pages
 ```
 
-`build:pages` checks the curriculum, compiles TypeScript, builds the website into `docs/`, and verifies all asset paths. Commit the source changes and the regenerated `docs/` together. Merge them into `main`; GitHub's managed Pages build and deployment workflow then publishes the update automatically. This branch-based setup requires no deployment token or custom Actions workflow.
-
-Progress is stored on this device and browser; it is not synchronized between devices. JSON export creates a backup for inspection; import is not currently implemented. Reading times are estimates, and difficulty labels and curated paths are editorial additions. Diagrams are conceptual explanations, not executable workflows. Hindi summaries preserve the original document, including simplified statements; the English guides add engineering caveats.
-
-Manrope, DM Sans, and Noto Sans Devanagari are bundled locally through Fontsource. English and Hindi render without contacting an external font service.
-
-Development file watching uses polling for reliable refreshes on the project's Windows-mounted WSL drive. Bundled font licenses are included in `public/licenses/`.
+This command prepares content, runs the content tests and TypeScript checks, builds `docs/`, generates the route HTML and sitemap, and verifies the published files. Commit source changes and regenerated `docs/` together. Merging into `main` triggers GitHub's configured Pages deployment. Building locally does not itself publish a release.
 
 ## Verification
 
-`npm run build` runs strict TypeScript checks and produces the static build. `scripts/qa.mjs` exercises the website in the installed gstack browser, covering curriculum integrity, filters, diagrams, bookmarks, completion persistence, language switching, practice, keyboard search, themes, and mobile navigation. It writes screenshots and a report to `artifacts/`.
+The content suite contains 147 assertions covering the canonical source, all lesson and industry schemas, substantive prose, references, related links, diagram uniqueness, prohibited terminology, the adapted download, and parity between authored content, public JSON, catalog summaries, and the full-text search index. The source Hindi checks preserve explanatory intent while allowing vendor-neutral corrections.
 
 ```sh
+node scripts/prepare-content.mjs
+npm test
+node scripts/validate-content.mjs
+npm run build:pages
+node scripts/validate-content.mjs --published
+```
+
+Content checks validate diagram structure and safe authored definitions. Browser rendering is a separate check. With a local Vite development server and the installed gstack browse binary, run:
+
+```sh
+BROWSE_BIN=/path/to/browse node scripts/validate-diagrams.mjs --url http://localhost:5173/ai-agent-architecture-concepts/
 QA_BASE_URL=http://localhost:5173/ai-agent-architecture-concepts BROWSE_BIN=/path/to/browse node scripts/qa.mjs
 ```
 
-The browser test resets learning data on its specified local preview origin. Run it against a disposable preview, not a browser profile whose study history you want to keep.
+The browser scripts write their reports and screenshots under `artifacts/`. Use the current reports to establish which checks passed; the presence of a script is not evidence of a completed run. Run interactive QA against a disposable local preview because it exercises and may reset browser learning state.
 
-## Learning references
+## Browser data and accessibility
 
-The curriculum is based on the user-supplied document. Domain references link to primary documentation:
+Progress, bookmarks, checklists, and theme preferences stay in browser local storage and do not synchronize between devices. The progress JSON export contains completion, saved and practiced concepts, and the last topic; it does not export separate checklist or theme storage. Import is not implemented. Reading times are estimates, and learning paths and difficulty groupings are editorial navigation aids.
 
-- [Anthropic: Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
-- [Microsoft: Secure multitenant RAG](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/secure-multitenant-rag)
-- [OpenTelemetry: Traces](https://opentelemetry.io/docs/concepts/signals/traces/)
-- [Microsoft: RAG design and evaluation](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/rag/rag-solution-design-and-evaluation-guide)
-- [vLLM documentation](https://docs.vllm.ai/en/latest/)
+Canonical lessons include an expandable Hindi source-summary note; the expanded architecture lessons are in English. Manrope, DM Sans, and Noto Sans Devanagari are bundled locally through Fontsource, with licenses in `public/licenses/`. Font loading does not contact an external font service.
 
-This is an independent educational resource and is not affiliated with Anaplan. Interview prompts are practice material, not official company interview questions. No AI provider credentials or backend services are required.
+The interface includes keyboard search (`Ctrl/Cmd + K` or `/`), visible focus states, a skip link, responsive navigation, reduced-motion handling, and light/dark diagram styling. Architecture lessons and practice prompts are independent educational material, with no claim to official interview questions or regulatory certification.

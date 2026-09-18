@@ -1,0 +1,171 @@
+{
+  "id": 28,
+  "title": "Deterministic Data Grounding",
+  "slug": "deterministic-data-grounding",
+  "category": 1,
+  "summary": "Bind generated claims to verified records and use deterministic computation for values that must be exact, current, and reproducible.",
+  "overview": [
+    "Deterministic data grounding connects model output to authoritative evidence through explicit validation. The model may explain facts, but exact totals, dates, identifiers, and eligibility predicates should come from verified records and deterministic code. Retrieval relevance alone does not establish that a passage supports a particular claim.",
+    "Separate evidence acquisition, calculation, and narrative generation. Preserve source versions and distinguish observed facts from interpretation. A claim can be grounded in a document that is itself outdated or wrong, so source authority and freshness must be checked independently from whether the answer faithfully repeats the retrieved text."
+  ],
+  "production": {
+    "poc": "A prototype can require citations for important claims and compare generated numbers with source records. Include conflicting and stale documents in evaluation.",
+    "production": "Production uses typed fact objects, deterministic calculations, claim-to-source mappings, and explicit unknown values. Unsupported required facts should block publication or appear as unresolved.",
+    "scale": "At scale, source snapshots and lineage make answers reproducible across changing systems. Track unsupported claims and stale evidence separately because they require different remediation."
+  },
+  "components": [
+    {
+      "name": "Authoritative data adapter",
+      "role": "Retrieves verified records with version, timestamp, and ownership information."
+    },
+    {
+      "name": "Fact schema",
+      "role": "Represents exact values, units, identifiers, uncertainty, and evidence references."
+    },
+    {
+      "name": "Calculation service",
+      "role": "Performs arithmetic and business predicates using tested deterministic logic."
+    },
+    {
+      "name": "Claim validator",
+      "role": "Checks whether generated statements are supported by the selected facts and calculations."
+    },
+    {
+      "name": "Evidence renderer",
+      "role": "Presents citations and freshness indicators suitable for the answer's audience."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Identify required facts",
+      "description": "Translate the question into explicit data requirements and acceptable source authorities."
+    },
+    {
+      "title": "Acquire evidence",
+      "description": "Retrieve authorized records and pin relevant versions or observation times."
+    },
+    {
+      "title": "Normalize values",
+      "description": "Resolve units, currencies, identifiers, and missing-data semantics before computation."
+    },
+    {
+      "title": "Compute exactly",
+      "description": "Use deterministic logic for totals, comparisons, and policy predicates."
+    },
+    {
+      "title": "Generate explanation",
+      "description": "Provide the model with typed facts and prohibit filling unresolved fields from memory."
+    },
+    {
+      "title": "Validate claims",
+      "description": "Check numbers and references, expose uncertainty, and publish only the supported result."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Facts and calculations precede narrative",
+      "type": "flowchart",
+      "code": "flowchart LR\n S[\"Authoritative records\"] --> F[\"Typed verified facts\"]\n F --> C[\"Deterministic calculations\"]\n F --> N[\"Narrative generator\"]\n C --> N\n N --> V[\"Claim and value validation\"]\n F --> V\n C --> V\n V --> A[\"Evidence-backed explanation\"]",
+      "caption": "The model explains verified results while exact values remain owned by records and calculation code."
+    }
+  ],
+  "useCase": {
+    "industry": "Energy retail",
+    "title": "Explaining a commercial electricity bill",
+    "situation": "An energy retailer receives questions about usage, tariff changes, and adjustments on complex commercial bills.",
+    "problem": "A fluent assistant may recompute totals incorrectly or cite a tariff that was not effective during the billing period.",
+    "requirement": "The assistant must explain the bill using the actual meter readings, tariff version, and billing-engine calculations.",
+    "architecture": "Data adapters retrieve the invoice snapshot and effective tariff; deterministic code verifies line totals before narrative generation.",
+    "runtime": [
+      "A customer asks why charges increased; the system separates consumption changes, tariff changes, and adjustments using recorded values.",
+      "The generated explanation references each component and identifies any missing meter evidence rather than estimating it silently."
+    ],
+    "failure": "If invoice and tariff versions conflict, publication pauses for reconciliation with the billing system.",
+    "impact": "Measure numeric mismatch, unsupported claims, stale-source use, and resolution quality. Grounding supports explanation but does not independently prove the billing source is correct."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Typed facts",
+      "benefit": "Exact values can be validated reliably.",
+      "cost": "Fact schemas and adapters require domain-specific maintenance."
+    },
+    {
+      "decision": "Source snapshots",
+      "benefit": "Answers can be reproduced later.",
+      "cost": "Snapshot storage and retention increase operational cost."
+    },
+    {
+      "decision": "Strict evidence requirements",
+      "benefit": "Unsupported assertions are reduced.",
+      "cost": "Some questions receive partial answers when records are incomplete."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A citation is relevant but does not support the claim",
+      "detection": "Claim validation finds no matching fact or calculation.",
+      "recovery": "Remove or qualify the statement and retrieve better evidence."
+    },
+    {
+      "scenario": "Units are mixed during normalization",
+      "detection": "Dimensional checks detect incompatible inputs.",
+      "recovery": "Correct the transformation and recompute before generation."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Asking the model to calculate authoritative totals",
+      "fix": "Use tested calculation services."
+    },
+    {
+      "mistake": "Treating citation presence as proof",
+      "fix": "Verify actual support and source authority."
+    },
+    {
+      "mistake": "Replacing missing values with plausible estimates",
+      "fix": "Preserve unknown values unless estimation is explicitly requested."
+    }
+  ],
+  "whenToUse": [
+    "Answers contain exact business values or consequential facts.",
+    "Authoritative records and source versions are available.",
+    "Users need evidence they can inspect and reproduce."
+  ],
+  "whenNotToUse": [
+    "The task is explicitly creative without factual claims.",
+    "No acceptable evidence source exists for the requested assertion.",
+    "The architecture promises certainty beyond source reliability."
+  ],
+  "checklist": [
+    "Define acceptable authorities for each fact.",
+    "Preserve units and source versions.",
+    "Compute exact values outside the model.",
+    "Validate claim-to-evidence support.",
+    "Expose missing and conflicting facts.",
+    "Test stale and contradictory source records."
+  ],
+  "related": [
+    20,
+    31,
+    38,
+    40,
+    65
+  ],
+  "keywords": [
+    "grounding",
+    "typed facts",
+    "deterministic calculation",
+    "claim verification",
+    "source freshness"
+  ],
+  "references": [
+    {
+      "title": "Ragas: faithfulness evaluation",
+      "url": "https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/"
+    },
+    {
+      "title": "TruLens: the RAG triad",
+      "url": "https://www.trulens.org/getting_started/core_concepts/rag_triad/"
+    }
+  ]
+}

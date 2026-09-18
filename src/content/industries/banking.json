@@ -1,0 +1,195 @@
+{
+  "slug": "banking",
+  "name": "Banking",
+  "sector": "Financial services",
+  "icon": "landmark",
+  "title": "Payment exception investigation desk",
+  "summary": "Reconcile payment evidence across ledgers, screening queues, and customer records while keeping release authority with bank operations.",
+  "situation": "Illustrative architecture: A regional bank receives cross-border payments with mismatched beneficiary details. Operations must assemble a case before the settlement cutoff, but ledger status, customer instructions, and screening evidence arrive independently. This design assists investigation; it neither recommends investments nor autonomously releases funds.",
+  "problem": "A single conversational assistant can confuse a missing receipt with a failed payment. Retrying a release after a timeout can create duplicate financial effects. Evidence also crosses branch and customer confidentiality boundaries.",
+  "whyAgents": "Independent specialists can reconcile transaction facts, explain procedural requirements, and check evidence completeness in parallel. A deterministic case state machine owns deadlines, permissions, and payment identifiers; agents never invent their own authorization.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Measure case preparation effort and unresolved exceptions against the existing desk process. Success requires fewer unsupported claims without increasing erroneous release attempts; any business improvement remains a hypothesis until observed.",
+  "agents": [
+    {
+      "name": "Payment reconciler",
+      "responsibility": "Compare payment identifiers, amounts, currencies, and settlement timestamps across immutable snapshots.",
+      "tools": [
+        "Ledger read API",
+        "payment status query"
+      ],
+      "boundary": "Read only; cannot release, reverse, or amend transactions."
+    },
+    {
+      "name": "Customer evidence agent",
+      "responsibility": "Locate authorized instructions and identify missing beneficiary fields with document citations.",
+      "tools": [
+        "Customer record search",
+        "secure document viewer"
+      ],
+      "boundary": "Access only customers assigned to the operations case."
+    },
+    {
+      "name": "Procedure analyst",
+      "responsibility": "Retrieve the applicable investigation procedure and list unresolved checks.",
+      "tools": [
+        "Versioned policy search",
+        "jurisdiction metadata filter"
+      ],
+      "boundary": "Cannot interpret a screening hit as permission to release funds."
+    },
+    {
+      "name": "Case assembler",
+      "responsibility": "Build the evidence timeline and proposed next operational step for the reviewer.",
+      "tools": [
+        "Case draft API",
+        "evidence manifest builder"
+      ],
+      "boundary": "Can save drafts; customer communication requires approval."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Payment ledger",
+      "role": "Authoritative transaction status and immutable booking identifiers, exposed through scoped read adapters."
+    },
+    {
+      "name": "Screening case system",
+      "role": "Supplies signed status and assigned analyst; agent summaries do not override its disposition."
+    },
+    {
+      "name": "Operations workbench",
+      "role": "Owns reviewer identity, approval versions, case queues, and controlled release requests."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Register exception",
+      "description": "Deduplicate the incoming event by transaction and exception version, then assign a settlement deadline and operations owner."
+    },
+    {
+      "title": "Bind access",
+      "description": "Resolve branch, account, and case entitlements before fetching instructions or ledger evidence; missing authority suspends retrieval."
+    },
+    {
+      "title": "Gather snapshots",
+      "description": "Run reconciliation and document retrieval concurrently, recording source timestamps, record versions, and unavailable dependencies in the evidence ledger."
+    },
+    {
+      "title": "Compare facts",
+      "description": "Use deterministic amount and currency checks; let the agent explain discrepancies without converting uncertain text into booked facts."
+    },
+    {
+      "title": "Assemble decision",
+      "description": "Present the unresolved checks, policy citations, and proposed operational action with the exact payment state the reviewer is approving."
+    },
+    {
+      "title": "Commit and reconcile",
+      "description": "An authorized adapter rechecks current status and approval scope, submits once with a stable key, and reconciles any ambiguous response."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Payment exception investigation desk — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Payment exception investigation desk\"]\n    N1[\"Payment reconciler\"]\n    N2[\"Customer evidence agent\"]\n    N3[\"Procedure analyst\"]\n    N4[\"Case assembler\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N0 --> N2\n    N3 --> N4\n    N1 --> N5\n    N2 --> N5\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Payment ledger\"\n    participant H as \"Accountable reviewer\"\nO->>S: Read payment and source version\n    S-->>O: Status remains pending\n    O->>H: Present evidence and release proposal\n    H-->>O: Approve exact payment version\n    O->>S: Submit with stable operation key\n    S--xO: Acknowledgement unavailable\n    O->>S: Reconcile original operation key\n    O->>H: Show confirmed or unresolved outcome",
+      "caption": "Release acknowledgement disappears after submission. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Release acknowledgement disappears after submission.",
+      "detection": "Status query finds an ambiguous attempt associated with the original payment key.",
+      "recovery": "Hold new submissions; reconcile ledger and gateway receipts before the operator decides whether another request is valid."
+    },
+    {
+      "scenario": "A policy citation refers to a superseded procedure.",
+      "detection": "The procedure version differs from the version effective at the review timestamp.",
+      "recovery": "Invalidate the draft, retrieve the current procedure, and request a fresh decision for affected checks."
+    }
+  ],
+  "controls": [
+    "Keep release credentials outside every model and specialist process.",
+    "Require approval bound to transaction ID, amount, currency, and evidence version.",
+    "Enforce customer and branch access before retrieval and again before rendering citations.",
+    "Record screening disposition as an authoritative external fact with its source owner.",
+    "Redact account identifiers from telemetry while retaining protected correlation references."
+  ],
+  "metrics": [
+    {
+      "name": "Investigation latency",
+      "definition": "Median and p95 time from exception ingestion to reviewer-ready case, separated from human queue time."
+    },
+    {
+      "name": "Evidence completeness",
+      "definition": "Cases containing every mandatory source reference divided by cases presented for approval."
+    },
+    {
+      "name": "Ambiguous action rate",
+      "definition": "Release attempts requiring reconciliation divided by all approved release attempts."
+    },
+    {
+      "name": "Reviewer correction rate",
+      "definition": "Reviewed drafts with material factual corrections divided by all reviewed drafts."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Parallel evidence collection",
+      "benefit": "Reduces dependency wait time before cutoffs.",
+      "cost": "Requires snapshot consistency checks when sources update independently."
+    },
+    {
+      "decision": "Strict approval binding",
+      "benefit": "Prevents an old approval authorizing a changed payment.",
+      "cost": "A legitimate late amendment triggers another human review."
+    },
+    {
+      "decision": "Read replicas for analysis",
+      "benefit": "Protects core ledger capacity.",
+      "cost": "Replica lag must remain visible and final execution uses current status."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Historical replay",
+      "acceptance": "Operations verifies representative exception classes and every proposed action against archived dispositions; no live writes occur."
+    },
+    {
+      "phase": "Shadow investigations",
+      "acceptance": "Live drafts remain internal until evidence completeness and privacy tests meet bank-defined acceptance thresholds."
+    },
+    {
+      "phase": "Controlled assistance",
+      "acceptance": "One operations queue enables approved adapter calls only after duplicate-submission and timeout-reconciliation exercises pass."
+    }
+  ],
+  "related": [
+    1,
+    21,
+    28,
+    30,
+    41,
+    44,
+    49
+  ],
+  "references": [
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    },
+    {
+      "title": "NIST SP 800-207: Zero Trust Architecture",
+      "url": "https://csrc.nist.gov/pubs/sp/800/207/final"
+    },
+    {
+      "title": "Temporal: Workflow execution",
+      "url": "https://docs.temporal.io/workflow-execution"
+    }
+  ]
+}

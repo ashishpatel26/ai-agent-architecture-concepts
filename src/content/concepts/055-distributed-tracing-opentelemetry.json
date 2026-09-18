@@ -1,0 +1,168 @@
+{
+  "id": 55,
+  "title": "Distributed Tracing (OpenTelemetry)",
+  "slug": "distributed-tracing-opentelemetry",
+  "category": 2,
+  "summary": "Connect agent decisions, retrieval, model calls, and tool effects into one causal execution record using interoperable trace context.",
+  "overview": [
+    "Distributed tracing represents a request as timed operations called spans, connected by parent relationships or explicit links. For agents, the important unit is not merely the HTTP call: planning iterations, queued jobs, retrieval, inference, validation, and external effects each contribute to the outcome. OpenTelemetry supplies instrumentation and export conventions while the application defines meaningful workflow boundaries.",
+    "Trace context should follow work across HTTP, messaging, and asynchronous execution. A retry needs its own attempt span under the same logical operation; a batch assembled from several requests can use span links. Trace data is operational evidence, not a license to store full prompts, credentials, customer documents, or private reasoning."
+  ],
+  "production": {
+    "poc": "A prototype traces one successful turn and verifies that model and tool timing explain its total duration.",
+    "production": "Production propagates context through queues, correlates logs, redacts attributes, and defines error classification and sampling.",
+    "scale": "Enterprise scale needs collector capacity, stable semantic naming, controlled cardinality, cross-team ownership, and sampling strategies that retain unusual failures without collecting every payload."
+  },
+  "components": [
+    {
+      "name": "Instrumentation SDK",
+      "role": "Creates spans around workflow stages and injects or extracts context at boundaries."
+    },
+    {
+      "name": "Context carrier",
+      "role": "Transfers trace identifiers through request headers or message metadata."
+    },
+    {
+      "name": "Collector",
+      "role": "Receives, filters, batches, and exports telemetry without coupling the agent to one backend."
+    },
+    {
+      "name": "Trace backend",
+      "role": "Stores causal execution records and enables latency and error investigation."
+    },
+    {
+      "name": "Redaction policy",
+      "role": "Allow-lists attributes and protects sensitive prompt or tool data before export."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Start logical request",
+      "description": "Create a root span carrying a stable task type, tenant classification, and workflow revision without raw personal data."
+    },
+    {
+      "title": "Propagate execution context",
+      "description": "Inject context when calling tools or publishing work; extract it in the receiving process."
+    },
+    {
+      "title": "Create semantic child spans",
+      "description": "Separate retrieval, provider queueing, inference, validation, and side-effect commit timings."
+    },
+    {
+      "title": "Record attempt outcomes",
+      "description": "Attach model revision, token usage, retry reason, and structured error category to the appropriate attempt."
+    },
+    {
+      "title": "Export safely",
+      "description": "Batch telemetry through a collector with bounded buffers and backpressure behavior that cannot block business work indefinitely."
+    },
+    {
+      "title": "Investigate causal paths",
+      "description": "Correlate a failed workflow with logs and metrics while distinguishing parallel work from critical-path latency."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "A queued agent trace",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant G as Gateway\n participant A as Agent\n participant Q as Work queue\n participant W as Tool worker\n participant C as Collector\n G->>A: Request with trace context\n A->>Q: Task and context carrier\n Q->>W: Deliver work\n W->>W: Tool attempt span\n W-->>A: Result and operation identifier\n A-->>G: Validated answer\n A-->>C: Agent spans\n W-->>C: Linked worker spans",
+      "caption": "Queue transport must preserve causal context even when the producing request has already returned."
+    }
+  ],
+  "useCase": {
+    "industry": "Manufacturing",
+    "title": "Finding the slow step in a maintenance agent",
+    "situation": "A plant assistant reads equipment alarms, retrieves manuals, and asks a maintenance API for recent work orders.",
+    "problem": "Operators report occasional slow answers, but aggregate model latency appears normal.",
+    "requirement": "Locate the causal bottleneck without exporting proprietary manuals or machine credentials.",
+    "architecture": "Instrumentation wraps retrieval and work-order calls, propagates context through a job queue, and exports only approved identifiers.",
+    "runtime": [
+      "A slow interaction produces separate queue, retrieval, and inference spans.",
+      "The trace reveals repeated work-order timeouts before the model starts generating."
+    ],
+    "failure": "If the collector becomes unavailable, bounded local buffering drops telemetry according to policy while the assistant continues serving.",
+    "impact": "Track trace completeness, critical-path time, and dropped telemetry; the value is actionable diagnosis rather than a larger collection of disconnected logs."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Detailed stage spans",
+      "benefit": "Reveal hidden queueing and retry costs.",
+      "cost": "Increase instrumentation and storage volume."
+    },
+    {
+      "decision": "Tail sampling",
+      "benefit": "Can retain traces with observed failures or unusual latency.",
+      "cost": "Requires buffering and more collector resources."
+    },
+    {
+      "decision": "Payload-free attributes",
+      "benefit": "Reduce privacy exposure.",
+      "cost": "May require protected application records for deeper reproduction."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Trace breaks at queue boundary",
+      "detection": "Worker spans appear as unrelated roots.",
+      "recovery": "Test context serialization and use links where parentage is inappropriate."
+    },
+    {
+      "scenario": "High-cardinality attributes overload storage",
+      "detection": "Index size and query latency grow with unique raw values.",
+      "recovery": "Replace uncontrolled labels with bounded categories or non-indexed approved identifiers."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Recording complete prompts by default",
+      "fix": "Use an attribute allow-list and separate governed evidence storage."
+    },
+    {
+      "mistake": "Treating retries as one opaque span",
+      "fix": "Record each attempt and its reason under a logical operation."
+    },
+    {
+      "mistake": "Making telemetry export synchronous",
+      "fix": "Use bounded asynchronous export with explicit loss metrics."
+    }
+  ],
+  "whenToUse": [
+    "Use for workflows crossing services or asynchronous queues.",
+    "Use when latency and cost cannot be explained by provider metrics alone.",
+    "Use to correlate tool effects with the agent request that caused them."
+  ],
+  "whenNotToUse": [
+    "Do not treat traces as an authoritative transaction ledger.",
+    "Avoid storing secrets or unrestricted model payloads in span attributes.",
+    "Avoid tracing every token as an individual span at high throughput."
+  ],
+  "checklist": [
+    "Propagate context through every transport.",
+    "Name spans by stable operations.",
+    "Separate attempts from logical requests.",
+    "Redact attributes before export.",
+    "Measure collector drops and queue depth.",
+    "Verify one complete failure trace end to end."
+  ],
+  "related": [
+    1,
+    6,
+    30,
+    49,
+    60,
+    94
+  ],
+  "keywords": [
+    "OpenTelemetry",
+    "trace context",
+    "span links",
+    "sampling",
+    "causal tracing"
+  ],
+  "references": [
+    {
+      "title": "OpenTelemetry: Traces",
+      "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+    }
+  ]
+}

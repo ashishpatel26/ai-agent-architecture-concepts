@@ -1,0 +1,167 @@
+{
+  "id": 38,
+  "title": "Data Lineage Tracking",
+  "slug": "data-lineage-tracking",
+  "category": 1,
+  "summary": "Track how source data becomes chunks, embeddings, prompts, model outputs, and decisions so changes and incidents can be traced to their affected artifacts.",
+  "overview": [
+    "Data lineage records relationships between inputs, transformations, execution runs, and outputs. For agent systems, useful lineage extends beyond ETL tables to document versions, chunks, embeddings, retrieval sets, prompts, model configurations, tool observations, and published artifacts. Trace spans describe execution timing; lineage explains derivation and dependency.",
+    "Choose stable identifiers and appropriate granularity. A document-level link may be enough for discovery but insufficient to explain which passage supported a claim. Store references and transformation metadata rather than duplicating sensitive content in the lineage catalog. Lineage supports investigation and impact analysis; it does not prove that a transformation was correct."
+  ],
+  "production": {
+    "poc": "A prototype can retain source identifiers and model versions beside generated outputs. Add transformation identities before rebuilding indexes or changing chunking logic.",
+    "production": "Production emits lineage events for ingestion and generation, preserves source versions, and links outputs to retrieval evidence and configuration. Handle deletions and revoked access across derived artifacts.",
+    "scale": "At scale, lineage becomes a graph supporting impact queries and selective reprocessing. Avoid unbounded event cardinality by choosing meaningful artifact boundaries and retention policies."
+  },
+  "components": [
+    {
+      "name": "Artifact identity",
+      "role": "Assigns stable names and versions to sources, chunks, embeddings, and generated outputs."
+    },
+    {
+      "name": "Transformation recorder",
+      "role": "Captures job, run, code, configuration, and input-output relationships."
+    },
+    {
+      "name": "Lineage catalog",
+      "role": "Stores derivation edges and supports upstream and downstream impact queries."
+    },
+    {
+      "name": "Generation evidence link",
+      "role": "Connects answers to retrieved passages, tool results, and model configuration."
+    },
+    {
+      "name": "Change propagator",
+      "role": "Uses lineage to identify artifacts requiring invalidation, deletion, or recomputation."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Identify source version",
+      "description": "Record the authoritative object, revision, ownership, and relevant access metadata."
+    },
+    {
+      "title": "Record transformation",
+      "description": "Emit input-output relationships for parsing, chunking, embedding, and indexing runs."
+    },
+    {
+      "title": "Capture retrieval set",
+      "description": "Associate the generation run with the actual evidence used, not every possible source."
+    },
+    {
+      "title": "Link output",
+      "description": "Store model and prompt versions with the published artifact and claim evidence references."
+    },
+    {
+      "title": "Query impact",
+      "description": "Traverse dependencies when a source, policy, or transformation changes."
+    },
+    {
+      "title": "Apply remediation",
+      "description": "Rebuild or invalidate affected artifacts and record the corrective transformation history."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Lineage from source revision to published answer",
+      "type": "flowchart",
+      "code": "flowchart LR\n S[\"Source document version\"] --> P[\"Parser run\"]\n P --> C[\"Chunk versions\"]\n C --> E[\"Embedding run\"]\n E --> I[\"Index snapshot\"]\n I --> R[\"Retrieved evidence set\"]\n R --> G[\"Generation run\"]\n M[\"Model and prompt versions\"] --> G\n G --> A[\"Published answer\"]\n S --> L[\"Lineage catalog\"]\n G --> L",
+      "caption": "The catalog connects actual derivations and evidence, enabling targeted impact analysis after a change."
+    }
+  ],
+  "useCase": {
+    "industry": "Pharmaceutical manufacturing",
+    "title": "Tracing an assistant answer to an operating procedure",
+    "situation": "A manufacturing support assistant answers questions about approved equipment procedures across several facilities.",
+    "problem": "When a procedure revision is withdrawn, the team cannot identify which indexed chunks and generated guidance used it.",
+    "requirement": "The assistant must support source-version traceability and targeted invalidation of affected content.",
+    "architecture": "Ingestion records document, parser, chunk, and embedding versions; generation records the retrieved evidence set and output artifact.",
+    "runtime": [
+      "An operator asks about cleaning setup, and the answer links to the exact approved procedure revision used.",
+      "When that revision is superseded, a lineage query identifies affected index entries and retained answer artifacts for review or invalidation."
+    ],
+    "failure": "If a pipeline omits lineage events, its outputs remain quarantined from the controlled corpus until provenance is repaired.",
+    "impact": "Measure lineage completeness, impact-query coverage, stale-artifact removal time, and reproducibility of sampled answers. Traceability does not replace procedure approval."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Fine-grained lineage",
+      "benefit": "Precise impact analysis reduces unnecessary reprocessing.",
+      "cost": "Metadata volume and identifier management increase."
+    },
+    {
+      "decision": "Event-based collection",
+      "benefit": "Independent pipelines can publish derivation facts.",
+      "cost": "Missing or delayed events can leave temporary gaps."
+    },
+    {
+      "decision": "Content references",
+      "benefit": "Sensitive payload duplication is reduced.",
+      "cost": "Investigations depend on continued access to referenced artifacts."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A reindex changes chunk identifiers without mapping",
+      "detection": "Downstream answers lose resolvable evidence references.",
+      "recovery": "Preserve versioned mappings or retain the referenced chunk artifacts."
+    },
+    {
+      "scenario": "Deletion removes a source but leaves derived content",
+      "detection": "Impact analysis finds live descendants.",
+      "recovery": "Propagate approved deletion or invalidation through the lineage graph."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Confusing traces with complete lineage",
+      "fix": "Record durable input-output relationships and source versions."
+    },
+    {
+      "mistake": "Linking answers to the whole corpus",
+      "fix": "Capture the actual retrieved and used evidence set."
+    },
+    {
+      "mistake": "Ignoring configuration dependencies",
+      "fix": "Include chunking, embedding, prompt, and model versions."
+    }
+  ],
+  "whenToUse": [
+    "Sources and transformations change over time.",
+    "Incidents require tracing affected generated artifacts.",
+    "Deletion and reprocessing need precise dependency information."
+  ],
+  "whenNotToUse": [
+    "Outputs are disposable and have no retained dependencies.",
+    "Identifiers cannot remain stable across transformations.",
+    "The catalog would collect sensitive payloads without a clear purpose."
+  ],
+  "checklist": [
+    "Define artifact identity and version rules.",
+    "Record every material transformation boundary.",
+    "Link answers to actual evidence sets.",
+    "Include model and prompt configuration.",
+    "Test deletion and invalidation propagation.",
+    "Monitor missing lineage events."
+  ],
+  "related": [
+    27,
+    28,
+    30,
+    64,
+    77
+  ],
+  "keywords": [
+    "lineage",
+    "provenance",
+    "artifact version",
+    "impact analysis",
+    "OpenLineage"
+  ],
+  "references": [
+    {
+      "title": "OpenLineage object model",
+      "url": "https://openlineage.io/docs/spec/object-model/"
+    }
+  ]
+}

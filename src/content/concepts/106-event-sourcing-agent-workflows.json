@@ -1,0 +1,184 @@
+{
+  "id": 106,
+  "title": "Event Sourcing for Agent Workflows",
+  "slug": "event-sourcing-agent-workflows",
+  "category": 5,
+  "summary": "Represent business progress as an ordered history of accepted events so state, approvals, and effects can be reconstructed and audited.",
+  "overview": [
+    "Event sourcing stores the facts that changed workflow state rather than only the latest state snapshot. Events such as EvidenceAttached, ApprovalGranted, ActionSubmitted, and ReceiptObserved form a business history. Read models derive the current view from that history and can be rebuilt when projection logic changes.",
+    "An event log is not a transcript of every model token. Choose stable domain facts with identifiers, schema versions, and ordering rules. Distinguish requested actions from confirmed effects, and store sensitive payloads through governed references where possible. Replaying events rebuilds state; it must not automatically repeat external side effects."
+  ],
+  "production": {
+    "poc": "A proof of concept can append a few workflow facts and rebuild one projection to verify that the domain events capture meaningful transitions.",
+    "production": "Production requires optimistic concurrency, event schema evolution, idempotent consumers, protected payload references, and separation between projections and effect execution.",
+    "scale": "Enterprise scale adds partitioning, projection lag monitoring, snapshot strategy, replay tooling, retention governance, and migrations across years of event versions."
+  },
+  "components": [
+    {
+      "name": "Command handler",
+      "role": "Validates requested transitions against current aggregate state and business authorization."
+    },
+    {
+      "name": "Append-only event store",
+      "role": "Persists accepted facts with aggregate version, event identity, and schema metadata."
+    },
+    {
+      "name": "Projection workers",
+      "role": "Build query views and dashboards from events without triggering business effects during replay."
+    },
+    {
+      "name": "Effect dispatcher",
+      "role": "Executes approved external actions using stable operation keys and records their observed results."
+    },
+    {
+      "name": "Replay and audit tools",
+      "role": "Reconstruct historical state and explain which facts supported a decision at a particular version."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Receive command",
+      "description": "Attach requester, workflow identity, expected aggregate version, and approval references to the requested transition."
+    },
+    {
+      "title": "Validate current state",
+      "description": "Reject commands whose preconditions or authority no longer hold against the latest accepted event version."
+    },
+    {
+      "title": "Append accepted facts",
+      "description": "Atomically record the domain event and any dispatch intent using a consistent transaction or outbox boundary."
+    },
+    {
+      "title": "Update projections",
+      "description": "Consume events idempotently, retaining sequence positions and exposing projection freshness to readers."
+    },
+    {
+      "title": "Execute authorized effects",
+      "description": "Dispatch only eligible live action intents with stable keys and record submission, uncertainty, or receipt as separate facts."
+    },
+    {
+      "title": "Rebuild safely",
+      "description": "Replay historical events into new projections with side effects disabled, then compare reconstructed state before switching readers."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Facts drive views while effects remain controlled",
+      "type": "flowchart",
+      "code": "flowchart LR\n    C[\"Authorized command\"] --> H[\"Versioned command handler\"]\n    H --> E[\"Append-only domain events\"]\n    E --> P[\"Idempotent projections\"]\n    P --> V[\"Current and historical views\"]\n    E --> D[\"Live effect dispatcher\"]\n    D --> S[\"External service\"]\n    S --> R[\"Observed receipt event\"]\n    R --> E\n    E --> B[\"Side-effect-free replay\"]",
+      "caption": "Projection replay reads history without reissuing external operations; the effect path maintains its own operation ledger."
+    }
+  ],
+  "useCase": {
+    "industry": "Insurance",
+    "title": "Claim evidence and review history",
+    "situation": "Illustrative architecture: An insurer must explain which claim documents and policy revisions were available when an adjuster approved a packet.",
+    "problem": "Overwriting the latest case state loses the distinction between the original decision and later evidence corrections.",
+    "requirement": "Reconstruct review history while keeping payments and customer notices from repeating during replay.",
+    "architecture": "The claim aggregate records evidence and approval events; projections show the current packet, while a separate dispatcher handles approved external actions.",
+    "runtime": [
+      "Append evidence revision",
+      "project review packet",
+      "record adjuster approval",
+      "dispatch approved notice",
+      "append receipt",
+      "rebuild historical packet on request"
+    ],
+    "failure": "A projection is rebuilt after a code change; it regenerates the timeline but does not resend the previously issued customer notice.",
+    "impact": "Measure reconstruction accuracy, projection lag, duplicate-consumer handling, event schema compatibility, and unresolved effect receipts rather than treating log volume as audit quality."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Complete domain history",
+      "benefit": "Supports reconstruction and explanation of state changes.",
+      "cost": "Requires deliberate schema and retention governance."
+    },
+    {
+      "decision": "Independent projections",
+      "benefit": "Allows views to evolve without rewriting source facts.",
+      "cost": "Readers must tolerate or detect projection lag."
+    },
+    {
+      "decision": "Append-only facts",
+      "benefit": "Preserve the sequence of decisions and corrections.",
+      "cost": "Sensitive data deletion requires careful payload and retention design."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Two reviewers approve against the same stale aggregate version.",
+      "detection": "Optimistic concurrency rejects the later conflicting append.",
+      "recovery": "Reload current state and request a new decision if the action or evidence changed."
+    },
+    {
+      "scenario": "A consumer processes an event twice after restart.",
+      "detection": "Event identity and stored consumer position identify the duplicate.",
+      "recovery": "Skip repeated application and retain idempotent projection updates."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Storing arbitrary model prose as the primary event schema.",
+      "fix": "Record explicit domain facts and keep generated drafts as referenced artifacts."
+    },
+    {
+      "mistake": "Replaying history through the live effect executor.",
+      "fix": "Disable side effects during projection rebuild and separate dispatch eligibility from event consumption."
+    },
+    {
+      "mistake": "Embedding sensitive documents permanently in every event.",
+      "fix": "Use governed payload references with explicit access, retention, and correction policies."
+    }
+  ],
+  "whenToUse": [
+    "Historical decision reconstruction is a first-class operational requirement.",
+    "Several teams need different read views over the same accepted workflow facts.",
+    "Business state evolves through meaningful transitions with explicit version conflicts."
+  ],
+  "whenNotToUse": [
+    "Simple current-state CRUD meets the audit and recovery requirements adequately.",
+    "The team cannot own event evolution, projection operations, and replay safety.",
+    "An append-only payload design would conflict with required information lifecycle controls."
+  ],
+  "checklist": [
+    "Define stable domain events and distinguish intent, submission, and confirmed effect.",
+    "Assign aggregate versions and reject conflicting commands atomically.",
+    "Make projection consumers idempotent and expose their freshness.",
+    "Separate live effect dispatch from historical replay.",
+    "Version event schemas and test old histories against new code.",
+    "Design sensitive payload references, access policy, and retention handling.",
+    "Verify historical reconstruction and duplicate-delivery recovery before adoption."
+  ],
+  "related": [
+    3,
+    12,
+    15,
+    30,
+    38,
+    41,
+    55,
+    57
+  ],
+  "keywords": [
+    "event sourcing",
+    "domain events",
+    "projections",
+    "optimistic concurrency",
+    "outbox",
+    "replay"
+  ],
+  "references": [
+    {
+      "title": "Microsoft Azure Architecture Center: Event Sourcing pattern",
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing"
+    },
+    {
+      "title": "Temporal: Workflow execution",
+      "url": "https://docs.temporal.io/workflow-execution"
+    },
+    {
+      "title": "W3C PROV overview",
+      "url": "https://www.w3.org/TR/prov-overview/"
+    }
+  ]
+}

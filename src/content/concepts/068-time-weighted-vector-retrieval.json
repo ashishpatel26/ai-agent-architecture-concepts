@@ -1,0 +1,172 @@
+{
+  "id": 68,
+  "title": "Time-Weighted Vector Retrieval",
+  "slug": "time-weighted-vector-retrieval",
+  "category": 3,
+  "summary": "Blend semantic relevance with task-appropriate freshness while distinguishing publication time, event time, and validity.",
+  "overview": [
+    "Time-weighted retrieval adjusts evidence ranking using temporal information. A recent incident update may matter more than an older operational note, while a foundational specification may remain authoritative for years. The correct time signal depends on the question: publication date, last modification, event occurrence, and effective validity are not interchangeable.",
+    "A common architecture combines a relevance score with a calibrated freshness function after applying hard validity constraints. Freshness is a preference; superseded or not-yet-effective policy status is often an eligibility rule. Time decay should be tuned by document class and query intent rather than applied uniformly to the entire corpus."
+  ],
+  "production": {
+    "poc": "A prototype compares relevance-only results with time-aware ranking on explicitly time-sensitive questions.",
+    "production": "Production normalizes timestamps, preserves source timezone and validity, and distinguishes live status from historical queries.",
+    "scale": "At scale, handle late-arriving events, clock errors, source-specific freshness contracts, and evaluation across both current and historical evidence needs."
+  },
+  "components": [
+    {
+      "name": "Temporal metadata parser",
+      "role": "Extracts publication, event, modification, and effective dates with provenance."
+    },
+    {
+      "name": "Query time resolver",
+      "role": "Determines whether the user asks about now, a historical point, or a period."
+    },
+    {
+      "name": "Eligibility filter",
+      "role": "Excludes evidence outside required validity or authorization constraints."
+    },
+    {
+      "name": "Ranking combiner",
+      "role": "Balances semantic relevance and document-class-specific recency."
+    },
+    {
+      "name": "Freshness monitor",
+      "role": "Detects delayed ingestion and source update gaps."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Resolve temporal intent",
+      "description": "Identify the requested reference time and clarify internally whether current or historical evidence is needed."
+    },
+    {
+      "title": "Filter validity",
+      "description": "Exclude superseded or future-effective records where the task requires active guidance."
+    },
+    {
+      "title": "Retrieve semantically",
+      "description": "Collect relevant candidates without allowing recency to substitute for topic relevance."
+    },
+    {
+      "title": "Apply time weighting",
+      "description": "Use the appropriate timestamp and calibrated decay for each evidence class."
+    },
+    {
+      "title": "Check conflicting revisions",
+      "description": "Prefer authoritative active versions while retaining historical context when requested."
+    },
+    {
+      "title": "Expose freshness",
+      "description": "Attach source dates and any ingestion lag to the answer’s evidence."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Validity before freshness preference",
+      "type": "flowchart",
+      "code": "flowchart LR\n Q[\"Question and reference time\"] --> V[\"Validity filter\"]\n V --> R[\"Semantic candidates\"]\n R --> T[\"Class-specific time weighting\"]\n M[\"Event and publication metadata\"] --> T\n T --> C[\"Revision conflict check\"]\n C --> A[\"Answer with evidence dates\"]",
+      "caption": "An ineligible revision cannot become valid merely because it was published recently."
+    }
+  ],
+  "useCase": {
+    "industry": "Cybersecurity operations",
+    "title": "Summarizing an evolving incident",
+    "situation": "An incident assistant summarizes an active service compromise from investigation notes and status updates.",
+    "problem": "An older high-similarity note describes a hypothesis that later evidence disproved.",
+    "requirement": "Favor current supported findings while retaining the timeline of changed understanding.",
+    "architecture": "Incident documents carry event time, publication time, and supersession links.",
+    "runtime": [
+      "The query asks for current containment status.",
+      "The retriever prioritizes the latest authoritative status while linking earlier hypotheses as historical context."
+    ],
+    "failure": "A late-arriving note with an old event timestamp does not automatically replace newer operational status.",
+    "impact": "Track stale-evidence selections, source lag, and historical-query accuracy; freshness improvements should not erase useful older evidence."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Strong recency weighting",
+      "benefit": "Helps rapidly changing operational questions.",
+      "cost": "Can demote enduring authoritative material."
+    },
+    {
+      "decision": "Hard validity filtering",
+      "benefit": "Prevents use of superseded guidance.",
+      "cost": "Requires reliable version and effective-date metadata."
+    },
+    {
+      "decision": "Multiple timestamps",
+      "benefit": "Supports accurate temporal interpretation.",
+      "cost": "Adds ingestion and query-policy complexity."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Future clock timestamp dominates",
+      "detection": "One record ranks first across unrelated current queries.",
+      "recovery": "Validate timestamp bounds and quarantine implausible metadata."
+    },
+    {
+      "scenario": "Historical question receives current answer",
+      "detection": "Query time is ignored by the filter.",
+      "recovery": "Carry an explicit reference time through retrieval and generation."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Using file modification as event time",
+      "fix": "Store the different temporal meanings separately."
+    },
+    {
+      "mistake": "Applying one decay rate to every source",
+      "fix": "Calibrate by document class and task."
+    },
+    {
+      "mistake": "Equating new with authoritative",
+      "fix": "Preserve source authority and validity rules."
+    }
+  ],
+  "whenToUse": [
+    "Use for incidents, news, inventory, and changing policies.",
+    "Use when users ask time-qualified questions.",
+    "Use when stale evidence is a measured failure mode."
+  ],
+  "whenNotToUse": [
+    "Avoid aggressive decay for stable technical standards.",
+    "Do not infer freshness from missing timestamps.",
+    "Avoid recency weighting as a replacement for version control."
+  ],
+  "checklist": [
+    "Define timestamp semantics.",
+    "Normalize timezones consistently.",
+    "Validate clock and future-date anomalies.",
+    "Distinguish validity from ranking preference.",
+    "Test historical as well as current queries.",
+    "Monitor source-to-index lag."
+  ],
+  "related": [
+    61,
+    63,
+    67,
+    69,
+    77,
+    93
+  ],
+  "keywords": [
+    "temporal retrieval",
+    "time decay",
+    "effective date",
+    "freshness",
+    "historical query"
+  ],
+  "references": [
+    {
+      "title": "Milvus: Filtered search",
+      "url": "https://milvus.io/docs/filtered-search.md"
+    },
+    {
+      "title": "Microsoft GraphRAG: Indexing overview",
+      "url": "https://microsoft.github.io/graphrag/index/overview/"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "id": 82,
+  "title": "Small Language Models (SLMs) Deployment",
+  "slug": "small-language-models-slms-deployment",
+  "category": 4,
+  "summary": "Deploy compact models for bounded tasks where local control, latency, or operating cost matters and measured capability is sufficient.",
+  "overview": [
+    "Small language model deployment places a comparatively compact model into a serving environment suited to a defined task. Small is relative to the model family and workload; parameter count alone does not determine latency, memory, or quality. Tokenizer, architecture, context length, precision, hardware, and serving engine all affect the operating envelope.",
+    "Compact models often fit classification, extraction, routing, or constrained drafting better than open-ended complex reasoning. The architecture should narrow the task contract, provide relevant evidence, and validate outputs. A local small model is not automatically private or safe: logs, telemetry, updates, and tool access still need explicit controls."
+  ],
+  "production": {
+    "poc": "A prototype benchmarks the candidate on real task examples and the intended hardware, including failure cases.",
+    "production": "Production packages weights, tokenizer, runtime, and configuration as a versioned artifact with health checks and bounded concurrency.",
+    "scale": "Enterprise scale adds fleet update controls, hardware-specific evaluation, monitoring of quality drift, and an approved fallback for tasks beyond the model’s envelope."
+  },
+  "components": [
+    {
+      "name": "Model artifact registry",
+      "role": "Stores approved weights, tokenizer, license information, and evaluation metadata."
+    },
+    {
+      "name": "Local inference runtime",
+      "role": "Executes the model with compatible kernels and resource limits."
+    },
+    {
+      "name": "Task adapter",
+      "role": "Constrains prompts, schemas, and input sizes to the evaluated task."
+    },
+    {
+      "name": "Output validator",
+      "role": "Rejects malformed or unsupported results and selects escalation."
+    },
+    {
+      "name": "Fleet manager",
+      "role": "Distributes signed versions and observes health across deployment locations."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Define a narrow task",
+      "description": "Specify supported inputs, output schema, quality thresholds, and escalation conditions."
+    },
+    {
+      "title": "Benchmark on target hardware",
+      "description": "Measure startup, latency, memory, and quality under representative concurrency."
+    },
+    {
+      "title": "Package the runtime",
+      "description": "Pin the model, tokenizer, quantization, and engine as one tested release."
+    },
+    {
+      "title": "Serve bounded requests",
+      "description": "Apply input limits, resource admission, and local authorization."
+    },
+    {
+      "title": "Validate outputs",
+      "description": "Use schema and task-specific checks before results reach downstream systems."
+    },
+    {
+      "title": "Update through cohorts",
+      "description": "Roll out to a small fleet segment and compare quality and resource use before expansion."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "A bounded local-model service",
+      "type": "flowchart",
+      "code": "flowchart LR\n A[\"Approved model bundle\"] --> R[\"Local inference runtime\"]\n Q[\"Task-specific request\"] --> T[\"Schema and size gate\"]\n T --> R\n R --> V[\"Output validation\"]\n V --> O[\"Accepted structured result\"]\n V --> F[\"Approved escalation path\"]\n R --> M[\"Fleet health and quality telemetry\"]",
+      "caption": "The deployment contract includes the task adapter and validator, not only the model weights."
+    }
+  ],
+  "useCase": {
+    "industry": "Manufacturing quality",
+    "title": "Classifying operator inspection notes",
+    "situation": "A factory workstation classifies short inspection notes into approved defect categories during intermittent connectivity.",
+    "problem": "Cloud dependence delays local triage, while unrestricted generation is unnecessary for the classification task.",
+    "requirement": "Run a bounded local classifier with explicit unknown handling and synchronized quality monitoring.",
+    "architecture": "A compact model uses a constrained category schema and stores uncertain cases for review.",
+    "runtime": [
+      "An operator note is classified locally and validated against the approved taxonomy.",
+      "An unfamiliar defect description receives an unknown status rather than a forced category."
+    ],
+    "failure": "If an update increases unknown or incorrect classifications, the workstation returns to the previous model bundle.",
+    "impact": "Measure per-category recall, unknown handling, local latency, and memory footprint; lower model size does not excuse lower task acceptance."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Local inference",
+      "benefit": "Reduces network dependency and data transfer.",
+      "cost": "Requires device and update operations."
+    },
+    {
+      "decision": "Narrow task scope",
+      "benefit": "Improves controllability and evaluation.",
+      "cost": "Limits flexibility beyond the approved workload."
+    },
+    {
+      "decision": "Quantized deployment",
+      "benefit": "Can reduce model memory.",
+      "cost": "Requires hardware-specific quality and speed validation."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Device cannot sustain concurrency",
+      "detection": "Latency and memory rise under simultaneous requests.",
+      "recovery": "Limit admission and queue bounded work."
+    },
+    {
+      "scenario": "New terminology exceeds training coverage",
+      "detection": "Unknown and error rates rise for a new product line.",
+      "recovery": "Review examples and update the model or task taxonomy."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Choosing by parameter count alone",
+      "fix": "Benchmark the complete runtime on target hardware."
+    },
+    {
+      "mistake": "Assuming local means no data egress",
+      "fix": "Inspect telemetry, update, and logging paths."
+    },
+    {
+      "mistake": "Forcing an answer on every input",
+      "fix": "Provide an explicit unknown or escalation outcome."
+    }
+  ],
+  "whenToUse": [
+    "Use for narrow high-volume tasks with clear labels.",
+    "Use for constrained or intermittently connected environments.",
+    "Use when local latency and control justify fleet operations."
+  ],
+  "whenNotToUse": [
+    "Avoid unsupported open-ended reasoning tasks.",
+    "Do not deploy without target-hardware evaluation.",
+    "Avoid local models when maintenance cost exceeds the benefit."
+  ],
+  "checklist": [
+    "Define supported task boundaries.",
+    "Benchmark quality on target hardware.",
+    "Pin the complete model bundle.",
+    "Bound concurrency and context size.",
+    "Provide unknown and escalation paths.",
+    "Test fleet rollback and offline behavior."
+  ],
+  "related": [
+    81,
+    84,
+    85,
+    90,
+    97,
+    98
+  ],
+  "keywords": [
+    "small language model",
+    "edge inference",
+    "local deployment",
+    "task specialization"
+  ],
+  "references": [
+    {
+      "title": "NVIDIA Triton: TensorRT-LLM backend",
+      "url": "https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html"
+    },
+    {
+      "title": "AWQ: Activation-aware Weight Quantization",
+      "url": "https://arxiv.org/abs/2306.00978"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "id": 64,
+  "title": "Parent-Child Chunking",
+  "slug": "parent-child-chunking",
+  "category": 3,
+  "summary": "Retrieve precise child passages, then expand them into bounded parent context that preserves meaning, provenance, and access boundaries.",
+  "overview": [
+    "Parent-child chunking separates the unit optimized for retrieval from the unit supplied for interpretation. Small child chunks make individual facts easier to match; a larger parent section restores definitions, exceptions, or surrounding procedure steps. Stable child-to-parent relationships let the retriever find a precise passage without forcing the model to reason from a context fragment.",
+    "Parent expansion is not permission to attach an entire document. The system should select the smallest coherent parent, deduplicate siblings, and enforce a token budget. Parent and child records must share version lineage; otherwise a retrieved child can be explained using a different revision. Access control also applies to the expanded parent."
+  ],
+  "production": {
+    "poc": "A prototype compares passage-only answers with section-expanded answers on questions requiring nearby definitions or exceptions.",
+    "production": "Production stores explicit lineage, source offsets, section hierarchy, and authorization metadata for both levels.",
+    "scale": "At scale, use bounded expansion policies, update parent-child sets atomically where possible, and measure expansion usefulness against context cost."
+  },
+  "components": [
+    {
+      "name": "Document structure parser",
+      "role": "Recognizes sections, tables, headings, and source offsets."
+    },
+    {
+      "name": "Child vector index",
+      "role": "Stores focused passages optimized for similarity retrieval."
+    },
+    {
+      "name": "Parent content store",
+      "role": "Preserves coherent sections with document and version identity."
+    },
+    {
+      "name": "Expansion resolver",
+      "role": "Fetches authorized parent context and deduplicates overlapping children."
+    },
+    {
+      "name": "Context budgeter",
+      "role": "Chooses the useful portion of each parent within the prompt allocation."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Parse structure",
+      "description": "Extract meaningful document boundaries instead of relying exclusively on character counts."
+    },
+    {
+      "title": "Create lineage",
+      "description": "Assign children to versioned parents and retain precise source positions."
+    },
+    {
+      "title": "Retrieve children",
+      "description": "Search small passages under the request’s access and freshness constraints."
+    },
+    {
+      "title": "Resolve parents",
+      "description": "Fetch matching parent revisions and reject missing or unauthorized expansions."
+    },
+    {
+      "title": "Deduplicate and trim",
+      "description": "Merge sibling hits and preserve the relevant subsection plus necessary definitions."
+    },
+    {
+      "title": "Cite the evidence",
+      "description": "Present source pointers that distinguish the matched passage from the broader explanatory section."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Precise retrieval with coherent expansion",
+      "type": "flowchart",
+      "code": "flowchart LR\n D[\"Versioned maintenance manual\"] --> P[\"Parent procedure sections\"]\n P --> C[\"Child passage index\"]\n Q[\"Technician question\"] --> C\n C --> R[\"Matched child identifiers\"]\n R --> E[\"Authorized parent expansion\"]\n P --> E\n E --> B[\"Deduplicated context budget\"]",
+      "caption": "Children identify relevant evidence; parent expansion restores only the context needed to interpret it."
+    }
+  ],
+  "useCase": {
+    "industry": "Aviation maintenance",
+    "title": "Interpreting a procedure exception",
+    "situation": "A maintenance assistant helps technicians locate approved inspection instructions.",
+    "problem": "A retrieved sentence gives a torque value but omits the nearby exception for a specific component revision.",
+    "requirement": "Return the value together with the procedure conditions and source revision.",
+    "architecture": "Manual sections form parents; individual steps and notes form indexed children.",
+    "runtime": [
+      "The query matches a torque-value child passage.",
+      "Expansion includes the enclosing procedure and its applicability note before a cited answer is drafted."
+    ],
+    "failure": "If the matching parent revision is unavailable, the assistant withholds the procedure answer and links the verified manual location.",
+    "impact": "Measure applicability accuracy and evidence coverage against prompt size; operational benefit comes from preserving conditions, not merely retrieving more text."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Small children",
+      "benefit": "Improve targeted matching.",
+      "cost": "May lose context before expansion."
+    },
+    {
+      "decision": "Larger parents",
+      "benefit": "Restore definitions and exceptions.",
+      "cost": "Consume tokens and can introduce distractors."
+    },
+    {
+      "decision": "Structural parsing",
+      "benefit": "Produces semantically coherent boundaries.",
+      "cost": "Requires format-specific extraction and quality checks."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Child points to newer parent",
+      "detection": "Source versions disagree during retrieval.",
+      "recovery": "Require matching lineage and rebuild the inconsistent chunk set."
+    },
+    {
+      "scenario": "Expansion crosses an access boundary",
+      "detection": "Parent includes restricted annex content.",
+      "recovery": "Authorize expanded sections independently or split the parent."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Always fetching the whole document",
+      "fix": "Expand to the smallest useful coherent section."
+    },
+    {
+      "mistake": "Duplicating one parent for every child hit",
+      "fix": "Deduplicate parent context while preserving child evidence markers."
+    },
+    {
+      "mistake": "Ignoring tables and headings",
+      "fix": "Use document structure to retain applicable labels and units."
+    }
+  ],
+  "whenToUse": [
+    "Use for manuals, policies, and structured long documents.",
+    "Use when facts depend on nearby exceptions.",
+    "Use when small chunks retrieve well but answer poorly."
+  ],
+  "whenNotToUse": [
+    "Avoid expansion for already self-contained short records.",
+    "Do not mix parent and child source revisions.",
+    "Avoid parents spanning unrelated security classifications."
+  ],
+  "checklist": [
+    "Preserve document hierarchy and offsets.",
+    "Version parent-child relationships.",
+    "Authorize expanded content.",
+    "Deduplicate sibling matches.",
+    "Cap expansion tokens per parent.",
+    "Evaluate exception and applicability questions."
+  ],
+  "related": [
+    63,
+    65,
+    71,
+    75,
+    76,
+    78
+  ],
+  "keywords": [
+    "parent child chunking",
+    "document hierarchy",
+    "context expansion",
+    "source lineage"
+  ],
+  "references": [
+    {
+      "title": "Sentence Transformers: Retrieve and re-rank",
+      "url": "https://www.sbert.net/examples/sentence_transformer/applications/retrieve_rerank/README.html"
+    },
+    {
+      "title": "Lost in the Middle: How Language Models Use Long Contexts",
+      "url": "https://arxiv.org/abs/2307.03172"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "slug": "supply-chain",
+  "name": "Supply Chain",
+  "sector": "Industrial operations",
+  "icon": "network",
+  "title": "Supplier disruption response planning",
+  "summary": "Connect supplier incidents to material demand, qualified alternatives, and planner-approved recovery scenarios.",
+  "situation": "Illustrative architecture: A machinery manufacturer receives notice that a supplier cannot deliver a critical bearing on time. Procurement, production planning, and engineering need a shared view of affected assemblies and feasible responses. Agents prepare scenarios; planners and engineering owners authorize sourcing and schedule changes.",
+  "problem": "Supplier messages use inconsistent part descriptions and uncertain dates. A superficially cheaper substitute may lack engineering approval, and a rescheduled purchase order may disrupt another plant. Local optimization can therefore hide enterprise-wide constraints.",
+  "whyAgents": "Specialists map supply exposure, inspect approved alternatives, simulate planning scenarios, and prepare supplier questions. Structured optimization and material requirements calculations remain deterministic, with agents interpreting exceptions and explaining scenario assumptions.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Evaluate the completeness and usability of recovery options before attributing service-level improvements. Record where human negotiation, engineering qualification, or physical capacity constrained the result so agent quality is measured separately.",
+  "agents": [
+    {
+      "name": "Exposure mapper",
+      "responsibility": "Trace late material to purchase orders, inventory, and dependent assemblies.",
+      "tools": [
+        "ERP material query",
+        "bill-of-materials graph"
+      ],
+      "boundary": "Cannot change demand or assume unrecorded substitute equivalence."
+    },
+    {
+      "name": "Qualification investigator",
+      "responsibility": "Retrieve engineering-approved substitute parts and supplier qualification status.",
+      "tools": [
+        "Product lifecycle system",
+        "supplier quality register"
+      ],
+      "boundary": "Cannot approve a new supplier or technical substitution."
+    },
+    {
+      "name": "Scenario planner",
+      "responsibility": "Run bounded shortage, transfer, and schedule scenarios with explicit assumptions.",
+      "tools": [
+        "Planning simulator",
+        "transport quote reader"
+      ],
+      "boundary": "Cannot commit purchase orders or production schedules."
+    },
+    {
+      "name": "Procurement briefing agent",
+      "responsibility": "Compile supplier questions and compare scenario evidence for buyers.",
+      "tools": [
+        "Supplier portal reader",
+        "negotiation draft workspace"
+      ],
+      "boundary": "Cannot promise volumes, accept terms, or contact suppliers without approval."
+    }
+  ],
+  "systems": [
+    {
+      "name": "ERP and planning platform",
+      "role": "Authoritative demand, stock, purchase orders, and scenario calculations."
+    },
+    {
+      "name": "Product lifecycle and quality systems",
+      "role": "Define engineering substitutions, effective revisions, and supplier qualifications."
+    },
+    {
+      "name": "Supplier collaboration portal",
+      "role": "Stores authenticated disruption notices and approved communications separately from agent-generated drafts."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Register disruption",
+      "description": "Authenticate the supplier event, map supplier part numbers, and record uncertain delivery windows without choosing a convenient date."
+    },
+    {
+      "title": "Calculate exposure",
+      "description": "Read a consistent planning snapshot and identify assemblies, plants, and customer commitments that depend on the material."
+    },
+    {
+      "title": "Check alternatives",
+      "description": "Filter candidate substitutes by engineering approval, effective revision, qualification, and available capacity."
+    },
+    {
+      "title": "Simulate responses",
+      "description": "Evaluate approved alternatives, transfers, and schedule changes with deterministic constraints and clearly labeled scenario assumptions."
+    },
+    {
+      "title": "Review cross-plant effects",
+      "description": "Show planners which shortages move elsewhere and which assumptions remain unconfirmed before a buyer authorizes action."
+    },
+    {
+      "title": "Commit selected plan",
+      "description": "Revalidate inventory and order versions, submit approved changes through ERP adapters, and monitor supplier acknowledgement separately from execution."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Supplier disruption response planning — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Supplier disruption response planning\"]\n    N1[\"Exposure mapper\"]\n    N2[\"Qualification investigator\"]\n    N3[\"Scenario planner\"]\n    N4[\"Procurement briefing agent\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N1 --> N2\n    N1 --> N3\n    N2 --> N3\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"ERP and planning platform\"\n    participant H as \"Accountable reviewer\"\nO->>S: Read disruption and planning snapshot\n    S-->>O: Affected material demand\n    O->>H: Present qualified recovery scenarios\n    H-->>O: Select inventory transfer\n    O->>S: Reserve current inventory\n    S-->>O: Allocation conflict\n    O->>H: Return revised scenario constraints",
+      "caption": "A substitute is approved for an older assembly revision only. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A substitute is approved for an older assembly revision only.",
+      "detection": "Qualification lookup conflicts with the current bill-of-materials revision.",
+      "recovery": "Remove that scenario and request engineering assessment without inventing equivalence."
+    },
+    {
+      "scenario": "Two plants reserve the same emergency inventory.",
+      "detection": "Reservation conflict or changed available-to-promise quantity rejects the second plan.",
+      "recovery": "Recalculate both affected scenarios using the current allocation and return ownership to planners."
+    }
+  ],
+  "controls": [
+    "Use governed part identifiers and engineering revision checks before scenario generation.",
+    "Keep optimization assumptions and supplier-confirmed commitments visibly separate.",
+    "Require buyer approval for commercial commitments and engineering approval for substitutions.",
+    "Reserve scarce inventory atomically before publishing a committed recovery plan.",
+    "Restrict supplier pricing and contracts to authorized procurement teams."
+  ],
+  "metrics": [
+    {
+      "name": "Exposure completeness",
+      "definition": "Known affected demand lines captured in the disruption graph divided by audited affected demand lines."
+    },
+    {
+      "name": "Scenario preparation latency",
+      "definition": "Time from authenticated notice to planner-reviewable options with current constraints."
+    },
+    {
+      "name": "Assumption closure",
+      "definition": "Unconfirmed scenario assumptions resolved before commitment divided by assumptions requiring confirmation."
+    },
+    {
+      "name": "Plan invalidation rate",
+      "definition": "Approved scenarios requiring revision because source constraints changed divided by approved scenarios."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Enterprise exposure graph",
+      "benefit": "Reveals downstream and cross-plant effects.",
+      "cost": "Depends on accurate bills of material and identifier mapping."
+    },
+    {
+      "decision": "Bounded scenario search",
+      "benefit": "Controls planning cost and review complexity.",
+      "cost": "May omit creative alternatives outside approved candidate sets."
+    },
+    {
+      "decision": "Approval-separated agents",
+      "benefit": "Preserves procurement and engineering accountability.",
+      "cost": "Recovery speed depends on both review queues."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Past disruption replay",
+      "acceptance": "Planners verify affected assemblies and reject unqualified substitutes across representative incidents."
+    },
+    {
+      "phase": "Shadow scenario pilot",
+      "acceptance": "One material family compares proposed options with planner decisions and tests commercial-data access boundaries."
+    },
+    {
+      "phase": "Controlled ERP integration",
+      "acceptance": "Approved changes launch after inventory-contention, stale-plan, and supplier-acknowledgement recovery pass."
+    }
+  ],
+  "related": [
+    2,
+    8,
+    13,
+    28,
+    41,
+    44,
+    67
+  ],
+  "references": [
+    {
+      "title": "CloudEvents specification project",
+      "url": "https://cloudevents.io/"
+    },
+    {
+      "title": "Temporal: Workflow execution",
+      "url": "https://docs.temporal.io/workflow-execution"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

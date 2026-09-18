@@ -1,0 +1,171 @@
+{
+  "id": 26,
+  "title": "VPC Peering / Private Links",
+  "slug": "vpc-peering-private-links",
+  "category": 1,
+  "summary": "Connect agent workloads to private services through deliberately scoped network paths while retaining application authentication, encryption, and egress control.",
+  "overview": [
+    "Private connectivity keeps selected service traffic on private addressing and controlled network paths. VPC peering connects network address spaces, while private service endpoints expose particular services without granting broad network adjacency. These patterns solve different connectivity problems and should not be treated as interchangeable security guarantees.",
+    "A private route does not authenticate the caller, authorize a business action, or guarantee a provider's data-retention behavior. Keep TLS, workload identity, resource permissions, and data policy in place. Plan DNS, address ranges, routing, endpoint policies, and failure behavior together because a private endpoint that silently falls back to public resolution defeats the intended boundary."
+  ],
+  "production": {
+    "poc": "A prototype may call a public endpoint from a development network. Document the intended production traffic path before handling restricted data.",
+    "production": "Production provisions private DNS, restrictive routes and security groups, service authentication, and explicit egress rules. Verify the actual destination from the workload rather than trusting configuration alone.",
+    "scale": "At scale, account and region topology, endpoint costs, address overlap, and centralized DNS become design constraints. For AWS VPC peering, transitive peering is not supported; design routing accordingly."
+  },
+  "components": [
+    {
+      "name": "Agent network segment",
+      "role": "Hosts workloads under explicit inbound and outbound network policy."
+    },
+    {
+      "name": "Private endpoint or peering",
+      "role": "Provides the chosen service-level or network-level connectivity boundary."
+    },
+    {
+      "name": "Private DNS resolver",
+      "role": "Resolves service names to the intended private destinations consistently."
+    },
+    {
+      "name": "Workload identity",
+      "role": "Authenticates the caller independently of its source network address."
+    },
+    {
+      "name": "Network observability",
+      "role": "Records connection destinations, route failures, and unexpected public egress."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Classify traffic",
+      "description": "Identify required services, data classes, regions, and permitted connection directions."
+    },
+    {
+      "title": "Choose topology",
+      "description": "Select service endpoints or network peering based on the required reachability scope."
+    },
+    {
+      "title": "Configure resolution",
+      "description": "Establish private DNS and test name resolution from the actual runtime environment."
+    },
+    {
+      "title": "Restrict paths",
+      "description": "Apply routes, endpoint policies, security groups, and outbound destination controls."
+    },
+    {
+      "title": "Authenticate service",
+      "description": "Use TLS and scoped workload identity for every protected application request."
+    },
+    {
+      "title": "Verify failure behavior",
+      "description": "Break private connectivity in a controlled test and confirm that prohibited public fallback does not occur."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Private inference connectivity with independent identity",
+      "type": "flowchart",
+      "code": "flowchart LR\n A[\"Agent workload subnet\"] --> D[\"Private DNS\"]\n D --> E[\"Private service endpoint\"]\n E --> S[\"Inference service\"]\n I[\"Workload identity\"] --> S\n P[\"Endpoint and egress policy\"] --> E\n A --> F[\"Network flow evidence\"]\n E --> F\n F --> M[\"Connectivity monitoring\"]",
+      "caption": "Private addressing narrows network exposure while service identity and policy still govern requests."
+    }
+  ],
+  "useCase": {
+    "industry": "Healthcare technology",
+    "title": "Connecting a clinical-document assistant to private inference",
+    "situation": "A healthcare software provider processes restricted administrative documents in a controlled cloud environment.",
+    "problem": "A default SDK endpoint can send requests through public egress even after a private endpoint has been provisioned.",
+    "requirement": "The assistant must use the approved regional service path and authenticated workload identity.",
+    "architecture": "Private DNS resolves the inference hostname to a service endpoint, and network policy blocks unapproved outbound paths.",
+    "runtime": [
+      "The worker resolves the hostname, establishes TLS through the endpoint, and submits a minimized request using a scoped identity.",
+      "Connection telemetry verifies the private destination and associates the request with its approved region."
+    ],
+    "failure": "If private DNS or the endpoint fails, the request returns a controlled service error instead of retrying through an unrestricted public hostname.",
+    "impact": "Measure unexpected egress, DNS failures, endpoint latency, and connection availability. Private connectivity does not by itself establish regulatory compliance or retention guarantees."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Service endpoints",
+      "benefit": "Reachability can be limited to selected services.",
+      "cost": "Endpoint charges and provider-specific configuration add overhead."
+    },
+    {
+      "decision": "Network peering",
+      "benefit": "Multiple private services can communicate directly.",
+      "cost": "Broader adjacency and address planning increase complexity."
+    },
+    {
+      "decision": "Strict no-fallback policy",
+      "benefit": "The intended data path remains enforceable during failure.",
+      "cost": "Availability may fall when private connectivity is unavailable."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "DNS resolves to a public address",
+      "detection": "Runtime resolution tests and flow logs reveal the unexpected destination.",
+      "recovery": "Correct resolver configuration and block the public path."
+    },
+    {
+      "scenario": "Overlapping address ranges prevent routing",
+      "detection": "Connectivity validation identifies ambiguous routes.",
+      "recovery": "Redesign addressing or use an appropriate service-level connection pattern."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Treating private IP addresses as authentication",
+      "fix": "Keep workload identity and resource authorization."
+    },
+    {
+      "mistake": "Assuming peering is transitive",
+      "fix": "Validate provider routing semantics explicitly."
+    },
+    {
+      "mistake": "Testing only endpoint creation status",
+      "fix": "Exercise real requests from production-equivalent subnets."
+    }
+  ],
+  "whenToUse": [
+    "Sensitive workloads require controlled service connectivity.",
+    "Private services span approved accounts or networks.",
+    "Network paths must be observable and enforceable."
+  ],
+  "whenNotToUse": [
+    "A public service with adequate controls meets all requirements.",
+    "The topology cost exceeds the actual isolation benefit.",
+    "Private routing is being used to replace application security."
+  ],
+  "checklist": [
+    "Document service and network reachability scope.",
+    "Verify private DNS from runtime workloads.",
+    "Retain TLS and scoped identity.",
+    "Block prohibited public fallback.",
+    "Test region and address-range constraints.",
+    "Monitor destination paths after deployment."
+  ],
+  "related": [
+    23,
+    34,
+    37,
+    91,
+    98
+  ],
+  "keywords": [
+    "private endpoint",
+    "VPC peering",
+    "private DNS",
+    "egress",
+    "workload identity"
+  ],
+  "references": [
+    {
+      "title": "AWS PrivateLink concepts",
+      "url": "https://docs.aws.amazon.com/vpc/latest/privatelink/concepts.html"
+    },
+    {
+      "title": "Amazon VPC peering basics",
+      "url": "https://docs.aws.amazon.com/vpc/latest/peering/vpc-peering-basics.html"
+    }
+  ]
+}

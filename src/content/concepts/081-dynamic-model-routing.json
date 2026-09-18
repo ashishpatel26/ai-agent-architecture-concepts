@@ -1,0 +1,171 @@
+{
+  "id": 81,
+  "title": "Dynamic Model Routing",
+  "slug": "dynamic-model-routing",
+  "category": 4,
+  "summary": "Select an eligible model for each task using measured capability, quality, latency, and cost while keeping policy constraints mandatory.",
+  "overview": [
+    "Dynamic model routing chooses among models according to the request rather than sending all work to one default. A router may consider task type, input modality, context length, required tools, latency deadline, and evaluated difficulty. Cost and latency are optimization objectives only after the model satisfies the task and data-policy contract.",
+    "Routing introduces its own error surface. A cheap classifier can underestimate a difficult request, while a complex router can cost more than it saves. Model self-confidence is not a reliable universal complexity score. Start with transparent rules, collect outcome data, and add learned routing only when the evaluation supports it."
+  ],
+  "production": {
+    "poc": "A prototype compares a fixed strong baseline with a simple two-route policy on labeled tasks.",
+    "production": "Production versions routing decisions, evaluates each route, and defines escalation when output validation fails.",
+    "scale": "Enterprise scale handles capacity, regional eligibility, tenant budgets, and drift while keeping routing changes independently reversible from model changes."
+  },
+  "components": [
+    {
+      "name": "Request profiler",
+      "role": "Extracts task requirements and bounded complexity signals."
+    },
+    {
+      "name": "Capability registry",
+      "role": "Records approved modalities, schemas, regions, and evaluated quality."
+    },
+    {
+      "name": "Routing policy",
+      "role": "Chooses the lowest-cost eligible route meeting the service objective."
+    },
+    {
+      "name": "Outcome validator",
+      "role": "Checks task-specific acceptance and triggers permitted escalation."
+    },
+    {
+      "name": "Decision ledger",
+      "role": "Stores route version, selected model, reasons, and actual usage."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Resolve hard constraints",
+      "description": "Determine data location, required features, and maximum context before optimizing cost."
+    },
+    {
+      "title": "Profile task difficulty",
+      "description": "Use observable request features and evaluated heuristics rather than ungrounded confidence."
+    },
+    {
+      "title": "Select eligible route",
+      "description": "Combine capability, current capacity, and the task’s quality floor."
+    },
+    {
+      "title": "Execute and validate",
+      "description": "Run inference and check schema, evidence, or business acceptance rules."
+    },
+    {
+      "title": "Escalate selectively",
+      "description": "Use a stronger approved route only when the remaining deadline and budget permit."
+    },
+    {
+      "title": "Learn from outcomes",
+      "description": "Compare route-level quality and total cost, including classifier and escalation overhead."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Quality-constrained routing",
+      "type": "flowchart",
+      "code": "flowchart TD\n R[\"Task requirements\"] --> P[\"Policy and capability filter\"]\n P --> C[\"Complexity and capacity decision\"]\n C --> S[\"Small specialized model\"]\n C --> L[\"Larger reasoning model\"]\n S --> V[\"Task acceptance check\"]\n L --> V\n V --> E[\"Eligible escalation\"]\n E --> L\n V --> A[\"Accepted result\"]",
+      "caption": "A route is eligible only after hard constraints pass; validation determines whether escalation is needed."
+    }
+  ],
+  "useCase": {
+    "industry": "Insurance operations",
+    "title": "Routing routine and unusual correspondence",
+    "situation": "A service assistant classifies routine claim correspondence and drafts explanations for unusual disputes.",
+    "problem": "Using one large model for every label is costly, while a small model struggles with complex exceptions.",
+    "requirement": "Route routine classification efficiently and reserve stronger reasoning for exception-heavy tasks.",
+    "architecture": "A task profiler selects evaluated model routes and a validator checks classification schema and evidence requirements.",
+    "runtime": [
+      "A standard document label uses the specialized route.",
+      "An ambiguous dispute with several policy references uses the stronger route or escalates after validation failure."
+    ],
+    "failure": "If the router version begins underclassifying difficult cases, traffic returns to the fixed baseline while the routing policy is reviewed.",
+    "impact": "Measure accepted-task cost, escalation rate, and quality by route; nominal per-token savings can disappear after repeated failures."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Simple rules",
+      "benefit": "Are explainable and cheap to operate.",
+      "cost": "May miss subtle task difficulty."
+    },
+    {
+      "decision": "Learned router",
+      "benefit": "Can exploit richer workload patterns.",
+      "cost": "Needs labels, monitoring, and its own rollout controls."
+    },
+    {
+      "decision": "Validation-based escalation",
+      "benefit": "Protects quality on uncertain tasks.",
+      "cost": "Adds latency and may pay for two generations."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Router underestimates complexity",
+      "detection": "One route shows rising validation failures.",
+      "recovery": "Tighten eligibility and revert affected tasks to the baseline."
+    },
+    {
+      "scenario": "Capacity changes invalidate routing",
+      "detection": "Selected endpoints throttle despite good quality fit.",
+      "recovery": "Include live capacity and bounded fallback behavior."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Optimizing token price alone",
+      "fix": "Compare total cost per accepted task."
+    },
+    {
+      "mistake": "Routing from model confidence only",
+      "fix": "Use calibrated outcomes and observable features."
+    },
+    {
+      "mistake": "Ignoring data-policy compatibility",
+      "fix": "Apply hard eligibility constraints before selection."
+    }
+  ],
+  "whenToUse": [
+    "Use for mixed workloads with distinct capability needs.",
+    "Use when route quality can be evaluated by task class.",
+    "Use when cost savings exceed routing and escalation overhead."
+  ],
+  "whenNotToUse": [
+    "Avoid complex routing for uniform low-volume work.",
+    "Do not route sensitive data to unapproved models.",
+    "Avoid unvalidated difficulty classifiers for consequential tasks."
+  ],
+  "checklist": [
+    "Define route-specific quality floors.",
+    "Version the routing policy.",
+    "Measure total accepted-task cost.",
+    "Include capacity and deadline constraints.",
+    "Test escalation and fallback paths.",
+    "Keep a fixed-baseline rollback route."
+  ],
+  "related": [
+    5,
+    14,
+    31,
+    52,
+    82,
+    94
+  ],
+  "keywords": [
+    "model routing",
+    "capability registry",
+    "cost quality tradeoff",
+    "escalation"
+  ],
+  "references": [
+    {
+      "title": "NVIDIA Triton: TensorRT-LLM backend",
+      "url": "https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html"
+    },
+    {
+      "title": "AWS Builders Library: Timeouts, retries and backoff with jitter",
+      "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+    }
+  ]
+}

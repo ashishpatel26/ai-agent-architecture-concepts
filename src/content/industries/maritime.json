@@ -1,0 +1,195 @@
+{
+  "slug": "maritime",
+  "name": "Maritime",
+  "sector": "Mobility and infrastructure",
+  "icon": "anchor",
+  "title": "Port call readiness and exception coordination",
+  "summary": "Reconcile vessel arrival estimates, berth constraints, cargo readiness, and agency documents for port-operator decisions.",
+  "situation": "Illustrative architecture: A shipping line prepares a port call while arrival estimates, terminal readiness, pilot availability, and cargo documents change independently. Operations staff need a coherent readiness picture. Agents support coordination and document checks; masters, pilots, terminal operators, and authorized officials retain navigation and clearance authority.",
+  "problem": "Estimated arrival is not a berthing commitment, and a complete document packet is not official clearance. Conflicting timezones and late cargo updates can make a schedule appear feasible when an essential service remains unconfirmed.",
+  "whyAgents": "Arrival, terminal, document, and service-coordination specialists inspect separate interfaces. A durable port-call workflow tracks dependencies and authoritative acknowledgements without granting agents control over navigation or official declarations.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Measure coordination clarity and unresolved dependency age alongside port-call performance. Berthing and cargo outcomes depend on physical operations and authorized decisions; a complete agent packet does not itself establish operational or regulatory readiness.",
+  "agents": [
+    {
+      "name": "Arrival evidence agent",
+      "responsibility": "Compare authenticated vessel updates and estimated arrival revisions.",
+      "tools": [
+        "Vessel operations feed",
+        "port-call event reader"
+      ],
+      "boundary": "Cannot navigate, issue sailing instructions, or treat estimates as confirmed arrival."
+    },
+    {
+      "name": "Terminal readiness agent",
+      "responsibility": "Check berth plans, cargo readiness, and handling constraints.",
+      "tools": [
+        "Terminal operating query",
+        "berth planning API"
+      ],
+      "boundary": "Cannot assign berths or override terminal restrictions."
+    },
+    {
+      "name": "Document completeness agent",
+      "responsibility": "Compare supplied agency documents with the configured port-call checklist.",
+      "tools": [
+        "Document repository",
+        "checklist service"
+      ],
+      "boundary": "Cannot declare customs clearance or sign official submissions."
+    },
+    {
+      "name": "Service coordination agent",
+      "responsibility": "Draft pilot, tug, and agency coordination requests with dependencies.",
+      "tools": [
+        "Service availability API",
+        "port-call draft workspace"
+      ],
+      "boundary": "Authorized operators approve bookings and external communications."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Vessel and port-call systems",
+      "role": "Provide voyage identity, event timestamps, and source-owned arrival estimates."
+    },
+    {
+      "name": "Terminal and service platforms",
+      "role": "Own berth allocations, cargo operations, pilot or tug confirmations, and local constraints."
+    },
+    {
+      "name": "Agency document workspace",
+      "role": "Retains submitted documents, official acknowledgement references, and authorized correspondence."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Open port-call case",
+      "description": "Bind vessel, voyage, port, terminal, and responsible operator using governed identifiers and explicit timezones."
+    },
+    {
+      "title": "Reconcile arrival evidence",
+      "description": "Compare estimate revisions and report age; retain uncertainty instead of converting a predicted time into a commitment."
+    },
+    {
+      "title": "Gather readiness constraints",
+      "description": "Retrieve berth, cargo, pilot, tug, and agency dependencies from their authoritative owners."
+    },
+    {
+      "title": "Check documentation",
+      "description": "Apply the configured document checklist and distinguish submitted, accepted, rejected, and pending official states."
+    },
+    {
+      "title": "Prepare coordination options",
+      "description": "Show operators feasible sequences and unresolved confirmations without proposing navigational or clearance decisions."
+    },
+    {
+      "title": "Record approved coordination",
+      "description": "Submit authorized booking or document requests with stable keys and track each external acknowledgement before declaring readiness."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Port call readiness and exception coordination — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Port call readiness and exception coordination\"]\n    N1[\"Arrival evidence agent\"]\n    N2[\"Terminal readiness agent\"]\n    N3[\"Document completeness agent\"]\n    N4[\"Service coordination agent\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N1 --> N2\n    N0 --> N3\n    N2 --> N4\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Vessel and port-call systems\"\n    participant H as \"Accountable reviewer\"\nO->>S: Read port-call and document status\n    S-->>O: Documents submitted but acceptance pending\n    O->>H: Present unresolved official dependency\n    H-->>O: Approve agency follow-up\n    O->>S: Track acceptance reference separately",
+      "caption": "A local-time berth window is interpreted as UTC. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A local-time berth window is interpreted as UTC.",
+      "detection": "Timezone validation conflicts with terminal metadata and service booking intervals.",
+      "recovery": "Block the schedule, normalize times with source timezone, and request operator review of affected bookings."
+    },
+    {
+      "scenario": "Documents are submitted but official acceptance is pending.",
+      "detection": "Acknowledgement state lacks a valid acceptance reference.",
+      "recovery": "Keep clearance pending and route follow-up to the authorized agent instead of reporting the vessel cleared."
+    }
+  ],
+  "controls": [
+    "Keep navigation, vessel safety, and official clearance decisions outside agent authority.",
+    "Attach timezone, source, and revision to every arrival and service-window timestamp.",
+    "Distinguish document completeness from submission and official acceptance.",
+    "Require operator approval for pilot, tug, berth-related requests, and agency correspondence.",
+    "Track service reservations and release expired options to avoid conflicting bookings."
+  ],
+  "metrics": [
+    {
+      "name": "Readiness packet latency",
+      "definition": "Time from port-call update to operator-reviewable dependency and document status."
+    },
+    {
+      "name": "Confirmation completeness",
+      "definition": "Required services with current authoritative acknowledgements divided by required services for the approved plan."
+    },
+    {
+      "name": "Timestamp consistency",
+      "definition": "Audited schedule events with correct timezone and source revision divided by audited events."
+    },
+    {
+      "name": "Pending dependency age",
+      "definition": "Elapsed time of each unresolved readiness dependency, reported by owning organization."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Shared readiness view",
+      "benefit": "Makes cross-organization dependencies visible.",
+      "cost": "Source owners may update at different cadences."
+    },
+    {
+      "decision": "Explicit acknowledgement states",
+      "benefit": "Prevents premature readiness claims.",
+      "cost": "Operators must manage more intermediate workflow states."
+    },
+    {
+      "decision": "Revision-aware scheduling",
+      "benefit": "Handles changing arrival estimates coherently.",
+      "cost": "Frequent changes can cause reservation churn and repeated review."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Completed port-call replay",
+      "acceptance": "Operators validate timezone handling, document states, and conflicting service confirmations."
+    },
+    {
+      "phase": "Shadow operations pilot",
+      "acceptance": "One port route evaluates readiness packets without bookings or official submissions."
+    },
+    {
+      "phase": "Approved coordination integration",
+      "acceptance": "Selected service requests launch after pending-clearance and changed-arrival exercises pass."
+    }
+  ],
+  "related": [
+    6,
+    12,
+    15,
+    41,
+    44,
+    49,
+    58
+  ],
+  "references": [
+    {
+      "title": "CloudEvents specification project",
+      "url": "https://cloudevents.io/"
+    },
+    {
+      "title": "Temporal: Workflow execution",
+      "url": "https://docs.temporal.io/workflow-execution"
+    },
+    {
+      "title": "OpenTelemetry: Traces",
+      "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+    }
+  ]
+}
