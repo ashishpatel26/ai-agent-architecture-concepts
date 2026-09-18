@@ -1,0 +1,195 @@
+{
+  "slug": "manufacturing",
+  "name": "Manufacturing",
+  "sector": "Industrial operations",
+  "icon": "factory",
+  "title": "Production quality containment assistant",
+  "summary": "Connect quality signals, lot genealogy, and maintenance evidence before a supervisor approves containment work.",
+  "situation": "Illustrative architecture: An electronics plant observes a rise in solder inspection failures after a component lot change. Engineers need to connect inspection images, feeder setup, supplier lots, and machine maintenance history while production continues. Agents assemble evidence and candidate checks; established plant controls retain equipment and release authority.",
+  "problem": "Different systems use station, batch, and serial identifiers inconsistently. A model that confuses correlation with root cause can recommend unnecessarily broad containment or miss affected units. Production latency also differs from the seconds-to-minutes timescale suitable for agent analysis.",
+  "whyAgents": "Genealogy, quality, maintenance, and planning specialists can inspect distinct evidence concurrently. A deterministic lineage graph defines potentially affected material, while agents formulate testable hypotheses and human engineers decide corrective action.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Measure evidence assembly time and completeness before claiming lower scrap or downtime. Production benefits depend on engineering response and process changes, so dashboards must separate agent preparation from physical corrective outcomes.",
+  "agents": [
+    {
+      "name": "Genealogy investigator",
+      "responsibility": "Trace components through lots, work orders, and finished serials.",
+      "tools": [
+        "Manufacturing execution query",
+        "lot graph traversal"
+      ],
+      "boundary": "Cannot change traceability records or remove material holds."
+    },
+    {
+      "name": "Quality evidence agent",
+      "responsibility": "Compare inspection patterns and retrieve representative images and measurements.",
+      "tools": [
+        "Quality database",
+        "image viewer"
+      ],
+      "boundary": "Cannot declare product conformity or infer unmeasured defects."
+    },
+    {
+      "name": "Maintenance analyst",
+      "responsibility": "Correlate calibration, alarms, and service history with affected equipment intervals.",
+      "tools": [
+        "Maintenance history API",
+        "historian reader"
+      ],
+      "boundary": "Cannot write controller settings or acknowledge safety alarms."
+    },
+    {
+      "name": "Containment planner",
+      "responsibility": "Draft bounded inspection and material-hold proposals with affected inventory references.",
+      "tools": [
+        "Inventory read API",
+        "work-order draft writer"
+      ],
+      "boundary": "Supervisor approval is required for holds, rework, and production changes."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Manufacturing execution system",
+      "role": "Owns work-order progress, serial genealogy, and material consumption history."
+    },
+    {
+      "name": "Quality and maintenance platforms",
+      "role": "Provide inspection measurements, calibration versions, and approved work procedures."
+    },
+    {
+      "name": "Industrial data gateway",
+      "role": "Exposes buffered equipment telemetry to the analysis network without a direct agent-to-controller path."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Capture quality signal",
+      "description": "Register the inspection event and station context; distinguish sensor anomalies from confirmed quality observations."
+    },
+    {
+      "title": "Build affected set",
+      "description": "Traverse exact lot and serial relationships from the manufacturing record, retaining unknown genealogy as an explicit gap."
+    },
+    {
+      "title": "Compare evidence windows",
+      "description": "Align inspection timestamps with component changeovers, calibration records, and machine events using synchronized clocks."
+    },
+    {
+      "title": "Generate hypotheses",
+      "description": "Specialists propose bounded explanations with supporting and contradicting evidence; do not present a ranking as proven causation."
+    },
+    {
+      "title": "Review containment",
+      "description": "Show the supervisor the affected-set query, proposed inspections, production impact, and evidence uncertainty before any hold is authorized."
+    },
+    {
+      "title": "Execute approved work",
+      "description": "Submit a versioned maintenance or containment work order through the existing workflow and track completion evidence separately from issue resolution."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Production quality containment assistant — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Production quality containment assistant\"]\n    N1[\"Genealogy investigator\"]\n    N2[\"Quality evidence agent\"]\n    N3[\"Maintenance analyst\"]\n    N4[\"Containment planner\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N0 --> N2\n    N0 --> N3\n    N1 --> N4\n    N2 --> N4\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Manufacturing execution system\"\n    participant H as \"Accountable reviewer\"\nO->>S: Query affected lot genealogy\n    S-->>O: Missing rework serial links\n    O->>H: Escalate incomplete containment scope\n    H-->>O: Confirm conservative investigation boundary\n    O->>S: Save approved inspection work order\n    S-->>O: Work order receipt",
+      "caption": "Genealogy is incomplete for a reworked batch. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Genealogy is incomplete for a reworked batch.",
+      "detection": "Traversal finds consumed components without linked finished serials.",
+      "recovery": "Mark the affected set incomplete and ask traceability staff to resolve it before narrowing containment."
+    },
+    {
+      "scenario": "A telemetry clock drifts across a changeover.",
+      "detection": "Time synchronization checks disagree with station event sequence.",
+      "recovery": "Use trusted production event ordering and label the correlation window uncertain pending clock repair."
+    }
+  ],
+  "controls": [
+    "Keep industrial control credentials and safety functions outside the agent runtime.",
+    "Require supervisor approval for holds, rework, and equipment-setting changes.",
+    "Attach measurement units, calibration status, and source timestamps to quality evidence.",
+    "Separate candidate causal hypotheses from verified engineering findings.",
+    "Enforce plant and product-line permissions for supplier and production data."
+  ],
+  "metrics": [
+    {
+      "name": "Containment preparation time",
+      "definition": "Time from confirmed quality signal to a supervisor-reviewable affected-set proposal."
+    },
+    {
+      "name": "Genealogy coverage",
+      "definition": "Affected serials with complete component ancestry divided by serials in the investigation scope."
+    },
+    {
+      "name": "Hypothesis confirmation rate",
+      "definition": "Reviewed hypotheses supported by engineering tests divided by hypotheses tested."
+    },
+    {
+      "name": "Work-order closure fidelity",
+      "definition": "Completed actions with required inspection evidence divided by actions marked complete."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Buffered telemetry access",
+      "benefit": "Protects plant control networks from model activity.",
+      "cost": "Analysis may lag machine events and cannot replace real-time control."
+    },
+    {
+      "decision": "Exact genealogy first",
+      "benefit": "Makes containment scope auditable.",
+      "cost": "Incomplete historical records can delay a narrow proposal."
+    },
+    {
+      "decision": "Parallel specialist analysis",
+      "benefit": "Brings quality and maintenance perspectives together.",
+      "cost": "Conflicting explanations require explicit engineering adjudication."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Historical incident replay",
+      "acceptance": "Plant engineers verify affected-set queries and that every hypothesis is distinguished from a confirmed cause."
+    },
+    {
+      "phase": "Shadow line operation",
+      "acceptance": "One line compares draft containment plans with existing investigations while all equipment access remains read only."
+    },
+    {
+      "phase": "Approved work-order pilot",
+      "acceptance": "Supervisors accept controlled draft integration after hold permissions, duplicate events, and clock-drift recovery pass."
+    }
+  ],
+  "related": [
+    1,
+    15,
+    28,
+    38,
+    44,
+    55,
+    67
+  ],
+  "references": [
+    {
+      "title": "OPC Foundation: Unified Architecture",
+      "url": "https://opcfoundation.org/about/opc-technologies/opc-ua/"
+    },
+    {
+      "title": "CloudEvents specification project",
+      "url": "https://cloudevents.io/"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

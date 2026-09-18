@@ -1,0 +1,171 @@
+{
+  "id": 29,
+  "title": "Output Jailbreaking Guardrails",
+  "slug": "output-jailbreaking-guardrails",
+  "category": 1,
+  "summary": "Apply an explicit output policy before publication and prevent unsafe model content from becoming executable instructions or unauthorized business actions.",
+  "overview": [
+    "Output guardrails inspect generated content against the application's publication and action policies. They may detect disallowed content, sensitive-data exposure, unsupported claims, or attempts to evade restrictions through encoding and role-play. The title describes a defense boundary; no guardrail can guarantee that every jailbreak attempt will fail.",
+    "Distinguish output moderation from tool authorization. A harmless-looking explanation can accompany an unauthorized tool call, while a quoted harmful phrase may be legitimate evidence in a security workflow. Evaluate content in context, enforce action controls independently, and define whether the system blocks, transforms, escalates, or returns a constrained alternative."
+  ],
+  "production": {
+    "poc": "A prototype can test a small policy set with benign and adversarial examples. Include legitimate discussion of sensitive material to reveal overblocking.",
+    "production": "Production combines structural validation, sensitive-data checks, semantic classification, and application-specific rules before delivery. Streaming responses require a deliberate buffering or incremental-check policy.",
+    "scale": "At scale, version policy and classifiers, evaluate multilingual and encoded attacks, and monitor false positives by workflow. Classifier availability and latency must have explicit degraded behavior."
+  },
+  "components": [
+    {
+      "name": "Output policy",
+      "role": "Defines allowed content, protected data, action constraints, and response handling by use case."
+    },
+    {
+      "name": "Validation pipeline",
+      "role": "Applies schema, secret, evidence, and semantic checks with documented ordering."
+    },
+    {
+      "name": "Decision engine",
+      "role": "Combines guardrail results into allow, block, transform, or review outcomes."
+    },
+    {
+      "name": "Safe response adapter",
+      "role": "Produces a constrained alternative without repeating the rejected sensitive payload."
+    },
+    {
+      "name": "Evaluation corpus",
+      "role": "Maintains benign edge cases, known bypasses, and policy-version regression tests."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Collect candidate",
+      "description": "Hold the generated response or a policy-defined streaming segment before publication."
+    },
+    {
+      "title": "Validate structure",
+      "description": "Reject malformed or unexpected fields before semantic checks operate on them."
+    },
+    {
+      "title": "Inspect content",
+      "description": "Evaluate sensitive data, disallowed requests, and application-specific output conditions."
+    },
+    {
+      "title": "Apply context",
+      "description": "Distinguish quoted evidence and legitimate professional discussion from prohibited assistance."
+    },
+    {
+      "title": "Choose response",
+      "description": "Allow, redact, block, or escalate according to explicit policy and detector confidence."
+    },
+    {
+      "title": "Record outcome",
+      "description": "Log reason codes and minimal evidence for evaluation without reproducing sensitive content unnecessarily."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Publication guardrails with explicit outcomes",
+      "type": "flowchart",
+      "code": "flowchart LR\n M[\"Candidate output\"] --> S[\"Structure and secret checks\"]\n S --> C[\"Contextual policy classifier\"]\n C --> D[\"Guardrail decision\"]\n D --> A[\"Publish approved response\"]\n D --> R[\"Constrained alternative\"]\n D --> H[\"Human review\"]\n P[\"Versioned application policy\"] --> D\n D --> E[\"Minimal evaluation record\"]",
+      "caption": "Publication decisions use several checks, while tool permissions remain a separate execution control."
+    }
+  ],
+  "useCase": {
+    "industry": "Education technology",
+    "title": "Moderating a student support assistant",
+    "situation": "An education platform offers tutoring and administrative assistance to students in different age groups.",
+    "problem": "Adversarial prompts can solicit inappropriate content, while simplistic keyword filters block legitimate literature and safety discussions.",
+    "requirement": "The assistant must apply the platform's age-appropriate policy without exposing private student records or suppressing necessary educational context.",
+    "architecture": "A guardrail pipeline checks output structure, personal-data exposure, and contextual policy before the response is displayed.",
+    "runtime": [
+      "A generated answer is evaluated against the student's authorized service context and the current tutoring policy.",
+      "If rejected, a response adapter offers a permitted educational direction without echoing the problematic content."
+    ],
+    "failure": "If the semantic classifier is unavailable, sensitive workflows use a constrained fallback or review path defined by policy.",
+    "impact": "Measure policy violations, legitimate-content rejection, added latency, and bypass success across supported languages and age-appropriate evaluation sets."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Semantic classifiers",
+      "benefit": "Context can reduce crude keyword overblocking.",
+      "cost": "Classifiers add latency and remain fallible."
+    },
+    {
+      "decision": "Buffered publication",
+      "benefit": "Full responses can be checked before exposure.",
+      "cost": "Users lose some streaming responsiveness."
+    },
+    {
+      "decision": "Transforming outputs",
+      "benefit": "Useful content can survive limited redaction.",
+      "cost": "Transformation may change meaning and needs revalidation."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Sensitive text leaks in an early streaming chunk",
+      "detection": "Delivery trace shows publication before policy evaluation.",
+      "recovery": "Buffer protected content or apply an explicitly tested incremental strategy."
+    },
+    {
+      "scenario": "Encoded content bypasses a detector",
+      "detection": "Adversarial evaluation finds a policy-violating decoded payload.",
+      "recovery": "Improve normalization and strengthen downstream publication controls."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Assuming refusal wording proves safety",
+      "fix": "Inspect actual content and external actions."
+    },
+    {
+      "mistake": "Using one policy for every audience",
+      "fix": "Apply the relevant product and user context."
+    },
+    {
+      "mistake": "Logging blocked secrets verbatim",
+      "fix": "Store minimal reason codes and protected evidence references."
+    }
+  ],
+  "whenToUse": [
+    "Generated content reaches users or downstream systems.",
+    "The application has explicit content and data policies.",
+    "Contextual review can distinguish legitimate edge cases."
+  ],
+  "whenNotToUse": [
+    "The control is expected to replace authorization.",
+    "No agreed publication policy exists.",
+    "A proposed detector is treated as a complete safety guarantee."
+  ],
+  "checklist": [
+    "Define allow, block, transform, and review outcomes.",
+    "Test benign sensitive-content examples.",
+    "Choose a streaming inspection strategy.",
+    "Version policy and detector configurations.",
+    "Evaluate multilingual and encoded bypasses.",
+    "Specify classifier-outage behavior."
+  ],
+  "related": [
+    20,
+    24,
+    25,
+    35,
+    39
+  ],
+  "keywords": [
+    "output guardrails",
+    "jailbreak defense",
+    "publication policy",
+    "streaming safety",
+    "moderation"
+  ],
+  "references": [
+    {
+      "title": "OWASP: LLM prompt injection prevention",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

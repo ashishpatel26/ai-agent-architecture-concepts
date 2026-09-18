@@ -1,0 +1,171 @@
+{
+  "id": 36,
+  "title": "Watermarking AI Outputs",
+  "slug": "watermarking-ai-outputs",
+  "category": 1,
+  "summary": "Attach or detect provenance signals in generated content while treating watermark evidence as limited, attack-sensitive, and distinct from proof of truth.",
+  "overview": [
+    "AI-output watermarking embeds a detectable signal into generated content or associates it with provenance metadata. Text watermarking may influence token selection to create a statistical pattern; media systems may embed signals in pixels or audio. Signed provenance manifests are a related but distinct mechanism that records assertions about an asset's history.",
+    "No universal detector can reliably identify every AI-generated artifact. Editing, paraphrasing, translation, cropping, or recompression may weaken signals, and statistical tests can produce false positives. A watermark can indicate a particular generation process under stated assumptions; it does not establish factual accuracy, ownership, or the identity of every later editor."
+  ],
+  "production": {
+    "poc": "A prototype should test detection on both marked and unmarked content, including realistic transformations. Short text may provide too little evidence for confident detection.",
+    "production": "Production defines the supported content types, generation path, detection thresholds, key custody, and user-facing interpretation. Preserve original artifacts and provenance records separately from transformed copies.",
+    "scale": "At scale, version watermark algorithms and detector configurations, monitor false positives, and maintain compatibility with editing pipelines. Never use a weak detection signal as the sole basis for a consequential accusation."
+  },
+  "components": [
+    {
+      "name": "Marking service",
+      "role": "Applies the chosen signal during generation or asset publication where the format supports it."
+    },
+    {
+      "name": "Provenance record",
+      "role": "Stores generation and editing assertions with appropriate signatures and asset bindings."
+    },
+    {
+      "name": "Key management",
+      "role": "Protects watermark or signing keys and supports rotation and verification history."
+    },
+    {
+      "name": "Detection service",
+      "role": "Evaluates candidate artifacts with calibrated thresholds and explicit uncertainty."
+    },
+    {
+      "name": "Transformation evaluator",
+      "role": "Tests robustness under expected editing, compression, and redistribution workflows."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Define evidence goal",
+      "description": "Decide whether the requirement is origin detection, tamper evidence, or visible disclosure."
+    },
+    {
+      "title": "Apply signal",
+      "description": "Mark supported output through the approved generation or publication path."
+    },
+    {
+      "title": "Bind provenance",
+      "description": "Associate the asset with versioned generation metadata and protected integrity evidence."
+    },
+    {
+      "title": "Publish and transform",
+      "description": "Track how downstream editors and formats may preserve or remove the signal."
+    },
+    {
+      "title": "Detect carefully",
+      "description": "Evaluate the artifact with the correct algorithm version and sufficient evidence length."
+    },
+    {
+      "title": "Report limitations",
+      "description": "Present confidence and provenance validity without claiming truth or universal AI detection."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Watermark signal and provenance are separate evidence",
+      "type": "flowchart",
+      "code": "flowchart LR\n G[\"Approved generator\"] --> W[\"Watermark insertion\"]\n W --> A[\"Published asset\"]\n G --> P[\"Signed provenance record\"]\n A --> T[\"Editing and redistribution\"]\n T --> D[\"Signal detector\"]\n P --> V[\"Provenance verifier\"]\n D --> R[\"Qualified origin evidence\"]\n V --> R",
+      "caption": "Detection and signed provenance provide different evidence, and both require explicit interpretation limits."
+    }
+  ],
+  "useCase": {
+    "industry": "Media production",
+    "title": "Tracking generated promotional assets",
+    "situation": "A media team creates AI-assisted promotional images that pass through agencies, cropping tools, and content-management systems.",
+    "problem": "Asset metadata can disappear during export, making it difficult to distinguish approved generated material from untracked copies.",
+    "requirement": "The assistant must preserve useful origin information without claiming that every transformed image remains detectable.",
+    "architecture": "The publication pipeline adds supported watermark signals and stores signed provenance for the original approved asset.",
+    "runtime": [
+      "An editor exports a resized version; automated checks measure whether the expected signal and metadata survived.",
+      "A later audit compares the distributed image with the original record and reports available provenance with uncertainty."
+    ],
+    "failure": "If cropping removes the detectable signal, the system reports insufficient watermark evidence rather than declaring the image human-created.",
+    "impact": "Measure detection precision, robustness by transformation, provenance retention, and false-positive rates on unmarked assets."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Embedded signals",
+      "benefit": "Some evidence may survive metadata removal.",
+      "cost": "Transformations can weaken detection and affect content quality."
+    },
+    {
+      "decision": "Signed provenance",
+      "benefit": "Tampering with recorded assertions becomes detectable.",
+      "cost": "Metadata can be stripped and trust depends on signer identity."
+    },
+    {
+      "decision": "Conservative thresholds",
+      "benefit": "False accusations become less likely.",
+      "cost": "More marked artifacts yield inconclusive results."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A short text is falsely classified as marked",
+      "detection": "Calibration shows weak statistical support at that length.",
+      "recovery": "Report inconclusive evidence and avoid consequential automated decisions."
+    },
+    {
+      "scenario": "A signing key is compromised",
+      "detection": "Key-status checks invalidate trust in affected provenance.",
+      "recovery": "Revoke the key and preserve a documented verification history."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Calling a watermark proof of factual accuracy",
+      "fix": "Separate origin evidence from content verification."
+    },
+    {
+      "mistake": "Treating no detection as proof of human authorship",
+      "fix": "Report the limits of the detector and transformation history."
+    },
+    {
+      "mistake": "Ignoring normal editing workflows",
+      "fix": "Test the actual publication toolchain."
+    }
+  ],
+  "whenToUse": [
+    "Content provenance is valuable to publishing workflows.",
+    "The generation path supports an evaluated marking method.",
+    "Users can understand uncertain detection results."
+  ],
+  "whenNotToUse": [
+    "Universal reliable AI detection is the requirement.",
+    "The signal would be the sole basis for punishment.",
+    "Expected transformations destroy the evidence needed for detection."
+  ],
+  "checklist": [
+    "Define the exact provenance claim.",
+    "Calibrate on marked and unmarked content.",
+    "Test realistic editing transformations.",
+    "Protect and rotate relevant keys.",
+    "Version detectors and algorithms.",
+    "Communicate inconclusive results explicitly."
+  ],
+  "related": [
+    27,
+    30,
+    35,
+    38,
+    39
+  ],
+  "keywords": [
+    "watermark",
+    "provenance",
+    "C2PA",
+    "statistical detection",
+    "content credentials"
+  ],
+  "references": [
+    {
+      "title": "A Watermark for Large Language Models",
+      "url": "https://arxiv.org/abs/2301.10226"
+    },
+    {
+      "title": "C2PA technical specifications",
+      "url": "https://c2pa.org/specifications/specifications/"
+    }
+  ]
+}

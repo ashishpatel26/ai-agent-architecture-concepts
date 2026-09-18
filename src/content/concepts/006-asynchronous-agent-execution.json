@@ -1,0 +1,171 @@
+{
+  "id": 6,
+  "title": "Asynchronous Agent Execution",
+  "slug": "asynchronous-agent-execution",
+  "category": 0,
+  "summary": "Move long-running agent work into durable jobs with explicit acceptance, progress, cancellation, and completion semantics.",
+  "overview": [
+    "Asynchronous execution separates accepting a request from completing its work. The service returns an operation identifier after durable acceptance, while workers process the operation independently of the user's connection. This is an API contract, not merely a background thread: clients need a reliable way to observe status and retrieve the final result.",
+    "The central difficulty is ownership across failures. A queue may deliver a job more than once, a worker can lose its lease, and a client can retry submission after an uncertain response. Use durable operation records, deduplication identities, and idempotent side effects to make these ordinary events safe."
+  ],
+  "production": {
+    "poc": "A prototype can use an in-process task for disposable work. Confirm that losing the process and its work is acceptable before choosing that shortcut.",
+    "production": "Production persists acceptance before acknowledgement, separates job state from queue state, and gives clients documented polling or notification behavior. Cancellation is cooperative unless the underlying operation supports stronger guarantees.",
+    "scale": "At enterprise scale, fair queues, tenant quotas, backpressure, and bounded worker concurrency protect interactive systems. Measure queue age independently from processing time because autoscaling cannot repair every downstream bottleneck."
+  },
+  "components": [
+    {
+      "name": "Submission API",
+      "role": "Validates requests and creates durable operations with stable client-visible identifiers."
+    },
+    {
+      "name": "Job queue",
+      "role": "Buffers accepted work and supports retryable delivery without defining business truth."
+    },
+    {
+      "name": "Worker pool",
+      "role": "Claims leased jobs and performs bounded tool and model operations."
+    },
+    {
+      "name": "Operation store",
+      "role": "Tracks progress, cancellation requests, final artifacts, and failure classifications."
+    },
+    {
+      "name": "Notification adapter",
+      "role": "Publishes completion events or authenticated callbacks without exposing internal job payloads."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Accept durably",
+      "description": "Validate the request and record its operation identity before returning acceptance."
+    },
+    {
+      "title": "Enqueue reliably",
+      "description": "Publish a job through an outbox or equivalent mechanism that closes the database-to-queue gap."
+    },
+    {
+      "title": "Claim ownership",
+      "description": "Acquire a renewable lease and verify that the operation remains eligible to run."
+    },
+    {
+      "title": "Execute checkpoints",
+      "description": "Save completed stages and progress so a replacement worker can resume safely."
+    },
+    {
+      "title": "Complete atomically",
+      "description": "Store the result reference and terminal status before sending a completion notification."
+    },
+    {
+      "title": "Serve status",
+      "description": "Let clients poll or reconnect using the operation identifier without creating another job."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Durable asynchronous report execution",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant U as Analyst\n participant A as Submission API\n participant S as Operation store\n participant Q as Job queue\n participant W as Worker\n U->>A: Request report with submission key\n A->>S: Persist accepted operation\n A-->>U: Operation identifier\n A->>Q: Publish durable job\n Q->>W: Deliver job\n W->>S: Claim lease and checkpoint progress\n W->>S: Commit result and terminal status\n U->>A: Read operation status\n A->>S: Read committed result\n A-->>U: Report link",
+      "caption": "The client connection lifetime is independent of the job, and committed operation state determines completion."
+    }
+  ],
+  "useCase": {
+    "industry": "Energy",
+    "title": "Generating a maintenance evidence package",
+    "situation": "A wind-farm operator requests maintenance summaries spanning inspection notes, sensor history, and spare-parts records.",
+    "problem": "The report takes longer than an interactive HTTP request and is frequently abandoned when a browser tab closes.",
+    "requirement": "The assistant must accept the request promptly and produce a recoverable report with visible progress.",
+    "architecture": "A submission service creates a durable operation, while leased workers retrieve evidence and assemble a versioned report artifact.",
+    "runtime": [
+      "The planner submits a site and date range, receives an operation identifier, and continues other work.",
+      "Workers checkpoint completed turbine sections; the interface reconnects later and reads the report's actual terminal state."
+    ],
+    "failure": "If a worker restarts, another worker resumes incomplete sections using the same operation identity and preserves finished artifacts.",
+    "impact": "Track queue age, completion latency, abandoned operations, duplicate submissions, and worker utilization rather than reporting only API response time."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Immediate acceptance",
+      "benefit": "The interface remains responsive during expensive work.",
+      "cost": "Clients must understand eventual completion and error reporting."
+    },
+    {
+      "decision": "Durable checkpoints",
+      "benefit": "Worker replacement wastes less completed computation.",
+      "cost": "Persistence and schema evolution add operational cost."
+    },
+    {
+      "decision": "Shared queues",
+      "benefit": "Capacity can be pooled efficiently.",
+      "cost": "Fairness controls are necessary to prevent large tenants dominating service."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Notification delivery fails",
+      "detection": "Operation is complete but callback attempts remain unsuccessful.",
+      "recovery": "Retain the result for polling and retry notifications separately."
+    },
+    {
+      "scenario": "Two workers overlap after lease expiry",
+      "detection": "Ownership version changes while the old worker is still active.",
+      "recovery": "Fence writes and deduplicate side effects by operation identity."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Returning acceptance before durable storage",
+      "fix": "Commit the operation before acknowledging it."
+    },
+    {
+      "mistake": "Treating cancellation as guaranteed rollback",
+      "fix": "Document what can stop and reconcile completed side effects."
+    },
+    {
+      "mistake": "Using queue visibility as business state",
+      "fix": "Keep an authoritative operation record."
+    }
+  ],
+  "whenToUse": [
+    "Tasks exceed interactive request budgets.",
+    "Work must survive client disconnection and worker replacement.",
+    "Bursty workloads benefit from controlled buffering."
+  ],
+  "whenNotToUse": [
+    "The result is required immediately for a synchronous transaction.",
+    "Work is trivial and queue overhead dominates latency.",
+    "No durable status or operational ownership can be provided."
+  ],
+  "checklist": [
+    "Persist acceptance before responding.",
+    "Deduplicate repeated submission keys.",
+    "Define polling and result-retention contracts.",
+    "Fence stale worker writes.",
+    "Separate queue age from processing latency.",
+    "Test cancellation during an external tool call."
+  ],
+  "related": [
+    12,
+    15,
+    16,
+    41,
+    48
+  ],
+  "keywords": [
+    "asynchronous execution",
+    "job queue",
+    "operation resource",
+    "worker lease",
+    "backpressure"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: persistence",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    },
+    {
+      "title": "Amazon EC2: ensuring idempotency",
+      "url": "https://docs.aws.amazon.com/ec2/latest/devguide/ec2-api-idempotency.html"
+    }
+  ]
+}

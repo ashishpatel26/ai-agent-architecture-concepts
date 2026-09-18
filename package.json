@@ -1,12 +1,12 @@
 {
   "name": "architect-atlas",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
-    "build:pages": "npm test && npm run build -- --outDir docs && node scripts/verify-pages.mjs",
+    "dev": "node scripts/prepare-content.mjs --development && vite --host 0.0.0.0",
+    "build": "node scripts/prepare-content.mjs && tsc -b && vite build && node scripts/render-pages.mjs dist",
+    "build:pages": "node scripts/prepare-content.mjs && npm test && tsc -b && vite build --outDir docs && node scripts/render-pages.mjs docs && node scripts/verify-pages.mjs",
     "test": "node --test tests/*.test.mjs",
     "preview": "vite preview --host 0.0.0.0"
   },
@@ -15,6 +15,7 @@
     "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource-variable/noto-sans-devanagari": "^5.3.0",
     "lucide-react": "^0.468.0",
+    "mermaid": "^11.17.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

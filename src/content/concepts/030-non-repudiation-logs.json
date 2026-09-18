@@ -1,0 +1,171 @@
+{
+  "id": 30,
+  "title": "Non-Repudiation Logs",
+  "slug": "non-repudiation-logs",
+  "category": 1,
+  "summary": "Create attributable, tamper-evident records of agent decisions and actions while recognizing that evidence strength depends on identity, keys, and independent custody.",
+  "overview": [
+    "Non-repudiation logging aims to provide strong evidence of who requested, authorized, and executed an action. Ordinary application logs help debugging but can be modified by the same administrator who operates the application. Stronger evidence combines authenticated identities, canonical event records, integrity protection, reliable timestamps, and controlled retention.",
+    "Hash chaining alone is insufficient if an attacker can rewrite the chain and its anchor. Sign records or batches with protected keys and anchor integrity evidence outside the writer's control. These mechanisms support accountability; whether evidence establishes legal non-repudiation depends on the wider process and jurisdiction."
+  ],
+  "production": {
+    "poc": "A prototype should record operation identities and actual tool outcomes. Avoid confusing a model's stated intention with an executed business action.",
+    "production": "Production separates audit events from debug logs, protects signing keys, and records policy and approval versions. Audit failure behavior should match the consequence of the protected action.",
+    "scale": "At scale, use durable ingestion, independent retention, key rotation, and verification jobs. Minimize sensitive payloads while retaining enough references to reconstruct decisions under authorized investigation."
+  },
+  "components": [
+    {
+      "name": "Audit event producer",
+      "role": "Emits canonical records for requests, approvals, policy decisions, and actual effects."
+    },
+    {
+      "name": "Identity binding",
+      "role": "Connects human, workload, and delegated identities to each event."
+    },
+    {
+      "name": "Integrity service",
+      "role": "Signs records or batches and links them to externally retained integrity anchors."
+    },
+    {
+      "name": "Protected archive",
+      "role": "Stores audit evidence under restricted administration and defined retention rules."
+    },
+    {
+      "name": "Verification process",
+      "role": "Checks signatures, ordering, missing events, and key-validity history."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Identify action",
+      "description": "Assign a stable operation identifier before the consequential request is executed."
+    },
+    {
+      "title": "Capture authority",
+      "description": "Record authenticated actors, approval evidence, policy version, and exact action parameters or protected hashes."
+    },
+    {
+      "title": "Record outcome",
+      "description": "Capture the authoritative result, including uncertain or rejected outcomes."
+    },
+    {
+      "title": "Protect integrity",
+      "description": "Canonicalize events, sign them with protected keys, and publish independent anchors."
+    },
+    {
+      "title": "Retain evidence",
+      "description": "Store records and referenced artifacts under appropriate access and retention controls."
+    },
+    {
+      "title": "Verify continuously",
+      "description": "Check integrity and sequence gaps, then investigate anomalies with documented custody."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Attributable action evidence with independent custody",
+      "type": "flowchart",
+      "code": "flowchart LR\n A[\"Authorized tool action\"] --> E[\"Canonical audit event\"]\n I[\"Actor and approval identity\"] --> E\n E --> S[\"Protected signing service\"]\n S --> W[\"Restricted audit archive\"]\n S --> X[\"Independent integrity anchor\"]\n W --> V[\"Verification job\"]\n X --> V\n V --> R[\"Evidence review\"]",
+      "caption": "Independent anchors and protected keys make retrospective tampering more detectable than ordinary writable logs."
+    }
+  ],
+  "useCase": {
+    "industry": "Financial services",
+    "title": "Recording agent-assisted settlement instructions",
+    "situation": "An operations team uses an assistant to prepare settlement instructions that authorized staff review before release.",
+    "problem": "Debug logs show conversations but do not reliably connect the final instruction to its approver and actual downstream acceptance.",
+    "requirement": "The assistant must produce an attributable record of proposal, approval, execution, and reconciliation.",
+    "architecture": "Canonical audit events bind each operation to user and workload identities, with signed batches retained in a separately controlled archive.",
+    "runtime": [
+      "A reviewer approves a versioned instruction; the execution gateway records the approved parameter hash and the receiving system's identifier.",
+      "A verification process checks batch signatures and missing sequence entries independently of the agent runtime."
+    ],
+    "failure": "If the audit service cannot durably accept evidence for a protected action, the gateway follows the defined hold policy rather than silently dropping records.",
+    "impact": "Measure evidence completeness, verification failures, ingestion delay, and time to reconstruct an operation. Cryptographic integrity does not establish that the original business decision was correct."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Signed audit records",
+      "benefit": "Later modification becomes detectable under the key trust model.",
+      "cost": "Key custody and rotation require operational discipline."
+    },
+    {
+      "decision": "Independent retention",
+      "benefit": "Application administrators have less ability to alter evidence.",
+      "cost": "Cross-system availability and retention costs increase."
+    },
+    {
+      "decision": "Minimal payloads",
+      "benefit": "Sensitive data exposure is reduced.",
+      "cost": "Investigations may need separately retained referenced artifacts."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A signing key is compromised",
+      "detection": "Key monitoring or verification investigation identifies suspect usage.",
+      "recovery": "Revoke the key, preserve affected evidence, and establish the trusted time boundary."
+    },
+    {
+      "scenario": "Events disappear before archival",
+      "detection": "Sequence checks show gaps between action records and retained batches.",
+      "recovery": "Reconcile from operation ledgers and investigate ingestion loss."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Calling a mutable database table immutable",
+      "fix": "Enforce separate custody and test administrative tampering."
+    },
+    {
+      "mistake": "Logging only model intentions",
+      "fix": "Record actual authorization and downstream outcomes."
+    },
+    {
+      "mistake": "Assuming hashes establish actor identity",
+      "fix": "Bind events to authenticated principals and protected signing keys."
+    }
+  ],
+  "whenToUse": [
+    "Consequential actions require attributable evidence.",
+    "Investigators must reconstruct approvals and execution outcomes.",
+    "Independent integrity verification is operationally supported."
+  ],
+  "whenNotToUse": [
+    "Ordinary debugging telemetry is the only requirement.",
+    "No trustworthy identity or key custody exists.",
+    "The design promises legal conclusions from hashes alone."
+  ],
+  "checklist": [
+    "Define canonical audit event schemas.",
+    "Bind user, workload, and approval identities.",
+    "Record actual operation outcomes.",
+    "Protect and rotate signing keys.",
+    "Retain independent integrity anchors.",
+    "Test gap detection and evidence reconstruction."
+  ],
+  "related": [
+    22,
+    23,
+    27,
+    38,
+    41
+  ],
+  "keywords": [
+    "audit integrity",
+    "non-repudiation",
+    "signed logs",
+    "key custody",
+    "evidence chain"
+  ],
+  "references": [
+    {
+      "title": "RFC 5848: signed syslog messages",
+      "url": "https://www.rfc-editor.org/rfc/rfc5848"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

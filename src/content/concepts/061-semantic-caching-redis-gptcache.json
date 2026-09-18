@@ -1,0 +1,167 @@
+{
+  "id": 61,
+  "title": "Semantic Caching (Redis/GPTCache)",
+  "slug": "semantic-caching-redis-gptcache",
+  "category": 3,
+  "summary": "Reuse validated answers for sufficiently similar requests while preserving tenant, policy, freshness, and task boundaries.",
+  "overview": [
+    "Semantic caching retrieves a previous answer by meaning rather than exact prompt bytes. It typically embeds the incoming query, searches cached query vectors, and applies an acceptance threshold before returning a stored response. The important contract is answer equivalence: two similar questions are not necessarily entitled to the same answer.",
+    "A cache entry must carry more than a vector and text. Tenant scope, authorization context, locale, model or prompt revision, source versions, and expiration determine eligibility. Personalized balances, changing prices, and action requests are usually poor candidates. Semantic caching differs from provider prefix caching, which reuses computation while still generating a fresh answer."
+  ],
+  "production": {
+    "poc": "A prototype measures hit quality on repeated public questions and labels false matches manually.",
+    "production": "Production adds metadata gates, per-intent thresholds, invalidation, provenance, and a bypass for sensitive or volatile tasks.",
+    "scale": "At enterprise scale, track false-hit rates by tenant and language, control cache cardinality, and test revocation propagation independently of expiration."
+  },
+  "components": [
+    {
+      "name": "Eligibility classifier",
+      "role": "Excludes personalized, action-oriented, or rapidly changing requests."
+    },
+    {
+      "name": "Embedding service",
+      "role": "Maps eligible questions into a versioned similarity space."
+    },
+    {
+      "name": "Scoped vector cache",
+      "role": "Stores answer evidence and filters entries by tenant and policy metadata."
+    },
+    {
+      "name": "Acceptance gate",
+      "role": "Checks semantic threshold, freshness, and answer compatibility."
+    },
+    {
+      "name": "Generation path",
+      "role": "Produces and validates fresh answers on a miss before storing eligible results."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Check eligibility",
+      "description": "Determine whether answer reuse is allowed for the request type and data classification."
+    },
+    {
+      "title": "Build scope",
+      "description": "Resolve tenant, language, policy revision, and source-version constraints."
+    },
+    {
+      "title": "Search candidates",
+      "description": "Embed the question and retrieve nearby entries only within the allowed scope."
+    },
+    {
+      "title": "Validate reuse",
+      "description": "Apply calibrated similarity and freshness checks; treat uncertainty as a miss."
+    },
+    {
+      "title": "Generate on miss",
+      "description": "Run retrieval and generation, validate the answer, and retain its supporting evidence."
+    },
+    {
+      "title": "Store and observe",
+      "description": "Write a bounded-life entry and measure hits, misses, false matches, and invalidation lag."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Reuse requires more than similarity",
+      "type": "flowchart",
+      "code": "flowchart LR\n Q[\"Question\"] --> E[\"Eligibility gate\"]\n E --> V[\"Scoped vector lookup\"]\n V --> A[\"Similarity and freshness checks\"]\n A --> H[\"Reuse validated answer\"]\n A --> G[\"Generate fresh answer\"]\n E --> G\n G --> S[\"Store eligible evidence-backed response\"]\n S --> V",
+      "caption": "A close vector match remains a miss if its scope or source revision is incompatible."
+    }
+  ],
+  "useCase": {
+    "industry": "Public transport",
+    "title": "Repeated passenger policy questions",
+    "situation": "A transit operator receives many paraphrases of the same baggage and bicycle questions.",
+    "problem": "Repeated model calls answer stable policy questions while personalized journey requests share the interface.",
+    "requirement": "Reuse policy answers without serving one passenger another passenger’s itinerary.",
+    "architecture": "The cache permits public policy intents and keys eligibility by policy revision and service region.",
+    "runtime": [
+      "A bicycle-policy question matches a validated answer for the same region.",
+      "A fare-balance question bypasses caching and reads the passenger account directly."
+    ],
+    "failure": "When the policy changes, its revision invalidates old entries even if their similarity scores remain high.",
+    "impact": "Track avoided generation work alongside false-hit rate and policy freshness; a higher hit rate is harmful if answer equivalence deteriorates."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Broader similarity threshold",
+      "benefit": "Increases potential reuse.",
+      "cost": "Raises the chance of a confidently wrong cache hit."
+    },
+    {
+      "decision": "Fine-grained scope",
+      "benefit": "Protects tenant and policy boundaries.",
+      "cost": "Reduces hit rate and increases index cardinality."
+    },
+    {
+      "decision": "Short expiration",
+      "benefit": "Limits stale answers.",
+      "cost": "Forces more generation on stable questions."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Negated question hits affirmative answer",
+      "detection": "Evaluation finds opposite-intent paraphrases near one another.",
+      "recovery": "Add hard-negative tests and stricter intent compatibility."
+    },
+    {
+      "scenario": "Revoked content remains cached",
+      "detection": "Answer provenance references an inaccessible source revision.",
+      "recovery": "Invalidate by source identifier and recheck authorization on retrieval."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Treating cosine similarity as correctness",
+      "fix": "Calibrate thresholds using labeled answer-equivalence pairs."
+    },
+    {
+      "mistake": "Caching before output validation",
+      "fix": "Store only accepted responses with provenance."
+    },
+    {
+      "mistake": "Sharing entries across users by default",
+      "fix": "Partition or gate reuse using explicit authorization scope."
+    }
+  ],
+  "whenToUse": [
+    "Use for repeated stable informational questions.",
+    "Use where false hits can be evaluated with labeled examples.",
+    "Use when generation cost exceeds cache lookup overhead."
+  ],
+  "whenNotToUse": [
+    "Avoid personalized balances and action requests.",
+    "Avoid rapidly changing facts without reliable invalidation.",
+    "Do not reuse answers across incompatible permissions."
+  ],
+  "checklist": [
+    "Define eligible request classes.",
+    "Version embeddings and source revisions.",
+    "Calibrate thresholds by intent.",
+    "Test negation and near-match failures.",
+    "Invalidate on permission changes.",
+    "Measure false hits as a first-class metric."
+  ],
+  "related": [
+    21,
+    34,
+    63,
+    68,
+    96,
+    99
+  ],
+  "keywords": [
+    "semantic cache",
+    "answer equivalence",
+    "cache invalidation",
+    "similarity threshold"
+  ],
+  "references": [
+    {
+      "title": "Redis: Semantic cache architecture",
+      "url": "https://redis.io/docs/latest/develop/use-cases/semantic-cache/"
+    }
+  ]
+}

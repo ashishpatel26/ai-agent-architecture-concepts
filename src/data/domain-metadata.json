@@ -1,0 +1,82 @@
+[
+  {
+    "id": 0,
+    "slug": "agentic-frameworks",
+    "short": "Agentic systems",
+    "title": "Agentic Frameworks & Coordination",
+    "description": "From a single decision to a coordinated team. Design how agents plan, delegate, remember, and act.",
+    "color": "teal",
+    "icon": "network",
+    "range": "01–20",
+    "question": "How should intelligence work together?",
+    "principles": [
+      "Give every agent a clear task contract.",
+      "Keep orchestration observable and bounded.",
+      "Prefer predictable workflows until autonomy adds value."
+    ]
+  },
+  {
+    "id": 1,
+    "slug": "security-governance",
+    "short": "Security & governance",
+    "title": "Enterprise-Grade Security & Governance",
+    "description": "Build permission boundaries, protect enterprise knowledge, and make every action accountable.",
+    "color": "violet",
+    "icon": "shield",
+    "range": "21–40",
+    "question": "What is this agent allowed to do?",
+    "principles": [
+      "Enforce authorization outside the model.",
+      "Treat retrieved text and tool output as untrusted inputs.",
+      "Keep evidence for every consequential action."
+    ]
+  },
+  {
+    "id": 2,
+    "slug": "resilience-reliability",
+    "short": "Resilience & reliability",
+    "title": "Resilience, Reliability & Failure Handling",
+    "description": "Make failure a designed part of the system. Recover work safely and keep useful service available.",
+    "color": "amber",
+    "icon": "activity",
+    "range": "41–60",
+    "question": "What happens when a dependency fails?",
+    "principles": [
+      "Bound work with deadlines and budgets.",
+      "Separate transient failures from permanent errors.",
+      "Make recovery safe to repeat."
+    ]
+  },
+  {
+    "id": 3,
+    "slug": "rag-data-architecture",
+    "short": "RAG & data architecture",
+    "title": "Advanced RAG & Data Architecture",
+    "description": "Connect agents to relevant, current, authorized knowledge. Design retrieval you can evaluate.",
+    "color": "blue",
+    "icon": "database",
+    "range": "61–80",
+    "question": "Which evidence should the model trust?",
+    "principles": [
+      "Evaluate retrieval separately from generation.",
+      "Preserve source permissions and provenance.",
+      "Treat freshness and context selection as design decisions."
+    ]
+  },
+  {
+    "id": 4,
+    "slug": "model-optimization-infrastructure",
+    "short": "Models & infrastructure",
+    "title": "Model Optimization, Deployment & Infrastructure",
+    "description": "Balance quality, latency, capacity, and cost. Turn model capabilities into dependable services.",
+    "color": "rose",
+    "icon": "cpu",
+    "range": "81–100",
+    "question": "How does the system behave at scale?",
+    "principles": [
+      "Measure quality before optimizing serving cost.",
+      "Test tail latency with representative traffic.",
+      "Version models, prompts, and evaluation evidence together."
+    ]
+  }
+]

@@ -1,0 +1,174 @@
+{
+  "id": 86,
+  "title": "Streaming LLM Responses",
+  "slug": "streaming-llm-responses",
+  "category": 4,
+  "summary": "Deliver incremental model output with explicit completion, cancellation, validation, and reconnect semantics rather than treating chunks as a finished answer.",
+  "overview": [
+    "Streaming sends generated output incrementally, often through server-sent events or a similar transport. It improves perceived responsiveness by exposing useful progress before generation completes, but it does not necessarily reduce total generation time. Time to first token, inter-token delay, and time to a complete usable answer are separate measurements.",
+    "A stream is a protocol with intermediate and terminal states. Text fragments, tool-call arguments, usage information, errors, and completion events may arrive differently across providers. The application must buffer incomplete structured data, propagate cancellation, and decide which content is safe to display before full validation. Once text is shown, later validation cannot make the earlier disclosure disappear."
+  ],
+  "production": {
+    "poc": "A prototype renders chunks while distinguishing an in-progress answer from a completed one.",
+    "production": "Production defines event schemas, terminal states, proxy buffering behavior, cancellation, and safe handling of partial tool calls.",
+    "scale": "Enterprise scale measures active connections, slow consumers, reconnect behavior, and moderation or validation policies for incremental content."
+  },
+  "components": [
+    {
+      "name": "Provider stream adapter",
+      "role": "Normalizes provider-specific events into a stable application protocol."
+    },
+    {
+      "name": "Validation buffer",
+      "role": "Holds incomplete structured or policy-sensitive content until release conditions pass."
+    },
+    {
+      "name": "Streaming gateway",
+      "role": "Forwards events with bounded buffering and backpressure."
+    },
+    {
+      "name": "Client state machine",
+      "role": "Tracks connecting, generating, completed, interrupted, and cancelled states."
+    },
+    {
+      "name": "Cancellation controller",
+      "role": "Stops downstream generation and releases resources when work is abandoned."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Open the response channel",
+      "description": "Authenticate and send an explicit start event with request identity."
+    },
+    {
+      "title": "Normalize incoming events",
+      "description": "Separate text, tool-call fragments, status, usage, and terminal events."
+    },
+    {
+      "title": "Apply release policy",
+      "description": "Buffer content that requires complete validation and emit only eligible fragments."
+    },
+    {
+      "title": "Handle backpressure",
+      "description": "Bound queued bytes and disconnect or slow production when the consumer cannot keep up."
+    },
+    {
+      "title": "Commit completion",
+      "description": "Mark the answer complete only after the terminal event and required validation pass."
+    },
+    {
+      "title": "Cancel or recover",
+      "description": "Propagate disconnects and present interrupted output honestly; restart only under a defined replay policy."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Streaming with an explicit terminal state",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant P as Model provider\n participant G as Stream gateway\n participant V as Validation buffer\n participant C as Client\n P-->>G: Output event\n G->>V: Normalize and validate fragment\n V-->>C: Eligible partial content\n P-->>G: Terminal completion event\n G-->>C: Complete answer state\n C->>G: Cancel if abandoned\n G->>P: Cancel generation",
+      "caption": "Partial content remains provisional until completion and any required validation have succeeded."
+    },
+    {
+      "title": "Client-visible stream states",
+      "type": "state",
+      "code": "stateDiagram-v2\n [*] --> Connecting\n Connecting --> Generating: Start event\n Generating --> Complete: Validated terminal event\n Generating --> Interrupted: Transport loss or provider error\n Generating --> Cancelled: User stops request\n Interrupted --> Connecting: Explicit restart permitted\n Complete --> [*]\n Cancelled --> [*]",
+      "caption": "A transport interruption never becomes completion merely because some text is already visible."
+    }
+  ],
+  "useCase": {
+    "industry": "Customer support",
+    "title": "Streaming a troubleshooting explanation",
+    "situation": "A broadband support assistant explains diagnostic steps while retrieving line-test results.",
+    "problem": "Users perceive long silence as failure and resubmit the same question.",
+    "requirement": "Show progress promptly while avoiding premature claims about the final diagnosis.",
+    "architecture": "The gateway streams safe explanatory text but buffers structured diagnostic results until validated.",
+    "runtime": [
+      "The client shows a generating state and receives the explanation incrementally.",
+      "A validated line-test result updates the answer, followed by an explicit completion event."
+    ],
+    "failure": "If the connection drops, the client labels the visible answer interrupted and does not infer that troubleshooting completed.",
+    "impact": "Measure first useful content, completion time, abandoned compute, and interrupted-stream rate; first-token speed alone can reward empty filler."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Immediate text release",
+      "benefit": "Improves perceived responsiveness.",
+      "cost": "Limits the ability to retract unsafe or incorrect content."
+    },
+    {
+      "decision": "Validation buffering",
+      "benefit": "Protects structured or sensitive output.",
+      "cost": "Delays visible content and adds memory use."
+    },
+    {
+      "decision": "Long-lived connections",
+      "benefit": "Support smooth incremental delivery.",
+      "cost": "Require connection capacity and slow-client handling."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Proxy buffers the stream",
+      "detection": "Clients receive all chunks only at the end.",
+      "recovery": "Test the deployed transport path and configure buffering appropriately."
+    },
+    {
+      "scenario": "Partial tool JSON executes",
+      "detection": "An incomplete argument stream triggers a tool call.",
+      "recovery": "Wait for complete validated tool-call data before dispatch."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Treating socket closure as success",
+      "fix": "Require an explicit terminal completion state."
+    },
+    {
+      "mistake": "Ignoring browser disconnects",
+      "fix": "Propagate cancellation to the provider and child tasks."
+    },
+    {
+      "mistake": "Assuming a later filter can undo disclosure",
+      "fix": "Choose a release policy before emitting content."
+    }
+  ],
+  "whenToUse": [
+    "Use for interactive long-form generation.",
+    "Use when users benefit from meaningful incremental progress.",
+    "Use with clients that represent provisional and terminal states."
+  ],
+  "whenNotToUse": [
+    "Avoid immediate release for output requiring whole-message approval.",
+    "Do not stream partial structured data into executing consumers.",
+    "Avoid streaming if infrastructure cannot support bounded connections."
+  ],
+  "checklist": [
+    "Define a stable event schema.",
+    "Represent completion and interruption separately.",
+    "Validate tool calls before execution.",
+    "Test proxy buffering and slow clients.",
+    "Propagate cancellation end to end.",
+    "Measure first useful content and total completion time."
+  ],
+  "related": [
+    16,
+    49,
+    54,
+    55,
+    88,
+    97
+  ],
+  "keywords": [
+    "streaming",
+    "SSE",
+    "backpressure",
+    "terminal event",
+    "cancellation"
+  ],
+  "references": [
+    {
+      "title": "WHATWG: Server-sent events",
+      "url": "https://html.spec.whatwg.org/multipage/server-sent-events.html"
+    }
+  ]
+}

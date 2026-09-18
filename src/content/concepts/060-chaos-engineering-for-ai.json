@@ -1,0 +1,175 @@
+{
+  "id": 60,
+  "title": "Chaos Engineering for AI",
+  "slug": "chaos-engineering-for-ai",
+  "category": 2,
+  "summary": "Test explicit resilience hypotheses by injecting controlled infrastructure and AI-specific faults, then measuring whether workflow invariants survive.",
+  "overview": [
+    "Chaos engineering evaluates system behavior under deliberately introduced faults. For AI agents, faults include slow model responses, malformed tool output, stale retrieval, dropped streaming connections, duplicate events, and process termination between an external effect and its recorded receipt. The experiment tests an architectural claim, not simply whether the service can be made to fail.",
+    "A useful experiment names a steady-state measure, a fault, an expected containment boundary, and an automatic stop condition. Begin with deterministic fixtures and isolated environments; expand exposure only after observability and recovery are credible. Testing hallucination handling requires labeled semantic perturbations, not random text presented as a realistic failure model."
+  ],
+  "production": {
+    "poc": "A prototype can inject a deterministic timeout into one tool and verify a visible, bounded failure response.",
+    "production": "Production-readiness testing combines seeded replay, contract violations, crash injection, and assertions about duplicate effects and data boundaries.",
+    "scale": "Enterprise programs schedule controlled exercises, limit affected tenants, rehearse rollback, and convert every discovered weakness into a repeatable regression scenario."
+  },
+  "components": [
+    {
+      "name": "Experiment controller",
+      "role": "Selects scope, fault duration, eligible traffic, and emergency stop conditions."
+    },
+    {
+      "name": "Fault injector",
+      "role": "Introduces transport, process, dependency, or semantic faults at known boundaries."
+    },
+    {
+      "name": "Steady-state monitor",
+      "role": "Measures user-visible completion, latency, queue growth, and business invariants."
+    },
+    {
+      "name": "Replay fixtures",
+      "role": "Provide reproducible tasks with expected evidence and allowed outcomes."
+    },
+    {
+      "name": "Recovery observer",
+      "role": "Verifies that the system returns to acceptable operation after injection stops."
+    }
+  ],
+  "flow": [
+    {
+      "title": "State the hypothesis",
+      "description": "Specify which workflow should remain available or recoverable under one concrete fault."
+    },
+    {
+      "title": "Establish baseline",
+      "description": "Run representative tasks and confirm telemetry can distinguish normal variability from failure."
+    },
+    {
+      "title": "Constrain exposure",
+      "description": "Select an isolated test tenant or small approved traffic slice and configure abort thresholds."
+    },
+    {
+      "title": "Inject the fault",
+      "description": "Apply the failure at a documented point with an experiment identifier in traces."
+    },
+    {
+      "title": "Evaluate invariants",
+      "description": "Check duplicate actions, missing evidence, deadline behavior, and recovery status alongside availability."
+    },
+    {
+      "title": "Stop and learn",
+      "description": "Remove the fault, verify recovery, and preserve the failing case as a regression test."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "A bounded resilience experiment",
+      "type": "flowchart",
+      "code": "flowchart TD\n H[\"Hypothesis and stop conditions\"] --> B[\"Baseline task replay\"]\n B --> I[\"Inject duplicate delivery\"]\n I --> W[\"Agent workflow\"]\n W --> L[\"Effect ledger\"]\n L --> V[\"Assert one business effect\"]\n V --> R[\"Remove fault and verify recovery\"]\n W --> S[\"Abort on unsafe invariant\"]",
+      "caption": "Business invariants such as one external effect matter even when the request eventually returns successfully."
+    }
+  ],
+  "useCase": {
+    "industry": "Travel operations",
+    "title": "Testing rebooking recovery before a disruption",
+    "situation": "A travel-service agent proposes rebooking options and reserves approved alternatives.",
+    "problem": "A timeout after reservation can trigger a duplicate booking during retry.",
+    "requirement": "Demonstrate that recovery reconciles the original reservation before issuing another command.",
+    "architecture": "A test supplier adapter creates a reservation but suppresses its response; the agent uses an effect ledger and stable booking key.",
+    "runtime": [
+      "The experiment injects the response loss for a synthetic traveler.",
+      "The recovery worker queries the original booking key and attaches its existing receipt."
+    ],
+    "failure": "If two bookings appear, the experiment stops, releases test reservations, and records the exact event sequence.",
+    "impact": "Measure invariant violations, detection time, and recovery duration; passing one experiment supports only the tested fault and workload conditions."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Deterministic fault replay",
+      "benefit": "Makes failures reproducible.",
+      "cost": "May miss interactions present only in live traffic."
+    },
+    {
+      "decision": "Production experiments",
+      "benefit": "Reveal real dependency and capacity behavior.",
+      "cost": "Require tight scope, stop controls, and operational ownership."
+    },
+    {
+      "decision": "Semantic corruption tests",
+      "benefit": "Exercise evidence and validation boundaries.",
+      "cost": "Need carefully labeled expected outcomes to avoid subjective scoring."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Abort mechanism shares failed dependency",
+      "detection": "The experiment cannot stop when the tested service fails.",
+      "recovery": "Keep an independent control path and rehearse emergency shutdown."
+    },
+    {
+      "scenario": "Fault removal leaves backlog",
+      "detection": "Service remains degraded after the injector stops.",
+      "recovery": "Drain bounded queues and verify recovery before ending the exercise."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Injecting failures without a hypothesis",
+      "fix": "Define measurable expected behavior first."
+    },
+    {
+      "mistake": "Testing only HTTP errors",
+      "fix": "Include duplicate events, malformed content, and ambiguous side effects."
+    },
+    {
+      "mistake": "Declaring success from eventual response",
+      "fix": "Assert business invariants and recovery time explicitly."
+    }
+  ],
+  "whenToUse": [
+    "Use before relying on automatic recovery controls.",
+    "Use after changes to retry, failover, or persistence behavior.",
+    "Use for workflows with costly external side effects."
+  ],
+  "whenNotToUse": [
+    "Avoid uncontrolled experiments with real irreversible effects.",
+    "Do not start with broad production exposure and weak telemetry.",
+    "Do not equate one successful drill with universal resilience."
+  ],
+  "checklist": [
+    "Write a falsifiable resilience hypothesis.",
+    "Define safe synthetic identities and data.",
+    "Set independent abort controls.",
+    "Tag traces with experiment identifiers.",
+    "Assert effect and evidence invariants.",
+    "Turn discovered failures into repeatable tests."
+  ],
+  "related": [
+    35,
+    41,
+    49,
+    51,
+    52,
+    59
+  ],
+  "keywords": [
+    "chaos engineering",
+    "fault injection",
+    "steady state",
+    "recovery drill"
+  ],
+  "references": [
+    {
+      "title": "AWS Builders Library: Timeouts, retries and backoff with jitter",
+      "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+    },
+    {
+      "title": "AWS Builders Library: Making retries safe with idempotent APIs",
+      "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+    },
+    {
+      "title": "Kubernetes: Liveness, readiness and startup probes",
+      "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/"
+    }
+  ]
+}

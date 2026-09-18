@@ -1,0 +1,171 @@
+{
+  "id": 73,
+  "title": "Cross-Lingual Retrieval",
+  "slug": "cross-lingual-retrieval",
+  "category": 3,
+  "summary": "Retrieve evidence across languages using evaluated multilingual representations or translation paths while preserving source meaning and access scope.",
+  "overview": [
+    "Cross-lingual retrieval lets a query in one language find relevant documents written in another. A multilingual embedding model can place supported languages in a shared space; an alternative translates the query or documents before retrieval. These strategies differ in cost, coverage, and vulnerability to mistranslated terminology.",
+    "Language support is not binary. Quality varies by language pair, script, domain, and document style. Product names, legal terms, units, and abbreviations often require exact preservation. Retrieval, reranking, answer generation, and citation rendering must all be evaluated across the languages actually used, not inferred from an English benchmark."
+  ],
+  "production": {
+    "poc": "A prototype builds a bilingual evaluation set with native-reviewed relevance labels.",
+    "production": "Production records source language, preserves original text, and uses terminology dictionaries where translation is required.",
+    "scale": "Enterprise scale monitors low-resource language slices, model-version drift, regional permissions, and translation costs separately from generation costs."
+  },
+  "components": [
+    {
+      "name": "Language detector",
+      "role": "Identifies likely languages and mixed-language inputs without forcing uncertain classification."
+    },
+    {
+      "name": "Multilingual encoder",
+      "role": "Embeds queries and documents in a compatible evaluated representation."
+    },
+    {
+      "name": "Translation adapter",
+      "role": "Provides an optional controlled path with terminology and identity preservation."
+    },
+    {
+      "name": "Cross-lingual reranker",
+      "role": "Orders retrieved evidence using supported language-pair evaluation."
+    },
+    {
+      "name": "Citation presenter",
+      "role": "Links original sources and labels translated excerpts clearly."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Identify language needs",
+      "description": "Determine query language, desired answer language, and permitted source languages."
+    },
+    {
+      "title": "Preserve key terms",
+      "description": "Extract identifiers, numbers, and domain terms that must survive transformation."
+    },
+    {
+      "title": "Choose retrieval path",
+      "description": "Use shared embeddings, translated queries, or a measured combination."
+    },
+    {
+      "title": "Retrieve under scope",
+      "description": "Apply the same authorization and temporal constraints regardless of language."
+    },
+    {
+      "title": "Validate relevance",
+      "description": "Rerank with a compatible model and verify critical terminology in original sources."
+    },
+    {
+      "title": "Answer with provenance",
+      "description": "Respond in the requested language while retaining original citations and marking translations."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Two cross-lingual retrieval paths",
+      "type": "flowchart",
+      "code": "flowchart LR\n Q[\"Spanish service question\"] --> M[\"Multilingual query encoder\"]\n Q --> T[\"Controlled query translation\"]\n M --> V[\"Multilingual passage index\"]\n T --> L[\"Source-language lexical search\"]\n V --> F[\"Fuse and rerank\"]\n L --> F\n F --> A[\"Spanish answer with original citations\"]",
+      "caption": "The answer language can differ from the evidence language without losing source provenance."
+    }
+  ],
+  "useCase": {
+    "industry": "Automotive",
+    "title": "Serving technicians across regional manuals",
+    "situation": "A vehicle manufacturer supports technicians who ask in Spanish while some engineering bulletins are published first in German.",
+    "problem": "English-centric retrieval misses relevant bulletins or mistranslates component identifiers.",
+    "requirement": "Find authoritative cross-language evidence and preserve exact part numbers and applicability.",
+    "architecture": "A multilingual index combines original bulletins with a controlled terminology dictionary and language-tested reranking.",
+    "runtime": [
+      "A Spanish query retains its component code while entering the multilingual retriever.",
+      "The answer cites the German bulletin and labels its translated explanation."
+    ],
+    "failure": "If a critical technical term remains ambiguous, the assistant shows the source phrase and routes the interpretation for specialist review.",
+    "impact": "Measure retrieval recall and terminology accuracy per language pair; a single multilingual average can conceal an unusable regional experience."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Shared multilingual embeddings",
+      "benefit": "Avoid translation on every lookup.",
+      "cost": "May perform unevenly across languages and domains."
+    },
+    {
+      "decision": "Query translation",
+      "benefit": "Can reuse strong source-language retrieval.",
+      "cost": "Adds latency and semantic-drift risk."
+    },
+    {
+      "decision": "Original-source citations",
+      "benefit": "Preserve auditability.",
+      "cost": "Users may need translated excerpts to interpret them."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Identifier changes during translation",
+      "detection": "The retrieved component differs from the requested code.",
+      "recovery": "Protect identifiers and compare them before search."
+    },
+    {
+      "scenario": "Reranker lacks language support",
+      "detection": "Relevant cross-language candidates fall in rank.",
+      "recovery": "Use a validated multilingual scorer or a tested fallback."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Assuming all languages have equal quality",
+      "fix": "Evaluate actual language pairs and domain slices."
+    },
+    {
+      "mistake": "Replacing originals with translations",
+      "fix": "Store originals and link translations by version."
+    },
+    {
+      "mistake": "Dropping access filters on translated search",
+      "fix": "Carry the same trusted scope through every path."
+    }
+  ],
+  "whenToUse": [
+    "Use for multilingual enterprises with shared knowledge.",
+    "Use when queries and authoritative documents differ in language.",
+    "Use when regional terminology has been evaluated."
+  ],
+  "whenNotToUse": [
+    "Avoid unsupported languages without an explicit fallback.",
+    "Do not translate exact identifiers casually.",
+    "Avoid relying on machine translation alone for ambiguous critical instructions."
+  ],
+  "checklist": [
+    "Build language-pair evaluation sets.",
+    "Preserve original source text.",
+    "Protect identifiers and units.",
+    "Version terminology dictionaries.",
+    "Test reranker language coverage.",
+    "Label translated excerpts and retain citations."
+  ],
+  "related": [
+    21,
+    62,
+    65,
+    66,
+    79,
+    96
+  ],
+  "keywords": [
+    "cross-lingual retrieval",
+    "multilingual embeddings",
+    "translation",
+    "terminology"
+  ],
+  "references": [
+    {
+      "title": "Sentence Transformers documentation",
+      "url": "https://sbert.net/"
+    },
+    {
+      "title": "Sentence Transformers: Retrieve and re-rank",
+      "url": "https://www.sbert.net/examples/sentence_transformer/applications/retrieve_rerank/README.html"
+    }
+  ]
+}

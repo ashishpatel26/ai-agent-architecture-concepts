@@ -1,0 +1,2966 @@
+{
+  "concepts": [
+    {
+      "id": 1,
+      "title": "Multi-Agent Orchestration",
+      "slug": "multi-agent-orchestration",
+      "category": 0,
+      "summary": "Coordinate specialist agents through explicit ownership, shared contracts, and bounded execution so a business task produces one accountable result.",
+      "keywords": [
+        "coordination",
+        "specialist agents",
+        "fan-out",
+        "task ledger",
+        "aggregation"
+      ],
+      "componentNames": [
+        "Coordinator",
+        "Specialist workers",
+        "Task ledger",
+        "Result validator",
+        "Policy gateway"
+      ],
+      "industry": "Insurance",
+      "words": 794,
+      "diagrams": 2
+    },
+    {
+      "id": 2,
+      "title": "Directed Acyclic Graphs (DAGs)",
+      "slug": "directed-acyclic-graphs-dags",
+      "category": 0,
+      "summary": "Represent bounded agent work as explicit dependencies, enabling reproducible scheduling, parallel branches, and precise restart boundaries.",
+      "keywords": [
+        "DAG",
+        "dependency graph",
+        "critical path",
+        "join policy",
+        "artifact cache"
+      ],
+      "componentNames": [
+        "Graph definition",
+        "Scheduler",
+        "Artifact store",
+        "Execution ledger",
+        "Join policy"
+      ],
+      "industry": "Procurement",
+      "words": 679,
+      "diagrams": 1
+    },
+    {
+      "id": 3,
+      "title": "Agentic State Machines",
+      "slug": "agentic-state-machines",
+      "category": 0,
+      "summary": "Make agent progress an explicit set of states, guarded transitions, and durable events so every action has a permitted execution context.",
+      "keywords": [
+        "state machine",
+        "transition guard",
+        "workflow version",
+        "optimistic concurrency",
+        "lifecycle"
+      ],
+      "componentNames": [
+        "State definition",
+        "Transition service",
+        "Event inbox",
+        "Action dispatcher",
+        "State inspector"
+      ],
+      "industry": "Enterprise operations",
+      "words": 761,
+      "diagrams": 2
+    },
+    {
+      "id": 4,
+      "title": "Hierarchical Orchestration",
+      "slug": "hierarchical-orchestration",
+      "category": 0,
+      "summary": "Delegate through supervisory layers that preserve domain ownership, limit context, and return evidence-rich results to a single accountable decision maker.",
+      "keywords": [
+        "supervisor",
+        "delegation",
+        "hierarchy",
+        "budget inheritance",
+        "domain ownership"
+      ],
+      "componentNames": [
+        "Root supervisor",
+        "Domain supervisors",
+        "Leaf workers",
+        "Delegation registry",
+        "Evidence aggregator"
+      ],
+      "industry": "Supply chain",
+      "words": 668,
+      "diagrams": 1
+    },
+    {
+      "id": 5,
+      "title": "Dynamic Routing",
+      "slug": "dynamic-routing",
+      "category": 0,
+      "summary": "Select the appropriate agent or workflow from request intent, capability, authorization, and uncertainty while keeping routing decisions observable and reversible.",
+      "keywords": [
+        "intent routing",
+        "capability registry",
+        "classification",
+        "ambiguity",
+        "eligibility"
+      ],
+      "componentNames": [
+        "Request normalizer",
+        "Eligibility filter",
+        "Intent router",
+        "Capability registry",
+        "Outcome feedback"
+      ],
+      "industry": "Telecommunications",
+      "words": 699,
+      "diagrams": 1
+    },
+    {
+      "id": 6,
+      "title": "Asynchronous Agent Execution",
+      "slug": "asynchronous-agent-execution",
+      "category": 0,
+      "summary": "Move long-running agent work into durable jobs with explicit acceptance, progress, cancellation, and completion semantics.",
+      "keywords": [
+        "asynchronous execution",
+        "job queue",
+        "operation resource",
+        "worker lease",
+        "backpressure"
+      ],
+      "componentNames": [
+        "Submission API",
+        "Job queue",
+        "Worker pool",
+        "Operation store",
+        "Notification adapter"
+      ],
+      "industry": "Energy",
+      "words": 713,
+      "diagrams": 1
+    },
+    {
+      "id": 7,
+      "title": "Agent Inter-communication (A2A)",
+      "slug": "agent-inter-communication-a2a",
+      "category": 0,
+      "summary": "Interoperate across independently operated agents through explicit capability discovery, task lifecycle contracts, authenticated messages, and verifiable artifacts.",
+      "keywords": [
+        "A2A",
+        "Agent Card",
+        "interoperability",
+        "remote tasks",
+        "delegated authority"
+      ],
+      "componentNames": [
+        "Agent directory",
+        "Protocol adapter",
+        "Delegation policy",
+        "Remote task tracker",
+        "Artifact verifier"
+      ],
+      "industry": "Logistics",
+      "words": 794,
+      "diagrams": 2
+    },
+    {
+      "id": 8,
+      "title": "Plan-and-Execute Pattern",
+      "slug": "plan-and-execute-pattern",
+      "category": 0,
+      "summary": "Separate deliberate task planning from controlled execution, validating dependencies and revising only the parts invalidated by new evidence.",
+      "keywords": [
+        "planner",
+        "executor",
+        "replanning",
+        "task plan",
+        "acceptance criteria"
+      ],
+      "componentNames": [
+        "Planner",
+        "Plan validator",
+        "Executor",
+        "Observation ledger",
+        "Replanner"
+      ],
+      "industry": "Manufacturing",
+      "words": 698,
+      "diagrams": 1
+    },
+    {
+      "id": 9,
+      "title": "ReAct Framework (Reasoning + Acting)",
+      "slug": "react-framework-reasoning-acting",
+      "category": 0,
+      "summary": "Alternate bounded action proposals with tool observations, allowing an agent to adapt its next step while application code controls authority and termination.",
+      "keywords": [
+        "ReAct",
+        "action observation loop",
+        "tool selection",
+        "trajectory",
+        "bounded autonomy"
+      ],
+      "componentNames": [
+        "Action proposer",
+        "Tool gateway",
+        "Observation store",
+        "Loop controller",
+        "Final validator"
+      ],
+      "industry": "Telecommunications",
+      "words": 712,
+      "diagrams": 1
+    },
+    {
+      "id": 10,
+      "title": "Reflection Loops",
+      "slug": "reflection-loops",
+      "category": 0,
+      "summary": "Use explicit critique and revision cycles to improve a draft against measurable criteria, while avoiding unsupported confidence from repeated self-assessment.",
+      "keywords": [
+        "reflection",
+        "critique",
+        "revision",
+        "rubric",
+        "regression checks"
+      ],
+      "componentNames": [
+        "Draft producer",
+        "Rubric evaluator",
+        "Revision worker",
+        "Comparison gate",
+        "Revision ledger"
+      ],
+      "industry": "Healthcare administration",
+      "words": 709,
+      "diagrams": 1
+    },
+    {
+      "id": 11,
+      "title": "Tool Invocation & Function Calling",
+      "slug": "tool-invocation-function-calling",
+      "category": 0,
+      "summary": "Convert model-proposed operations into validated, authorized tool calls with stable schemas and explicit treatment of side effects.",
+      "keywords": [
+        "function calling",
+        "tool schema",
+        "capability gateway",
+        "argument validation",
+        "side effects"
+      ],
+      "componentNames": [
+        "Tool registry",
+        "Invocation validator",
+        "Authorization gateway",
+        "Execution adapter",
+        "Result normalizer"
+      ],
+      "industry": "Retail",
+      "words": 687,
+      "diagrams": 1
+    },
+    {
+      "id": 12,
+      "title": "State Persistence",
+      "slug": "state-persistence",
+      "category": 0,
+      "summary": "Persist the minimum authoritative execution state needed to recover an agent run, maintain concurrency safety, and explain completed work.",
+      "keywords": [
+        "checkpoint",
+        "durable state",
+        "recovery",
+        "schema migration",
+        "execution identity"
+      ],
+      "componentNames": [
+        "Checkpoint store",
+        "Artifact repository",
+        "Execution identity",
+        "Recovery coordinator",
+        "Retention controller"
+      ],
+      "industry": "Banking operations",
+      "words": 772,
+      "diagrams": 2
+    },
+    {
+      "id": 13,
+      "title": "Sub-Goal Generation",
+      "slug": "sub-goal-generation",
+      "category": 0,
+      "summary": "Decompose broad objectives into bounded sub-goals with explicit dependencies, measurable completion criteria, and a controlled expansion budget.",
+      "keywords": [
+        "sub-goals",
+        "goal decomposition",
+        "coverage",
+        "goal graph",
+        "completion criteria"
+      ],
+      "componentNames": [
+        "Goal decomposer",
+        "Capability matcher",
+        "Goal graph",
+        "Completion evaluator",
+        "Expansion controller"
+      ],
+      "industry": "Food manufacturing",
+      "words": 705,
+      "diagrams": 1
+    },
+    {
+      "id": 14,
+      "title": "Token-Aware Routing",
+      "slug": "token-aware-routing",
+      "category": 0,
+      "summary": "Route work according to estimated context and output demand while preserving capability, evidence quality, and a hard task-level token budget.",
+      "keywords": [
+        "token budget",
+        "context capacity",
+        "tokenizer",
+        "routing cost",
+        "usage accounting"
+      ],
+      "componentNames": [
+        "Prompt estimator",
+        "Capability filter",
+        "Budget allocator",
+        "Routing policy",
+        "Usage reconciler"
+      ],
+      "industry": "Insurance",
+      "words": 696,
+      "diagrams": 1
+    },
+    {
+      "id": 15,
+      "title": "Event-Driven Agent Triggers",
+      "slug": "event-driven-agent-triggers",
+      "category": 0,
+      "summary": "Start bounded agent work from meaningful business events using durable publication, deduplicated consumption, and explicit event-to-task ownership.",
+      "keywords": [
+        "events",
+        "CloudEvents",
+        "transactional outbox",
+        "deduplication",
+        "trigger policy"
+      ],
+      "componentNames": [
+        "Event producer",
+        "Event bus",
+        "Trigger evaluator",
+        "Task launcher",
+        "Loop and rate controller"
+      ],
+      "industry": "Logistics",
+      "words": 694,
+      "diagrams": 1
+    },
+    {
+      "id": 16,
+      "title": "Task Interruption & Resumption",
+      "slug": "task-interruption-resumption",
+      "category": 0,
+      "summary": "Pause a durable execution at a defined boundary and resume it with validated input, current authority, and reconciled external effects.",
+      "keywords": [
+        "interrupt",
+        "resume",
+        "durable wait",
+        "stale approval",
+        "replay boundary"
+      ],
+      "componentNames": [
+        "Interrupt controller",
+        "Checkpoint store",
+        "Resume gateway",
+        "Reconciliation service",
+        "Expiry scheduler"
+      ],
+      "industry": "Construction",
+      "words": 793,
+      "diagrams": 2
+    },
+    {
+      "id": 17,
+      "title": "Agent Lifespan Management",
+      "slug": "agent-lifespan-management",
+      "category": 0,
+      "summary": "Control how agent instances are created, leased, reused, drained, and retired so long-running work does not accumulate abandoned resources or authority.",
+      "keywords": [
+        "agent lifecycle",
+        "lease",
+        "draining",
+        "orphan cleanup",
+        "resource ownership"
+      ],
+      "componentNames": [
+        "Instance manager",
+        "Lease service",
+        "Resource registry",
+        "Drain controller",
+        "Reaper"
+      ],
+      "industry": "Enterprise SaaS",
+      "words": 687,
+      "diagrams": 1
+    },
+    {
+      "id": 18,
+      "title": "Semantic Condition Checking",
+      "slug": "semantic-condition-checking",
+      "category": 0,
+      "summary": "Evaluate meaning-dependent workflow conditions through evidence-backed classification while keeping hard business predicates deterministic and reviewable.",
+      "keywords": [
+        "semantic condition",
+        "classification",
+        "abstention",
+        "evidence spans",
+        "decision rubric"
+      ],
+      "componentNames": [
+        "Condition registry",
+        "Evidence selector",
+        "Semantic evaluator",
+        "Deterministic gate",
+        "Review queue"
+      ],
+      "industry": "Insurance operations",
+      "words": 703,
+      "diagrams": 1
+    },
+    {
+      "id": 19,
+      "title": "Context Condensation",
+      "slug": "context-condensation",
+      "category": 0,
+      "summary": "Compress accumulated context into a versioned working summary that preserves commitments, evidence pointers, unresolved questions, and recovery-critical facts.",
+      "keywords": [
+        "context condensation",
+        "summary fidelity",
+        "protected state",
+        "compaction",
+        "evidence retrieval"
+      ],
+      "componentNames": [
+        "Context meter",
+        "Condensation worker",
+        "Protected-state store",
+        "Evidence index",
+        "Retention evaluator"
+      ],
+      "industry": "Enterprise support",
+      "words": 676,
+      "diagrams": 1
+    },
+    {
+      "id": 20,
+      "title": "Deterministic Output Stripping",
+      "slug": "deterministic-output-stripping",
+      "category": 0,
+      "summary": "Extract and validate an explicit public output contract so model responses cannot leak internal fields, malformed wrappers, or unintended executable content.",
+      "keywords": [
+        "output stripping",
+        "structured output",
+        "schema validation",
+        "allowlist",
+        "safe rendering"
+      ],
+      "componentNames": [
+        "Output contract",
+        "Strict parser",
+        "Field allowlist",
+        "Semantic validator",
+        "Renderer"
+      ],
+      "industry": "Financial operations",
+      "words": 714,
+      "diagrams": 1
+    },
+    {
+      "id": 21,
+      "title": "Authorization-Aware RAG",
+      "slug": "authorization-aware-rag",
+      "category": 1,
+      "summary": "Apply the requester’s current data entitlements throughout retrieval, reranking, generation, caching, and citation delivery.",
+      "keywords": [
+        "secure RAG",
+        "ACL filtering",
+        "entitlements",
+        "revocation",
+        "citation authorization"
+      ],
+      "componentNames": [
+        "Identity resolver",
+        "Policy service",
+        "Secure retriever",
+        "Metadata pipeline",
+        "Citation gateway"
+      ],
+      "industry": "Professional services",
+      "words": 728,
+      "diagrams": 2
+    },
+    {
+      "id": 22,
+      "title": "Role-Based Access Control (RBAC)",
+      "slug": "role-based-access-control-rbac",
+      "category": 1,
+      "summary": "Assign stable permissions to organizational roles and enforce those permissions at every agent tool and data boundary.",
+      "keywords": [
+        "RBAC",
+        "roles",
+        "permissions",
+        "separation of duties",
+        "delegated identity"
+      ],
+      "componentNames": [
+        "Identity provider",
+        "Role directory",
+        "Permission policy",
+        "Enforcement point",
+        "Access review record"
+      ],
+      "industry": "Accounts payable",
+      "words": 673,
+      "diagrams": 1
+    },
+    {
+      "id": 23,
+      "title": "Attribute-Based Access Control (ABAC)",
+      "slug": "attribute-based-access-control-abac",
+      "category": 1,
+      "summary": "Evaluate access from trusted subject, resource, action, and environment attributes when static roles cannot express the required business boundary.",
+      "keywords": [
+        "ABAC",
+        "policy decision point",
+        "attribute provenance",
+        "resource policy",
+        "access context"
+      ],
+      "componentNames": [
+        "Attribute authorities",
+        "Policy decision point",
+        "Policy enforcement point",
+        "Policy administration",
+        "Decision audit"
+      ],
+      "industry": "Aerospace manufacturing",
+      "words": 684,
+      "diagrams": 1
+    },
+    {
+      "id": 24,
+      "title": "Prompt Injection Mitigation",
+      "slug": "prompt-injection-mitigation",
+      "category": 1,
+      "summary": "Constrain untrusted instructions at data boundaries and prevent retrieved content from acquiring tool authority, secrets, or control over the agent workflow.",
+      "keywords": [
+        "prompt injection",
+        "trust boundary",
+        "indirect injection",
+        "egress control",
+        "least privilege"
+      ],
+      "componentNames": [
+        "Trust-aware prompt assembler",
+        "Capability gateway",
+        "Content detector",
+        "Egress controller",
+        "Adversarial evaluator"
+      ],
+      "industry": "Enterprise procurement",
+      "words": 773,
+      "diagrams": 2
+    },
+    {
+      "id": 25,
+      "title": "Data PII Masking",
+      "slug": "data-pii-masking",
+      "category": 1,
+      "summary": "Detect and transform personal data before model exposure while preserving task utility, protecting reidentification mappings, and measuring missed entities.",
+      "keywords": [
+        "PII",
+        "redaction",
+        "pseudonymization",
+        "tokenization",
+        "data minimization"
+      ],
+      "componentNames": [
+        "Data classifier",
+        "Entity detector",
+        "Transformation engine",
+        "Mapping vault",
+        "Coverage evaluator"
+      ],
+      "industry": "Insurance customer service",
+      "words": 698,
+      "diagrams": 1
+    },
+    {
+      "id": 26,
+      "title": "VPC Peering / Private Links",
+      "slug": "vpc-peering-private-links",
+      "category": 1,
+      "summary": "Connect agent workloads to private services through deliberately scoped network paths while retaining application authentication, encryption, and egress control.",
+      "keywords": [
+        "private endpoint",
+        "VPC peering",
+        "private DNS",
+        "egress",
+        "workload identity"
+      ],
+      "componentNames": [
+        "Agent network segment",
+        "Private endpoint or peering",
+        "Private DNS resolver",
+        "Workload identity",
+        "Network observability"
+      ],
+      "industry": "Healthcare technology",
+      "words": 685,
+      "diagrams": 1
+    },
+    {
+      "id": 27,
+      "title": "Responsible AI Governance (ISO/IEC 42001)",
+      "slug": "responsible-ai-governance-iso-iec-42001",
+      "category": 1,
+      "summary": "Translate responsible-AI commitments into an operating management system with named owners, risk decisions, evidence, and continuous improvement.",
+      "keywords": [
+        "ISO 42001",
+        "AI management system",
+        "risk ownership",
+        "governance",
+        "corrective action"
+      ],
+      "componentNames": [
+        "AI system inventory",
+        "Risk and impact register",
+        "Control implementation",
+        "Release governance",
+        "Monitoring and review"
+      ],
+      "industry": "Insurance",
+      "words": 696,
+      "diagrams": 1
+    },
+    {
+      "id": 28,
+      "title": "Deterministic Data Grounding",
+      "slug": "deterministic-data-grounding",
+      "category": 1,
+      "summary": "Bind generated claims to verified records and use deterministic computation for values that must be exact, current, and reproducible.",
+      "keywords": [
+        "grounding",
+        "typed facts",
+        "deterministic calculation",
+        "claim verification",
+        "source freshness"
+      ],
+      "componentNames": [
+        "Authoritative data adapter",
+        "Fact schema",
+        "Calculation service",
+        "Claim validator",
+        "Evidence renderer"
+      ],
+      "industry": "Energy retail",
+      "words": 661,
+      "diagrams": 1
+    },
+    {
+      "id": 29,
+      "title": "Output Jailbreaking Guardrails",
+      "slug": "output-jailbreaking-guardrails",
+      "category": 1,
+      "summary": "Apply an explicit output policy before publication and prevent unsafe model content from becoming executable instructions or unauthorized business actions.",
+      "keywords": [
+        "output guardrails",
+        "jailbreak defense",
+        "publication policy",
+        "streaming safety",
+        "moderation"
+      ],
+      "componentNames": [
+        "Output policy",
+        "Validation pipeline",
+        "Decision engine",
+        "Safe response adapter",
+        "Evaluation corpus"
+      ],
+      "industry": "Education technology",
+      "words": 660,
+      "diagrams": 1
+    },
+    {
+      "id": 30,
+      "title": "Non-Repudiation Logs",
+      "slug": "non-repudiation-logs",
+      "category": 1,
+      "summary": "Create attributable, tamper-evident records of agent decisions and actions while recognizing that evidence strength depends on identity, keys, and independent custody.",
+      "keywords": [
+        "audit integrity",
+        "non-repudiation",
+        "signed logs",
+        "key custody",
+        "evidence chain"
+      ],
+      "componentNames": [
+        "Audit event producer",
+        "Identity binding",
+        "Integrity service",
+        "Protected archive",
+        "Verification process"
+      ],
+      "industry": "Financial services",
+      "words": 688,
+      "diagrams": 1
+    },
+    {
+      "id": 31,
+      "title": "LLM Evaluation Frameworks (TruLens/Ragas)",
+      "slug": "llm-evaluation-frameworks-trulens-ragas",
+      "category": 1,
+      "summary": "Evaluate agent and RAG behavior with versioned datasets, component metrics, calibrated judges, and release criteria tied to actual task outcomes.",
+      "keywords": [
+        "evaluation",
+        "TruLens",
+        "Ragas",
+        "judge calibration",
+        "release gate"
+      ],
+      "componentNames": [
+        "Evaluation dataset",
+        "Execution recorder",
+        "Metric pipeline",
+        "Human calibration set",
+        "Release gate"
+      ],
+      "industry": "Enterprise SaaS",
+      "words": 662,
+      "diagrams": 1
+    },
+    {
+      "id": 32,
+      "title": "Model Bias Auditing",
+      "slug": "model-bias-auditing",
+      "category": 1,
+      "summary": "Measure whether model behavior and downstream decisions differ across relevant groups, investigate causes, and validate mitigations within the actual application context.",
+      "keywords": [
+        "bias audit",
+        "fairness",
+        "disaggregated metrics",
+        "intersectionality",
+        "evaluation uncertainty"
+      ],
+      "componentNames": [
+        "Audit scope",
+        "Governed evaluation data",
+        "Disaggregated metrics",
+        "Investigation workflow",
+        "Mitigation review"
+      ],
+      "industry": "Human resources technology",
+      "words": 690,
+      "diagrams": 1
+    },
+    {
+      "id": 33,
+      "title": "Token Rate Limiting",
+      "slug": "token-rate-limiting",
+      "category": 1,
+      "summary": "Enforce token-based admission and consumption budgets so individual requests and tenants cannot exhaust shared inference capacity or spend.",
+      "keywords": [
+        "token rate limit",
+        "admission control",
+        "quota reservation",
+        "fairness",
+        "usage reconciliation"
+      ],
+      "componentNames": [
+        "Usage estimator",
+        "Quota store",
+        "Admission controller",
+        "Consumption meter",
+        "Reconciler"
+      ],
+      "industry": "Enterprise SaaS",
+      "words": 685,
+      "diagrams": 1
+    },
+    {
+      "id": 34,
+      "title": "Tenant Isolation",
+      "slug": "tenant-isolation",
+      "category": 1,
+      "summary": "Prevent one tenant’s identity, data, state, tools, or resource consumption from crossing into another tenant’s execution boundary.",
+      "keywords": [
+        "tenant isolation",
+        "multitenancy",
+        "partitioning",
+        "cache scope",
+        "noisy neighbor"
+      ],
+      "componentNames": [
+        "Tenant identity resolver",
+        "Data partition layer",
+        "Execution scope",
+        "Cache and memory boundary",
+        "Resource governor"
+      ],
+      "industry": "Property management software",
+      "words": 730,
+      "diagrams": 2
+    },
+    {
+      "id": 35,
+      "title": "Adversarial Prompt Testing",
+      "slug": "adversarial-prompt-testing",
+      "category": 1,
+      "summary": "Continuously test adversarial inputs against the application’s actual trust boundaries, measuring unauthorized effects and preserving reproducible regression cases.",
+      "keywords": [
+        "adversarial testing",
+        "red teaming",
+        "prompt attack",
+        "regression corpus",
+        "trust boundary"
+      ],
+      "componentNames": [
+        "Threat model",
+        "Attack corpus",
+        "Isolated harness",
+        "Outcome detector",
+        "Regression triage"
+      ],
+      "industry": "Industrial procurement",
+      "words": 686,
+      "diagrams": 1
+    },
+    {
+      "id": 36,
+      "title": "Watermarking AI Outputs",
+      "slug": "watermarking-ai-outputs",
+      "category": 1,
+      "summary": "Attach or detect provenance signals in generated content while treating watermark evidence as limited, attack-sensitive, and distinct from proof of truth.",
+      "keywords": [
+        "watermark",
+        "provenance",
+        "C2PA",
+        "statistical detection",
+        "content credentials"
+      ],
+      "componentNames": [
+        "Marking service",
+        "Provenance record",
+        "Key management",
+        "Detection service",
+        "Transformation evaluator"
+      ],
+      "industry": "Media production",
+      "words": 683,
+      "diagrams": 1
+    },
+    {
+      "id": 37,
+      "title": "Zero-Data Retention (ZDR) Contracts",
+      "slug": "zero-data-retention-zdr-contracts",
+      "category": 1,
+      "summary": "Translate retention commitments into enforceable endpoint selection, feature restrictions, logging controls, and evidence that the deployed data path matches the agreement.",
+      "keywords": [
+        "ZDR",
+        "data retention",
+        "no training",
+        "service profile",
+        "data-flow inventory"
+      ],
+      "componentNames": [
+        "Data-flow inventory",
+        "Approved service profile",
+        "Inference gateway",
+        "Telemetry policy",
+        "Evidence monitor"
+      ],
+      "industry": "Legal operations",
+      "words": 703,
+      "diagrams": 1
+    },
+    {
+      "id": 38,
+      "title": "Data Lineage Tracking",
+      "slug": "data-lineage-tracking",
+      "category": 1,
+      "summary": "Track how source data becomes chunks, embeddings, prompts, model outputs, and decisions so changes and incidents can be traced to their affected artifacts.",
+      "keywords": [
+        "lineage",
+        "provenance",
+        "artifact version",
+        "impact analysis",
+        "OpenLineage"
+      ],
+      "componentNames": [
+        "Artifact identity",
+        "Transformation recorder",
+        "Lineage catalog",
+        "Generation evidence link",
+        "Change propagator"
+      ],
+      "industry": "Pharmaceutical manufacturing",
+      "words": 677,
+      "diagrams": 1
+    },
+    {
+      "id": 39,
+      "title": "Content Moderation API",
+      "slug": "content-moderation-api",
+      "category": 1,
+      "summary": "Integrate content classification as a versioned policy service with explicit thresholds, contextual handling, latency budgets, and review paths.",
+      "keywords": [
+        "moderation API",
+        "content policy",
+        "threshold calibration",
+        "review queue",
+        "appeals"
+      ],
+      "componentNames": [
+        "Content adapter",
+        "Moderation service",
+        "Policy mapper",
+        "Review workflow",
+        "Moderation telemetry"
+      ],
+      "industry": "Online marketplace",
+      "words": 680,
+      "diagrams": 1
+    },
+    {
+      "id": 40,
+      "title": "Explainable AI (XAI)",
+      "slug": "explainable-ai-xai",
+      "category": 1,
+      "summary": "Provide audience-appropriate explanations grounded in actual evidence, rules, and execution records without presenting generated rationales as faithful internal reasoning.",
+      "keywords": [
+        "XAI",
+        "explanation fidelity",
+        "decision evidence",
+        "transparency",
+        "contestability"
+      ],
+      "componentNames": [
+        "Decision evidence store",
+        "Explanation builder",
+        "Audience policy",
+        "Fidelity evaluator",
+        "Review interface"
+      ],
+      "industry": "Insurance operations",
+      "words": 702,
+      "diagrams": 1
+    },
+    {
+      "id": 41,
+      "title": "Idempotent Tool Execution",
+      "slug": "idempotent-tool-execution",
+      "category": 2,
+      "summary": "Make repeated attempts at one business operation converge on one recorded effect, even when agents, queues, or networks deliver the request more than once.",
+      "keywords": [
+        "idempotency",
+        "operation key",
+        "deduplication",
+        "request fingerprint",
+        "uncertain outcome"
+      ],
+      "componentNames": [
+        "Operation identity",
+        "Request fingerprint",
+        "Idempotency ledger",
+        "Tool adapter",
+        "Reconciler"
+      ],
+      "industry": "Retail fulfillment",
+      "words": 790,
+      "diagrams": 2
+    },
+    {
+      "id": 42,
+      "title": "Circuit Breakers (Resilience4j)",
+      "slug": "circuit-breakers-resilience4j",
+      "category": 2,
+      "summary": "Stop sending ordinary traffic to an unhealthy dependency, probe recovery deliberately, and protect the rest of the agent workflow from repeated failure.",
+      "keywords": [
+        "circuit breaker",
+        "Resilience4j",
+        "half-open",
+        "sliding window",
+        "failure containment"
+      ],
+      "componentNames": [
+        "Outcome classifier",
+        "Sliding-window recorder",
+        "Breaker state",
+        "Fallback handler",
+        "State telemetry"
+      ],
+      "industry": "Travel operations",
+      "words": 699,
+      "diagrams": 1
+    },
+    {
+      "id": 43,
+      "title": "Self-Correction Loops",
+      "slug": "self-correction-loops",
+      "category": 2,
+      "summary": "Repair specific validated defects in an agent’s work through bounded feedback, preserving accepted facts and preventing repeated unsafe actions.",
+      "keywords": [
+        "self-correction",
+        "validation feedback",
+        "repair loop",
+        "error classification",
+        "regression"
+      ],
+      "componentNames": [
+        "Error classifier",
+        "Validator",
+        "Correction worker",
+        "Protected artifact store",
+        "Loop governor"
+      ],
+      "industry": "Manufacturing analytics",
+      "words": 726,
+      "diagrams": 1
+    },
+    {
+      "id": 44,
+      "title": "Human-in-the-Loop (HITL)",
+      "slug": "human-in-the-loop-hitl",
+      "category": 2,
+      "summary": "Place accountable human decisions at explicit workflow boundaries, presenting sufficient evidence and preserving approval scope through execution.",
+      "keywords": [
+        "HITL",
+        "approval",
+        "review queue",
+        "human oversight",
+        "approval scope"
+      ],
+      "componentNames": [
+        "Review trigger",
+        "Decision package",
+        "Review queue",
+        "Approval record",
+        "Execution gate"
+      ],
+      "industry": "Energy operations",
+      "words": 695,
+      "diagrams": 1
+    },
+    {
+      "id": 45,
+      "title": "Graceful Degradation",
+      "slug": "graceful-degradation",
+      "category": 2,
+      "summary": "Preserve the most valuable safe subset of service during dependency failure, making reduced capability and evidence freshness explicit to users.",
+      "keywords": [
+        "graceful degradation",
+        "partial service",
+        "fallback capacity",
+        "freshness",
+        "capability map"
+      ],
+      "componentNames": [
+        "Capability map",
+        "Health and policy evaluator",
+        "Fallback provider",
+        "Response contract",
+        "Recovery controller"
+      ],
+      "industry": "Retail operations",
+      "words": 686,
+      "diagrams": 1
+    },
+    {
+      "id": 46,
+      "title": "Max Iterations Fallback",
+      "slug": "max-iterations-fallback",
+      "category": 2,
+      "summary": "Terminate agent loops predictably when iteration, time, cost, or progress limits are reached, returning an honest partial outcome and a controlled next step.",
+      "keywords": [
+        "iteration limit",
+        "loop budget",
+        "termination",
+        "no progress",
+        "partial outcome"
+      ],
+      "componentNames": [
+        "Budget counter",
+        "Progress detector",
+        "Loop admission gate",
+        "Termination handler",
+        "Fallback response"
+      ],
+      "industry": "Enterprise IT",
+      "words": 714,
+      "diagrams": 1
+    },
+    {
+      "id": 47,
+      "title": "Fallback Prompt Strategies",
+      "slug": "fallback-prompt-strategies",
+      "category": 2,
+      "summary": "Use evaluated alternate prompt strategies for specific recoverable failure classes while preserving policy, evidence requirements, and response contracts.",
+      "keywords": [
+        "fallback prompt",
+        "prompt registry",
+        "failure classification",
+        "invariant constraints",
+        "strategy evaluation"
+      ],
+      "componentNames": [
+        "Failure classifier",
+        "Prompt registry",
+        "Strategy selector",
+        "Shared validator",
+        "Outcome recorder"
+      ],
+      "industry": "Logistics documentation",
+      "words": 717,
+      "diagrams": 1
+    },
+    {
+      "id": 48,
+      "title": "Dead-Letter Queues (DLQ) for Agents",
+      "slug": "dead-letter-queues-dlq-for-agents",
+      "category": 2,
+      "summary": "Quarantine repeatedly failing agent jobs with enough context for diagnosis and controlled replay, keeping poison work from blocking healthy processing.",
+      "keywords": [
+        "DLQ",
+        "dead-letter queue",
+        "poison message",
+        "redrive",
+        "quarantine"
+      ],
+      "componentNames": [
+        "Primary work queue",
+        "Failure classifier",
+        "Dead-letter store",
+        "Triage console",
+        "Redrive controller"
+      ],
+      "industry": "Supply chain finance",
+      "words": 703,
+      "diagrams": 1
+    },
+    {
+      "id": 49,
+      "title": "Timeout Policies",
+      "slug": "timeout-policies",
+      "category": 2,
+      "summary": "Allocate end-to-end deadlines across queueing, inference, tools, retries, and finalization so work stops predictably and uncertain side effects are reconciled.",
+      "keywords": [
+        "timeout",
+        "deadline propagation",
+        "cancellation",
+        "uncertain outcome",
+        "latency budget"
+      ],
+      "componentNames": [
+        "Deadline context",
+        "Stage budget allocator",
+        "Timeout adapter",
+        "Cancellation coordinator",
+        "Outcome reconciler"
+      ],
+      "industry": "Travel management",
+      "words": 789,
+      "diagrams": 2
+    },
+    {
+      "id": 50,
+      "title": "Exponential Backoff with Jitter",
+      "slug": "exponential-backoff-with-jitter",
+      "category": 2,
+      "summary": "Retry transient failures with bounded exponential delays and randomized timing, preserving operation identity and respecting the remaining task deadline.",
+      "keywords": [
+        "exponential backoff",
+        "jitter",
+        "retry budget",
+        "throttling",
+        "retry amplification"
+      ],
+      "componentNames": [
+        "Retry classifier",
+        "Backoff scheduler",
+        "Retry budget",
+        "Deadline check",
+        "Operation ledger"
+      ],
+      "industry": "Logistics integration",
+      "words": 718,
+      "diagrams": 1
+    },
+    {
+      "id": 51,
+      "title": "State Rollbacks",
+      "slug": "state-rollbacks",
+      "category": 2,
+      "summary": "Restore a coherent workflow checkpoint while explicitly compensating business effects that a database rollback cannot undo.",
+      "keywords": [
+        "compensation",
+        "checkpoint",
+        "recovery revision",
+        "effect ledger",
+        "fencing"
+      ],
+      "componentNames": [
+        "Checkpoint store",
+        "Effect ledger",
+        "Recovery coordinator",
+        "Compensation adapters",
+        "Audit journal"
+      ],
+      "industry": "Retail",
+      "words": 746,
+      "diagrams": 2
+    },
+    {
+      "id": 52,
+      "title": "Model Redundancy / Multi-Provider Failover",
+      "slug": "model-redundancy-multi-provider-failover",
+      "category": 2,
+      "summary": "Continue eligible model work through independent providers without silently changing capability, privacy, or output contracts.",
+      "keywords": [
+        "provider failover",
+        "capability contract",
+        "quota",
+        "residency",
+        "redundancy"
+      ],
+      "componentNames": [
+        "Capability registry",
+        "Routing gateway",
+        "Provider adapters",
+        "Health and quota monitor",
+        "Output validator"
+      ],
+      "industry": "Insurance",
+      "words": 748,
+      "diagrams": 2
+    },
+    {
+      "id": 53,
+      "title": "Health Check Endpoints for Agents",
+      "slug": "health-check-endpoints-for-agents",
+      "category": 2,
+      "summary": "Separate process survival, traffic readiness, and end-to-end agent capability so health automation makes the correct recovery decision.",
+      "keywords": [
+        "liveness",
+        "readiness",
+        "startup probe",
+        "synthetic monitoring",
+        "graceful drain"
+      ],
+      "componentNames": [
+        "Liveness handler",
+        "Readiness evaluator",
+        "Startup gate",
+        "Synthetic task runner",
+        "Traffic controller"
+      ],
+      "industry": "Telecom",
+      "words": 726,
+      "diagrams": 2
+    },
+    {
+      "id": 54,
+      "title": "Memory Leak Mitigation in Long-Running Agents",
+      "slug": "memory-leak-mitigation-in-long-running-agents",
+      "category": 2,
+      "summary": "Bound retained state and resource lifetimes so long-running agents remain stable as conversations, tools, and tenants accumulate.",
+      "keywords": [
+        "memory leak",
+        "heap retention",
+        "resource lifetime",
+        "cancellation",
+        "KV cache"
+      ],
+      "componentNames": [
+        "Session store",
+        "Resource scope manager",
+        "Bounded cache",
+        "Memory profiler",
+        "Admission controller"
+      ],
+      "industry": "Logistics",
+      "words": 705,
+      "diagrams": 1
+    },
+    {
+      "id": 55,
+      "title": "Distributed Tracing (OpenTelemetry)",
+      "slug": "distributed-tracing-opentelemetry",
+      "category": 2,
+      "summary": "Connect agent decisions, retrieval, model calls, and tool effects into one causal execution record using interoperable trace context.",
+      "keywords": [
+        "OpenTelemetry",
+        "trace context",
+        "span links",
+        "sampling",
+        "causal tracing"
+      ],
+      "componentNames": [
+        "Instrumentation SDK",
+        "Context carrier",
+        "Collector",
+        "Trace backend",
+        "Redaction policy"
+      ],
+      "industry": "Manufacturing",
+      "words": 708,
+      "diagrams": 1
+    },
+    {
+      "id": 56,
+      "title": "Load Balancing LLM Requests",
+      "slug": "load-balancing-llm-requests",
+      "category": 2,
+      "summary": "Distribute inference work using token demand, queue pressure, capability, and cache locality instead of treating all requests as equal.",
+      "keywords": [
+        "token scheduling",
+        "load balancing",
+        "prefix affinity",
+        "admission control"
+      ],
+      "componentNames": [
+        "Request estimator",
+        "Replica directory",
+        "Scheduling policy",
+        "Admission queue",
+        "Inference replicas"
+      ],
+      "industry": "Enterprise SaaS",
+      "words": 607,
+      "diagrams": 1
+    },
+    {
+      "id": 57,
+      "title": "Crash-Safe Memory",
+      "slug": "crash-safe-memory",
+      "category": 2,
+      "summary": "Persist agent progress and effect receipts so a replacement worker can resume safely after an abrupt process or machine failure.",
+      "keywords": [
+        "durable state",
+        "write-ahead log",
+        "outbox",
+        "recovery",
+        "effect receipt"
+      ],
+      "componentNames": [
+        "Durable state database",
+        "Command outbox",
+        "Receipt ledger",
+        "Recovery worker",
+        "Snapshot archive"
+      ],
+      "industry": "Banking operations",
+      "words": 685,
+      "diagrams": 2
+    },
+    {
+      "id": 58,
+      "title": "Partial Success Management",
+      "slug": "partial-success-management",
+      "category": 2,
+      "summary": "Represent completed, failed, and unknown sub-results explicitly so a workflow can deliver useful work without misrepresenting completion.",
+      "keywords": [
+        "partial success",
+        "coverage",
+        "branch outcomes",
+        "incremental results"
+      ],
+      "componentNames": [
+        "Task manifest",
+        "Branch executors",
+        "Progress store",
+        "Aggregation policy",
+        "Result presentation"
+      ],
+      "industry": "Asset management",
+      "words": 626,
+      "diagrams": 1
+    },
+    {
+      "id": 59,
+      "title": "Cascade Failure Prevention",
+      "slug": "cascade-failure-prevention",
+      "category": 2,
+      "summary": "Contain overload and dependency failures so one slow tool or model does not consume the capacity of an entire agent platform.",
+      "keywords": [
+        "cascade failure",
+        "bulkhead",
+        "retry budget",
+        "load shedding",
+        "circuit breaker"
+      ],
+      "componentNames": [
+        "Admission controller",
+        "Bulkhead pools",
+        "Circuit breaker",
+        "Deadline propagator",
+        "Retry budget"
+      ],
+      "industry": "Energy",
+      "words": 688,
+      "diagrams": 2
+    },
+    {
+      "id": 60,
+      "title": "Chaos Engineering for AI",
+      "slug": "chaos-engineering-for-ai",
+      "category": 2,
+      "summary": "Test explicit resilience hypotheses by injecting controlled infrastructure and AI-specific faults, then measuring whether workflow invariants survive.",
+      "keywords": [
+        "chaos engineering",
+        "fault injection",
+        "steady state",
+        "recovery drill"
+      ],
+      "componentNames": [
+        "Experiment controller",
+        "Fault injector",
+        "Steady-state monitor",
+        "Replay fixtures",
+        "Recovery observer"
+      ],
+      "industry": "Travel operations",
+      "words": 668,
+      "diagrams": 1
+    },
+    {
+      "id": 61,
+      "title": "Semantic Caching (Redis/GPTCache)",
+      "slug": "semantic-caching-redis-gptcache",
+      "category": 3,
+      "summary": "Reuse validated answers for sufficiently similar requests while preserving tenant, policy, freshness, and task boundaries.",
+      "keywords": [
+        "semantic cache",
+        "answer equivalence",
+        "cache invalidation",
+        "similarity threshold"
+      ],
+      "componentNames": [
+        "Eligibility classifier",
+        "Embedding service",
+        "Scoped vector cache",
+        "Acceptance gate",
+        "Generation path"
+      ],
+      "industry": "Public transport",
+      "words": 605,
+      "diagrams": 1
+    },
+    {
+      "id": 62,
+      "title": "Hybrid Search (Dense + Sparse)",
+      "slug": "hybrid-search-dense-sparse",
+      "category": 3,
+      "summary": "Combine lexical precision with semantic recall, then fuse candidate rankings under one authorization and evaluation contract.",
+      "keywords": [
+        "hybrid search",
+        "BM25",
+        "dense retrieval",
+        "reciprocal rank fusion"
+      ],
+      "componentNames": [
+        "Lexical index",
+        "Dense index",
+        "Query coordinator",
+        "Fusion layer",
+        "Relevance evaluator"
+      ],
+      "industry": "Industrial distribution",
+      "words": 582,
+      "diagrams": 1
+    },
+    {
+      "id": 63,
+      "title": "Metadata Pre-Filtering",
+      "slug": "metadata-pre-filtering",
+      "category": 3,
+      "summary": "Restrict the searchable evidence set using trusted metadata before semantic ranking, while validating the store’s actual filtering behavior.",
+      "keywords": [
+        "metadata filtering",
+        "authorization",
+        "tenant isolation",
+        "filtered ANN"
+      ],
+      "componentNames": [
+        "Identity resolver",
+        "Policy compiler",
+        "Metadata catalog",
+        "Filtered search engine",
+        "Source fetch gate"
+      ],
+      "industry": "Legal services",
+      "words": 589,
+      "diagrams": 1
+    },
+    {
+      "id": 64,
+      "title": "Parent-Child Chunking",
+      "slug": "parent-child-chunking",
+      "category": 3,
+      "summary": "Retrieve precise child passages, then expand them into bounded parent context that preserves meaning, provenance, and access boundaries.",
+      "keywords": [
+        "parent child chunking",
+        "document hierarchy",
+        "context expansion",
+        "source lineage"
+      ],
+      "componentNames": [
+        "Document structure parser",
+        "Child vector index",
+        "Parent content store",
+        "Expansion resolver",
+        "Context budgeter"
+      ],
+      "industry": "Aviation maintenance",
+      "words": 601,
+      "diagrams": 1
+    },
+    {
+      "id": 65,
+      "title": "Re-ranking (Cohere/Cross-Encoders)",
+      "slug": "re-ranking-cohere-cross-encoders",
+      "category": 3,
+      "summary": "Use a stronger query-document relevance model on a bounded shortlist before expensive generation consumes the evidence.",
+      "keywords": [
+        "reranking",
+        "cross encoder",
+        "candidate recall",
+        "relevance ranking"
+      ],
+      "componentNames": [
+        "Candidate retriever",
+        "Passage normalizer",
+        "Cross-encoder service",
+        "Selection policy",
+        "Ranking evaluator"
+      ],
+      "industry": "Pharmaceutical research",
+      "words": 597,
+      "diagrams": 1
+    },
+    {
+      "id": 66,
+      "title": "Query Deconstruction / Expansion",
+      "slug": "query-deconstruction-expansion",
+      "category": 3,
+      "summary": "Turn complex or underspecified questions into bounded retrieval plans while preserving the original intent and evidence requirements.",
+      "keywords": [
+        "query expansion",
+        "decomposition",
+        "retrieval planning",
+        "intent preservation"
+      ],
+      "componentNames": [
+        "Intent parser",
+        "Retrieval planner",
+        "Budget controller",
+        "Evidence matrix",
+        "Synthesis validator"
+      ],
+      "industry": "Records management",
+      "words": 593,
+      "diagrams": 1
+    },
+    {
+      "id": 67,
+      "title": "Graph RAG / Knowledge Graphs",
+      "slug": "graph-rag-knowledge-graphs",
+      "category": 3,
+      "summary": "Combine entity relationships with source passages to answer connection-oriented questions that isolated similarity matches cannot resolve.",
+      "keywords": [
+        "Graph RAG",
+        "knowledge graph",
+        "entity resolution",
+        "provenance",
+        "multi-hop retrieval"
+      ],
+      "componentNames": [
+        "Entity resolver",
+        "Relation extractor",
+        "Graph store",
+        "Passage index",
+        "Graph-guided retriever"
+      ],
+      "industry": "Supply chain",
+      "words": 644,
+      "diagrams": 2
+    },
+    {
+      "id": 68,
+      "title": "Time-Weighted Vector Retrieval",
+      "slug": "time-weighted-vector-retrieval",
+      "category": 3,
+      "summary": "Blend semantic relevance with task-appropriate freshness while distinguishing publication time, event time, and validity.",
+      "keywords": [
+        "temporal retrieval",
+        "time decay",
+        "effective date",
+        "freshness",
+        "historical query"
+      ],
+      "componentNames": [
+        "Temporal metadata parser",
+        "Query time resolver",
+        "Eligibility filter",
+        "Ranking combiner",
+        "Freshness monitor"
+      ],
+      "industry": "Cybersecurity operations",
+      "words": 576,
+      "diagrams": 1
+    },
+    {
+      "id": 69,
+      "title": "Vector Database Scaling (Pinecone/Milvus)",
+      "slug": "vector-database-scaling-pinecone-milvus",
+      "category": 3,
+      "summary": "Scale vector retrieval by separating storage, indexing, query capacity, tenancy, and ingestion while measuring recall under real constraints.",
+      "keywords": [
+        "vector scaling",
+        "ANN",
+        "sharding",
+        "replication",
+        "index migration"
+      ],
+      "componentNames": [
+        "Ingestion workers",
+        "Index partitions",
+        "Query replicas",
+        "Routing layer",
+        "Capacity telemetry"
+      ],
+      "industry": "E-commerce",
+      "words": 608,
+      "diagrams": 1
+    },
+    {
+      "id": 70,
+      "title": "Dynamic Prompt Assembly",
+      "slug": "dynamic-prompt-assembly",
+      "category": 3,
+      "summary": "Build each model request from versioned policy, authorized evidence, task state, and a deliberate token allocation.",
+      "keywords": [
+        "prompt assembly",
+        "context manifest",
+        "instruction hierarchy",
+        "token budget"
+      ],
+      "componentNames": [
+        "Template registry",
+        "Context selector",
+        "Policy resolver",
+        "Token budgeter",
+        "Prompt manifest"
+      ],
+      "industry": "Human resources",
+      "words": 604,
+      "diagrams": 1
+    },
+    {
+      "id": 71,
+      "title": "Context Window Optimization",
+      "slug": "context-window-optimization",
+      "category": 3,
+      "summary": "Allocate finite model context to the evidence and state that matter, preserving constraints and enough capacity for a complete response.",
+      "keywords": [
+        "context budget",
+        "history compaction",
+        "token allocation",
+        "fact retention"
+      ],
+      "componentNames": [
+        "Token estimator",
+        "Segment allocator",
+        "History compactor",
+        "Evidence selector",
+        "Context evaluator"
+      ],
+      "industry": "Engineering services",
+      "words": 608,
+      "diagrams": 1
+    },
+    {
+      "id": 72,
+      "title": "Self-RAG / Self-Reflection",
+      "slug": "self-rag-self-reflection",
+      "category": 3,
+      "summary": "Use bounded evidence critique to decide when retrieval or revision is necessary, while avoiding self-confidence as a substitute for verification.",
+      "keywords": [
+        "Self-RAG",
+        "reflection",
+        "evidence critique",
+        "bounded retrieval loop"
+      ],
+      "componentNames": [
+        "Draft generator",
+        "Evidence critic",
+        "Retrieval controller",
+        "Revision stage",
+        "Stopping policy"
+      ],
+      "industry": "Environmental consulting",
+      "words": 681,
+      "diagrams": 2
+    },
+    {
+      "id": 73,
+      "title": "Cross-Lingual Retrieval",
+      "slug": "cross-lingual-retrieval",
+      "category": 3,
+      "summary": "Retrieve evidence across languages using evaluated multilingual representations or translation paths while preserving source meaning and access scope.",
+      "keywords": [
+        "cross-lingual retrieval",
+        "multilingual embeddings",
+        "translation",
+        "terminology"
+      ],
+      "componentNames": [
+        "Language detector",
+        "Multilingual encoder",
+        "Translation adapter",
+        "Cross-lingual reranker",
+        "Citation presenter"
+      ],
+      "industry": "Automotive",
+      "words": 587,
+      "diagrams": 1
+    },
+    {
+      "id": 74,
+      "title": "Hypothetical Document Embeddings (HyDE)",
+      "slug": "hypothetical-document-embeddings-hyde",
+      "category": 3,
+      "summary": "Generate a hypothetical relevant passage to improve retrieval alignment, then answer only from real retrieved evidence.",
+      "keywords": [
+        "HyDE",
+        "hypothetical document embeddings",
+        "zero-shot retrieval",
+        "query drift"
+      ],
+      "componentNames": [
+        "Hypothetical passage generator",
+        "Embedding encoder",
+        "Real document index",
+        "Fusion controller",
+        "Evidence-only answer stage"
+      ],
+      "industry": "Materials science",
+      "words": 609,
+      "diagrams": 1
+    },
+    {
+      "id": 75,
+      "title": "Chunk Overlap Tuning",
+      "slug": "chunk-overlap-tuning",
+      "category": 3,
+      "summary": "Tune shared text between neighboring chunks to preserve boundary evidence without filling retrieval results with duplicates.",
+      "keywords": [
+        "chunk overlap",
+        "segmentation",
+        "source offsets",
+        "boundary recall"
+      ],
+      "componentNames": [
+        "Structure-aware splitter",
+        "Overlap policy",
+        "Chunk lineage store",
+        "Duplicate-aware retriever",
+        "Boundary evaluation set"
+      ],
+      "industry": "Construction engineering",
+      "words": 579,
+      "diagrams": 1
+    },
+    {
+      "id": 76,
+      "title": "Multi-Aspect Indexing",
+      "slug": "multi-aspect-indexing",
+      "category": 3,
+      "summary": "Index different views of the same source so queries can match its content, purpose, entities, and structure without losing source identity.",
+      "keywords": [
+        "multi-aspect indexing",
+        "multi-vector retrieval",
+        "derived views",
+        "source identity"
+      ],
+      "componentNames": [
+        "Source registry",
+        "Aspect builders",
+        "Multi-vector index",
+        "Fusion policy",
+        "Source resolver"
+      ],
+      "industry": "Insurance underwriting",
+      "words": 601,
+      "diagrams": 1
+    },
+    {
+      "id": 77,
+      "title": "Real-time Vector Ingestion",
+      "slug": "real-time-vector-ingestion",
+      "category": 3,
+      "summary": "Keep retrieval synchronized with changing source systems using versioned events, idempotent processing, and measurable visibility lag.",
+      "keywords": [
+        "real-time ingestion",
+        "CDC",
+        "tombstone",
+        "index freshness",
+        "idempotent upsert"
+      ],
+      "componentNames": [
+        "Change capture source",
+        "Durable event log",
+        "Transformation workers",
+        "Embedding and index writers",
+        "Freshness verifier"
+      ],
+      "industry": "Telecom operations",
+      "words": 655,
+      "diagrams": 2
+    },
+    {
+      "id": 78,
+      "title": "Lost in the Middle Mitigation",
+      "slug": "lost-in-the-middle-mitigation",
+      "category": 3,
+      "summary": "Test and reduce position-sensitive evidence loss in long prompts through selection, ordering, local extraction, and explicit coverage checks.",
+      "keywords": [
+        "lost in the middle",
+        "context position",
+        "evidence coverage",
+        "long context"
+      ],
+      "componentNames": [
+        "Position-sensitive evaluation set",
+        "Evidence selector",
+        "Context organizer",
+        "Local extraction stage",
+        "Coverage validator"
+      ],
+      "industry": "Procurement",
+      "words": 630,
+      "diagrams": 1
+    },
+    {
+      "id": 79,
+      "title": "Embedding Model Fine-Tuning",
+      "slug": "embedding-model-fine-tuning",
+      "category": 3,
+      "summary": "Adapt the retrieval representation to domain relevance using trustworthy examples, hard negatives, and a controlled re-indexing migration.",
+      "keywords": [
+        "embedding fine-tuning",
+        "hard negatives",
+        "retrieval evaluation",
+        "index migration"
+      ],
+      "componentNames": [
+        "Relevance dataset",
+        "Negative miner",
+        "Training pipeline",
+        "Retrieval evaluator",
+        "Index migration controller"
+      ],
+      "industry": "Semiconductor manufacturing",
+      "words": 616,
+      "diagrams": 1
+    },
+    {
+      "id": 80,
+      "title": "Token Pruning",
+      "slug": "token-pruning",
+      "category": 3,
+      "summary": "Remove low-value prompt content under a measured quality constraint while preserving negation, identifiers, evidence, and instructions.",
+      "keywords": [
+        "token pruning",
+        "prompt compression",
+        "protected spans",
+        "LLMLingua"
+      ],
+      "componentNames": [
+        "Budget controller",
+        "Importance scorer",
+        "Protected-span policy",
+        "Compression stage",
+        "Quality gate"
+      ],
+      "industry": "Customer service analytics",
+      "words": 590,
+      "diagrams": 1
+    },
+    {
+      "id": 81,
+      "title": "Dynamic Model Routing",
+      "slug": "dynamic-model-routing",
+      "category": 4,
+      "summary": "Select an eligible model for each task using measured capability, quality, latency, and cost while keeping policy constraints mandatory.",
+      "keywords": [
+        "model routing",
+        "capability registry",
+        "cost quality tradeoff",
+        "escalation"
+      ],
+      "componentNames": [
+        "Request profiler",
+        "Capability registry",
+        "Routing policy",
+        "Outcome validator",
+        "Decision ledger"
+      ],
+      "industry": "Insurance operations",
+      "words": 615,
+      "diagrams": 1
+    },
+    {
+      "id": 82,
+      "title": "Small Language Models (SLMs) Deployment",
+      "slug": "small-language-models-slms-deployment",
+      "category": 4,
+      "summary": "Deploy compact models for bounded tasks where local control, latency, or operating cost matters and measured capability is sufficient.",
+      "keywords": [
+        "small language model",
+        "edge inference",
+        "local deployment",
+        "task specialization"
+      ],
+      "componentNames": [
+        "Model artifact registry",
+        "Local inference runtime",
+        "Task adapter",
+        "Output validator",
+        "Fleet manager"
+      ],
+      "industry": "Manufacturing quality",
+      "words": 623,
+      "diagrams": 1
+    },
+    {
+      "id": 83,
+      "title": "Speculative Decoding",
+      "slug": "speculative-decoding",
+      "category": 4,
+      "summary": "Use a cheap proposal mechanism and target-model verification to reduce decoding latency only where acceptance and workload conditions justify the overhead.",
+      "keywords": [
+        "speculative decoding",
+        "draft model",
+        "acceptance rate",
+        "target verification"
+      ],
+      "componentNames": [
+        "Draft proposer",
+        "Target verifier",
+        "Acceptance sampler",
+        "Cache coordinator",
+        "Adaptive controller"
+      ],
+      "industry": "Software support",
+      "words": 619,
+      "diagrams": 1
+    },
+    {
+      "id": 84,
+      "title": "Model Quantization (AWQ/GGUF)",
+      "slug": "model-quantization-awq-gguf",
+      "category": 4,
+      "summary": "Reduce model representation cost using hardware-compatible quantization while validating task quality, memory headroom, and actual serving speed.",
+      "keywords": [
+        "quantization",
+        "AWQ",
+        "GGUF",
+        "weight precision",
+        "calibration"
+      ],
+      "componentNames": [
+        "Calibration dataset",
+        "Quantization toolchain",
+        "Artifact registry",
+        "Compatible runtime",
+        "Quality and performance harness"
+      ],
+      "industry": "Field service",
+      "words": 627,
+      "diagrams": 1
+    },
+    {
+      "id": 85,
+      "title": "LLM Cold Start Optimization",
+      "slug": "llm-cold-start-optimization",
+      "category": 4,
+      "summary": "Shorten the path from a scheduled inference replica to usable capacity by measuring and optimizing each initialization stage.",
+      "keywords": [
+        "cold start",
+        "model loading",
+        "warm pool",
+        "readiness",
+        "artifact cache"
+      ],
+      "componentNames": [
+        "Artifact cache",
+        "Placement scheduler",
+        "Runtime initializer",
+        "Warmup runner",
+        "Readiness controller"
+      ],
+      "industry": "Retail operations",
+      "words": 598,
+      "diagrams": 1
+    },
+    {
+      "id": 86,
+      "title": "Streaming LLM Responses",
+      "slug": "streaming-llm-responses",
+      "category": 4,
+      "summary": "Deliver incremental model output with explicit completion, cancellation, validation, and reconnect semantics rather than treating chunks as a finished answer.",
+      "keywords": [
+        "streaming",
+        "SSE",
+        "backpressure",
+        "terminal event",
+        "cancellation"
+      ],
+      "componentNames": [
+        "Provider stream adapter",
+        "Validation buffer",
+        "Streaming gateway",
+        "Client state machine",
+        "Cancellation controller"
+      ],
+      "industry": "Customer support",
+      "words": 678,
+      "diagrams": 2
+    },
+    {
+      "id": 87,
+      "title": "Batch Prompting",
+      "slug": "batch-prompting",
+      "category": 4,
+      "summary": "Amortize work across independent items while preserving item identity, isolation, validation, and retry boundaries.",
+      "keywords": [
+        "batch prompting",
+        "request batching",
+        "item identity",
+        "demultiplexing"
+      ],
+      "componentNames": [
+        "Batch builder",
+        "Prompt envelope",
+        "Token estimator",
+        "Result demultiplexer",
+        "Retry queue"
+      ],
+      "industry": "Media operations",
+      "words": 599,
+      "diagrams": 1
+    },
+    {
+      "id": 88,
+      "title": "vLLM / TensorRT-LLM Engines",
+      "slug": "vllm-tensorrt-llm-engines",
+      "category": 4,
+      "summary": "Treat the inference engine as a scheduled memory-and-compute system whose configuration must match models, hardware, and service objectives.",
+      "keywords": [
+        "vLLM",
+        "TensorRT-LLM",
+        "continuous batching",
+        "KV cache",
+        "inference engine"
+      ],
+      "componentNames": [
+        "API frontend",
+        "Request scheduler",
+        "KV cache manager",
+        "Execution backend",
+        "Engine telemetry"
+      ],
+      "industry": "Enterprise search",
+      "words": 599,
+      "diagrams": 1
+    },
+    {
+      "id": 89,
+      "title": "Serverless LLM Architecture",
+      "slug": "serverless-llm-architecture",
+      "category": 4,
+      "summary": "Separate request admission from elastic inference capacity so serverless execution can scale safely despite model startup and duration constraints.",
+      "keywords": [
+        "serverless inference",
+        "elastic workers",
+        "scale to zero",
+        "async jobs"
+      ],
+      "componentNames": [
+        "Request gateway",
+        "Durable queue",
+        "Elastic inference workers",
+        "External state store",
+        "Autoscaling controller"
+      ],
+      "industry": "Property services",
+      "words": 637,
+      "diagrams": 1
+    },
+    {
+      "id": 90,
+      "title": "LoRA / QLoRA Fine-Tuning",
+      "slug": "lora-qlora-fine-tuning",
+      "category": 4,
+      "summary": "Adapt a base model through low-rank trainable updates, optionally over a quantized frozen base, with explicit compatibility and evaluation controls.",
+      "keywords": [
+        "LoRA",
+        "QLoRA",
+        "adapter",
+        "low-rank adaptation",
+        "fine-tuning"
+      ],
+      "componentNames": [
+        "Training dataset",
+        "Frozen base model",
+        "Low-rank adapter trainer",
+        "Evaluation suite",
+        "Adapter registry and server"
+      ],
+      "industry": "Document processing",
+      "words": 696,
+      "diagrams": 2
+    },
+    {
+      "id": 91,
+      "title": "GPU Cluster Orchestration (Kubernetes/KServe)",
+      "slug": "gpu-cluster-orchestration-kubernetes-kserve",
+      "category": 4,
+      "summary": "Coordinate accelerator placement, model readiness, autoscaling, and recovery as one serving system rather than treating GPUs as ordinary interchangeable CPU slots.",
+      "keywords": [
+        "GPU orchestration",
+        "Kubernetes",
+        "KServe",
+        "topology",
+        "autoscaling"
+      ],
+      "componentNames": [
+        "Cluster scheduler",
+        "Device integration",
+        "Model serving controller",
+        "Autoscaling signals",
+        "Artifact and telemetry services"
+      ],
+      "industry": "Financial research",
+      "words": 631,
+      "diagrams": 1
+    },
+    {
+      "id": 92,
+      "title": "Pre-Computing Embeddings",
+      "slug": "pre-computing-embeddings",
+      "category": 4,
+      "summary": "Compute reusable document vectors ahead of requests using content identity, version lineage, and an explicit freshness strategy.",
+      "keywords": [
+        "precomputed embeddings",
+        "content hashing",
+        "index backfill",
+        "embedding cache"
+      ],
+      "componentNames": [
+        "Source manifest",
+        "Content hash cache",
+        "Embedding workers",
+        "Vector artifact store",
+        "Coverage controller"
+      ],
+      "industry": "Public administration",
+      "words": 622,
+      "diagrams": 1
+    },
+    {
+      "id": 93,
+      "title": "Model Versioning and A/B Testing",
+      "slug": "model-versioning-and-a-b-testing",
+      "category": 4,
+      "summary": "Version the complete inference behavior and compare releases through stable assignment, meaningful outcome measures, and reversible promotion.",
+      "keywords": [
+        "model versioning",
+        "A/B testing",
+        "canary",
+        "shadow evaluation",
+        "behavior bundle"
+      ],
+      "componentNames": [
+        "Behavior registry",
+        "Assignment service",
+        "Outcome collector",
+        "Evaluation gate",
+        "Release controller"
+      ],
+      "industry": "Recruiting operations",
+      "words": 610,
+      "diagrams": 1
+    },
+    {
+      "id": 94,
+      "title": "Token Cost Allocation Tracking",
+      "slug": "token-cost-allocation-tracking",
+      "category": 4,
+      "summary": "Attribute inference usage to the business work that caused it, including retries, caches, tools, and shared infrastructure.",
+      "keywords": [
+        "token accounting",
+        "cost allocation",
+        "usage ledger",
+        "chargeback",
+        "reconciliation"
+      ],
+      "componentNames": [
+        "Usage envelope",
+        "Provider usage adapter",
+        "Rate catalog",
+        "Cost ledger",
+        "Budget and reporting service"
+      ],
+      "industry": "Enterprise collaboration",
+      "words": 633,
+      "diagrams": 1
+    },
+    {
+      "id": 95,
+      "title": "Distributed Memory Architectures",
+      "slug": "distributed-memory-architectures",
+      "category": 4,
+      "summary": "Distribute model weights, activations, and attention state across devices with an explicit communication and failure model.",
+      "keywords": [
+        "tensor parallelism",
+        "pipeline parallelism",
+        "distributed inference",
+        "model memory",
+        "KV cache"
+      ],
+      "componentNames": [
+        "Model partition planner",
+        "Accelerator workers",
+        "Communication fabric",
+        "Distributed scheduler",
+        "Memory telemetry"
+      ],
+      "industry": "Scientific publishing",
+      "words": 694,
+      "diagrams": 2
+    },
+    {
+      "id": 96,
+      "title": "Semantic Similarity Analytics",
+      "slug": "semantic-similarity-analytics",
+      "category": 4,
+      "summary": "Analyze semantic neighborhoods to find retrieval gaps, repeated intents, and content drift without treating vector distance as an objective truth score.",
+      "keywords": [
+        "semantic analytics",
+        "embedding drift",
+        "clustering",
+        "knowledge gaps",
+        "similarity calibration"
+      ],
+      "componentNames": [
+        "Governed sample collector",
+        "Embedding pipeline",
+        "Neighborhood and clustering analysis",
+        "Outcome joiner",
+        "Review workflow"
+      ],
+      "industry": "University services",
+      "words": 603,
+      "diagrams": 1
+    },
+    {
+      "id": 97,
+      "title": "Hardware-Accelerated Guardrails",
+      "slug": "hardware-accelerated-guardrails",
+      "category": 4,
+      "summary": "Accelerate selected safety and policy checks while keeping their detection limits, ordering, and failure behavior explicit.",
+      "keywords": [
+        "accelerated guardrails",
+        "content classifier",
+        "release gate",
+        "policy enforcement"
+      ],
+      "componentNames": [
+        "Deterministic validation layer",
+        "Guard model runtime",
+        "Policy decision service",
+        "Release and tool gate",
+        "Guard telemetry"
+      ],
+      "industry": "Online marketplace",
+      "words": 632,
+      "diagrams": 1
+    },
+    {
+      "id": 98,
+      "title": "Local Model Ingress/Egress",
+      "slug": "local-model-ingress-egress",
+      "category": 4,
+      "summary": "Control how requests enter a locally hosted model and how data, tools, telemetry, and updates leave its environment.",
+      "keywords": [
+        "local inference",
+        "ingress",
+        "egress",
+        "network policy",
+        "data boundary"
+      ],
+      "componentNames": [
+        "Ingress gateway",
+        "Inference network zone",
+        "Egress proxy",
+        "Tool policy adapter",
+        "Artifact update channel"
+      ],
+      "industry": "Healthcare administration",
+      "words": 639,
+      "diagrams": 1
+    },
+    {
+      "id": 99,
+      "title": "Context Caching (Anthropic/OpenAI Feature)",
+      "slug": "context-caching-anthropic-openai-feature",
+      "category": 4,
+      "summary": "Reuse provider-supported computation for stable prompt prefixes while preserving fresh generation and provider-specific eligibility, retention, and billing rules.",
+      "keywords": [
+        "context caching",
+        "prompt caching",
+        "prefix reuse",
+        "cache retention",
+        "cached tokens"
+      ],
+      "componentNames": [
+        "Stable prefix builder",
+        "Provider cache adapter",
+        "Dynamic suffix assembler",
+        "Usage collector",
+        "Cache effectiveness monitor"
+      ],
+      "industry": "Enterprise analytics",
+      "words": 684,
+      "diagrams": 1
+    },
+    {
+      "id": 100,
+      "title": "Asynchronous Fine-Tuning Pipelines",
+      "slug": "asynchronous-fine-tuning-pipelines",
+      "category": 4,
+      "summary": "Run data preparation, adaptation, evaluation, and model promotion as a durable offline workflow with explicit quality gates and lineage.",
+      "keywords": [
+        "asynchronous fine-tuning",
+        "training pipeline",
+        "dataset lineage",
+        "model promotion",
+        "MLOps"
+      ],
+      "componentNames": [
+        "Feedback intake",
+        "Dataset builder",
+        "Training orchestrator",
+        "Evaluation gate",
+        "Artifact registry and release controller"
+      ],
+      "industry": "Technical support",
+      "words": 731,
+      "diagrams": 2
+    },
+    {
+      "id": 101,
+      "title": "Model Context Protocol (MCP)",
+      "slug": "model-context-protocol",
+      "category": 5,
+      "summary": "Standardize how agent hosts discover and invoke external capabilities while keeping trust, authorization, and business policy explicit.",
+      "keywords": [
+        "MCP",
+        "protocol",
+        "tools",
+        "resources",
+        "capability discovery",
+        "authorization"
+      ],
+      "componentNames": [
+        "Agent host",
+        "Protocol client",
+        "Registered MCP server",
+        "Authorization gateway",
+        "Evidence and telemetry store"
+      ],
+      "industry": "Enterprise software",
+      "words": 790,
+      "diagrams": 1
+    },
+    {
+      "id": 102,
+      "title": "Agent Evaluation & Regression Suites",
+      "slug": "agent-evaluation-regression-suites",
+      "category": 5,
+      "summary": "Evaluate complete agent behavior across task outcomes, tool effects, authorization, cost, and failure recovery before releasing changes.",
+      "keywords": [
+        "agent evaluation",
+        "regression",
+        "trajectory testing",
+        "release gates",
+        "stochastic testing",
+        "grader calibration"
+      ],
+      "componentNames": [
+        "Case registry",
+        "Controlled environment",
+        "Trace collector",
+        "Assertion and grading layer",
+        "Release comparator"
+      ],
+      "industry": "E-commerce",
+      "words": 772,
+      "diagrams": 1
+    },
+    {
+      "id": 103,
+      "title": "Durable Workflow Execution",
+      "slug": "durable-workflow-execution",
+      "category": 5,
+      "summary": "Preserve business progress across process crashes, long waits, retries, and human approvals without duplicating external effects.",
+      "keywords": [
+        "workflow durability",
+        "replay",
+        "activities",
+        "signals",
+        "idempotency",
+        "long-running workflows"
+      ],
+      "componentNames": [
+        "Workflow coordinator",
+        "History store",
+        "Activity workers",
+        "Signal and approval endpoint",
+        "Effect ledger"
+      ],
+      "industry": "Logistics",
+      "words": 781,
+      "diagrams": 1
+    },
+    {
+      "id": 104,
+      "title": "Agent Sandboxing & Capability Isolation",
+      "slug": "agent-sandboxing-capability-isolation",
+      "category": 5,
+      "summary": "Constrain agent-executed code and tools through independent process, filesystem, network, credential, and resource boundaries.",
+      "keywords": [
+        "sandbox",
+        "capability isolation",
+        "generated code",
+        "egress",
+        "ephemeral credentials",
+        "resource limits"
+      ],
+      "componentNames": [
+        "Task capability manifest",
+        "Sandbox launcher",
+        "Credential broker",
+        "Network and tool gateway",
+        "Artifact verifier"
+      ],
+      "industry": "Professional services",
+      "words": 774,
+      "diagrams": 1
+    },
+    {
+      "id": 105,
+      "title": "Agent Identity & Delegated Authorization",
+      "slug": "agent-identity-delegated-authorization",
+      "category": 5,
+      "summary": "Represent who requested an agent action, which workload performs it, and the exact authority delegated to each downstream operation.",
+      "keywords": [
+        "agent identity",
+        "delegation",
+        "OAuth",
+        "token exchange",
+        "audience",
+        "least privilege",
+        "confused deputy"
+      ],
+      "componentNames": [
+        "Requesting principal",
+        "Workload identity",
+        "Delegation broker",
+        "Policy decision point",
+        "Resource enforcement point"
+      ],
+      "industry": "Banking",
+      "words": 790,
+      "diagrams": 1
+    },
+    {
+      "id": 106,
+      "title": "Event Sourcing for Agent Workflows",
+      "slug": "event-sourcing-agent-workflows",
+      "category": 5,
+      "summary": "Represent business progress as an ordered history of accepted events so state, approvals, and effects can be reconstructed and audited.",
+      "keywords": [
+        "event sourcing",
+        "domain events",
+        "projections",
+        "optimistic concurrency",
+        "outbox",
+        "replay"
+      ],
+      "componentNames": [
+        "Command handler",
+        "Append-only event store",
+        "Projection workers",
+        "Effect dispatcher",
+        "Replay and audit tools"
+      ],
+      "industry": "Insurance",
+      "words": 788,
+      "diagrams": 1
+    },
+    {
+      "id": 107,
+      "title": "Data Residency & Tenant Isolation",
+      "slug": "data-residency-tenant-isolation",
+      "category": 5,
+      "summary": "Control where tenant information is processed and retained, and prevent cross-tenant access across every derived artifact and operational surface.",
+      "keywords": [
+        "tenant isolation",
+        "data residency",
+        "regional routing",
+        "derived data",
+        "failover",
+        "privacy"
+      ],
+      "componentNames": [
+        "Tenant policy registry",
+        "Identity-bound router",
+        "Partitioned data services",
+        "Regional telemetry pipeline",
+        "Migration and recovery controller"
+      ],
+      "industry": "Enterprise software",
+      "words": 785,
+      "diagrams": 1
+    },
+    {
+      "id": 108,
+      "title": "Multimodal Agent Pipelines",
+      "slug": "multimodal-agent-pipelines",
+      "category": 5,
+      "summary": "Combine text, images, audio, video, and structured observations while preserving modality-specific evidence and uncertainty.",
+      "keywords": [
+        "multimodal",
+        "OCR",
+        "audio",
+        "vision",
+        "evidence alignment",
+        "provenance",
+        "uncertainty"
+      ],
+      "componentNames": [
+        "Media ingestion boundary",
+        "Specialist extractors",
+        "Alignment layer",
+        "Evidence fusion agent",
+        "Validation and review workspace"
+      ],
+      "industry": "Manufacturing",
+      "words": 788,
+      "diagrams": 1
+    },
+    {
+      "id": 109,
+      "title": "Agent Budgeting & Admission Control",
+      "slug": "agent-budgeting-admission-control",
+      "category": 5,
+      "summary": "Reserve and enforce task-level limits for model tokens, tool calls, concurrency, elapsed time, and downstream load before work begins.",
+      "keywords": [
+        "budgeting",
+        "admission control",
+        "quotas",
+        "fan-out",
+        "fairness",
+        "cost governance",
+        "resource reservation"
+      ],
+      "componentNames": [
+        "Admission controller",
+        "Budget ledger",
+        "Execution governor",
+        "Priority queue",
+        "Usage reconciler"
+      ],
+      "industry": "Telecommunications",
+      "words": 811,
+      "diagrams": 1
+    },
+    {
+      "id": 110,
+      "title": "Memory Lifecycle & Forgetting",
+      "slug": "memory-lifecycle-forgetting",
+      "category": 5,
+      "summary": "Govern how agent memories are created, corrected, expired, and removed across source records, summaries, embeddings, caches, and backups.",
+      "keywords": [
+        "memory lifecycle",
+        "forgetting",
+        "retention",
+        "deletion",
+        "provenance",
+        "stale memory",
+        "suppression"
+      ],
+      "componentNames": [
+        "Memory write gate",
+        "Provenance registry",
+        "Serving filter",
+        "Lifecycle orchestrator",
+        "Verification and restore controls"
+      ],
+      "industry": "Travel and hospitality",
+      "words": 824,
+      "diagrams": 1
+    },
+    {
+      "id": 111,
+      "title": "Agent-to-Human Handoffs",
+      "slug": "agent-to-human-handoffs",
+      "category": 5,
+      "summary": "Transfer unresolved work with evidence, authority, ownership, and resumption conditions so a human can take effective control.",
+      "keywords": [
+        "human handoff",
+        "approval",
+        "ownership",
+        "escalation",
+        "decision packet",
+        "resumption",
+        "review queues"
+      ],
+      "componentNames": [
+        "Handoff trigger policy",
+        "Decision packet builder",
+        "Human work queue",
+        "Decision endpoint",
+        "Resumption controller"
+      ],
+      "industry": "Healthcare",
+      "words": 827,
+      "diagrams": 1
+    },
+    {
+      "id": 112,
+      "title": "Agent Supply Chain Security",
+      "slug": "agent-supply-chain-security",
+      "category": 5,
+      "summary": "Track and verify the origin, integrity, permissions, and release compatibility of models, prompts, tools, connectors, and agent dependencies.",
+      "keywords": [
+        "supply chain",
+        "provenance",
+        "attestation",
+        "artifact integrity",
+        "capability review",
+        "release manifest",
+        "revocation"
+      ],
+      "componentNames": [
+        "Dependency and capability inventory",
+        "Trusted build pipeline",
+        "Artifact registry",
+        "Admission verifier",
+        "Runtime monitor and rollback controller"
+      ],
+      "industry": "Enterprise software",
+      "words": 831,
+      "diagrams": 1
+    }
+  ],
+  "industries": [
+    {
+      "slug": "aerospace",
+      "name": "Aerospace",
+      "sector": "Industrial operations",
+      "icon": "plane",
+      "title": "Aircraft maintenance records readiness",
+      "summary": "Assemble configuration-sensitive maintenance evidence for licensed personnel without granting release-to-service authority.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "agriculture",
+      "name": "Agriculture",
+      "sector": "Natural resources",
+      "icon": "sprout",
+      "title": "Field operations planning assistant",
+      "summary": "Combine field observations, weather, equipment, and agronomist-approved practices into reviewable farm work plans.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "automotive",
+      "name": "Automotive",
+      "sector": "Industrial operations",
+      "icon": "car",
+      "title": "Service campaign evidence coordination",
+      "summary": "Connect vehicle configuration, service reports, and parts readiness into engineering-reviewed campaign planning.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "banking",
+      "name": "Banking",
+      "sector": "Financial services",
+      "icon": "landmark",
+      "title": "Payment exception investigation desk",
+      "summary": "Reconcile payment evidence across ledgers, screening queues, and customer records while keeping release authority with bank operations.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "capital-markets",
+      "name": "Capital Markets",
+      "sector": "Financial services",
+      "icon": "chart",
+      "title": "Trade settlement break resolution",
+      "summary": "Investigate unmatched allocations and settlement instructions without granting agents trading or settlement authority.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "construction",
+      "name": "Construction",
+      "sector": "Built environment",
+      "icon": "hard-hat",
+      "title": "Design change and site impact coordination",
+      "summary": "Trace a design revision through quantities, procurement, and site sequencing before project teams approve a change.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "ecommerce",
+      "name": "E-commerce",
+      "sector": "Commerce",
+      "icon": "shopping-bag",
+      "title": "Order recovery and returns coordination",
+      "summary": "Coordinate order status, shipment evidence, and return eligibility before committing a customer-approved resolution.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "education",
+      "name": "Education",
+      "sector": "Public and social services",
+      "icon": "graduation-cap",
+      "title": "Student support case coordination",
+      "summary": "Coordinate academic records, support resources, and appointment options while staff retain consequential student decisions.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "energy",
+      "name": "Energy",
+      "sector": "Mobility and infrastructure",
+      "icon": "bolt",
+      "title": "Renewable asset maintenance planning",
+      "summary": "Combine turbine condition evidence, weather windows, and spare-part availability into engineer-approved maintenance plans.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "enterprise-software",
+      "name": "Enterprise Software",
+      "sector": "Information services",
+      "icon": "code",
+      "title": "Tenant-scoped incident and change assistant",
+      "summary": "Combine tenant symptoms, release history, and bounded diagnostics into engineer-approved incident recovery.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "government",
+      "name": "Government",
+      "sector": "Public and social services",
+      "icon": "landmark",
+      "title": "Public service application completeness desk",
+      "summary": "Assemble application evidence and service-rule citations for accountable caseworker review with accessible applicant communication.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "healthcare",
+      "name": "Healthcare",
+      "sector": "Health and science",
+      "icon": "heart",
+      "title": "Referral coordination evidence desk",
+      "summary": "Prepare complete referral packets and scheduling options while clinicians retain clinical decisions and care priorities.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "insurance",
+      "name": "Insurance",
+      "sector": "Financial services",
+      "icon": "shield",
+      "title": "Property claim evidence workbench",
+      "summary": "Coordinate damage evidence, coverage documents, and repair estimates into an adjuster-owned claim review.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "legal",
+      "name": "Legal Services",
+      "sector": "Information services",
+      "icon": "scale",
+      "title": "Matter evidence and chronology workspace",
+      "summary": "Organize authorized matter records, source citations, and review tasks while lawyers retain legal judgment and client advice.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "life-sciences",
+      "name": "Life Sciences",
+      "sector": "Health and science",
+      "icon": "flask",
+      "title": "Clinical study deviation evidence assembly",
+      "summary": "Assemble protocol deviation evidence for study teams while preserving source records and qualified reviewer decisions.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "logistics",
+      "name": "Logistics",
+      "sector": "Mobility and infrastructure",
+      "icon": "truck",
+      "title": "Shipment exception recovery desk",
+      "summary": "Coordinate carrier evidence, dock capacity, and customer commitments for dispatcher-approved shipment recovery.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "manufacturing",
+      "name": "Manufacturing",
+      "sector": "Industrial operations",
+      "icon": "factory",
+      "title": "Production quality containment assistant",
+      "summary": "Connect quality signals, lot genealogy, and maintenance evidence before a supervisor approves containment work.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "maritime",
+      "name": "Maritime",
+      "sector": "Mobility and infrastructure",
+      "icon": "anchor",
+      "title": "Port call readiness and exception coordination",
+      "summary": "Reconcile vessel arrival estimates, berth constraints, cargo readiness, and agency documents for port-operator decisions.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "media",
+      "name": "Media and Publishing",
+      "sector": "Information services",
+      "icon": "newspaper",
+      "title": "Editorial evidence and rights coordination",
+      "summary": "Assemble source verification, asset rights, and publication checks for editor-owned release decisions.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "mining",
+      "name": "Mining",
+      "sector": "Natural resources",
+      "icon": "pickaxe",
+      "title": "Mine maintenance and shift evidence desk",
+      "summary": "Combine equipment condition, inspection records, and shift constraints into supervisor-reviewed maintenance coordination.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "nonprofits",
+      "name": "Nonprofits",
+      "sector": "Public and social services",
+      "icon": "hand-heart",
+      "title": "Grant delivery and beneficiary evidence desk",
+      "summary": "Coordinate restricted funding, program evidence, and reporting obligations while staff retain funding and beneficiary decisions.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "professional-services",
+      "name": "Professional Services",
+      "sector": "Information services",
+      "icon": "briefcase",
+      "title": "Engagement delivery evidence coordinator",
+      "summary": "Connect client requirements, delivery evidence, staffing constraints, and commercial scope before engagement leaders commit changes.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "real-estate",
+      "name": "Real Estate",
+      "sector": "Built environment",
+      "icon": "building",
+      "title": "Commercial lease operations workbench",
+      "summary": "Reconcile lease obligations, maintenance requests, and property records for manager-reviewed operational action.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "retail",
+      "name": "Retail",
+      "sector": "Commerce",
+      "icon": "store",
+      "title": "Store replenishment exception desk",
+      "summary": "Reconcile shelf observations, inventory records, and delivery plans into manager-approved replenishment actions.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "supply-chain",
+      "name": "Supply Chain",
+      "sector": "Industrial operations",
+      "icon": "network",
+      "title": "Supplier disruption response planning",
+      "summary": "Connect supplier incidents to material demand, qualified alternatives, and planner-approved recovery scenarios.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "telecom",
+      "name": "Telecommunications",
+      "sector": "Mobility and infrastructure",
+      "icon": "radio",
+      "title": "Network incident evidence coordination",
+      "summary": "Correlate alarms, service dependencies, and change history before an operator approves network remediation.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "travel-hospitality",
+      "name": "Travel and Hospitality",
+      "sector": "Consumer services",
+      "icon": "compass",
+      "title": "Disruption-aware guest journey recovery",
+      "summary": "Coordinate booking, inventory, accessibility requirements, and supplier policies before confirming a traveler-approved change.",
+      "agents": 4,
+      "diagrams": 2
+    },
+    {
+      "slug": "utilities",
+      "name": "Utilities",
+      "sector": "Mobility and infrastructure",
+      "icon": "droplet",
+      "title": "Water network incident coordination",
+      "summary": "Assemble pressure, asset, and customer-impact evidence for operator-owned water-network response.",
+      "agents": 4,
+      "diagrams": 2
+    }
+  ]
+}

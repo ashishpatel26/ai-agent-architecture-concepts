@@ -1,0 +1,196 @@
+{
+  "slug": "telecom",
+  "name": "Telecommunications",
+  "sector": "Mobility and infrastructure",
+  "icon": "radio",
+  "title": "Network incident evidence coordination",
+  "summary": "Correlate alarms, service dependencies, and change history before an operator approves network remediation.",
+  "situation": "Illustrative architecture: A telecom operations center receives thousands of alarms after a regional service degradation. Teams must identify shared dependencies, determine affected services, and inspect recent changes. The illustrative system assembles incident evidence and proposes runbook steps while network operators retain production control.",
+  "problem": "Alarm volume can hide the initiating fault, topology may be stale, and a recent change can be coincidental. A model-driven rollback without current dependency checks could widen an outage or interrupt unaffected customers.",
+  "whyAgents": "Alarm triage, topology analysis, change investigation, and runbook specialists work in parallel. Deterministic correlation rules and topology queries produce the affected-service set; the orchestrator limits hypothesis loops and preserves operator ownership.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Track preparation time and diagnostic quality alongside service restoration outcomes. The architecture should make uncertainty and action boundaries visible during pressure, rather than reward fluent incident narratives that outpace the evidence.",
+  "agents": [
+    {
+      "name": "Alarm correlation agent",
+      "responsibility": "Group repeated alarms by resource, time window, and known dependency.",
+      "tools": [
+        "Alarm stream query",
+        "correlation rule engine"
+      ],
+      "boundary": "Cannot suppress critical alarms or redefine severity."
+    },
+    {
+      "name": "Service impact agent",
+      "responsibility": "Trace affected resources to customer services and redundancy paths.",
+      "tools": [
+        "Network inventory graph",
+        "service assurance API"
+      ],
+      "boundary": "Cannot assume a stale topology edge remains operational."
+    },
+    {
+      "name": "Change investigator",
+      "responsibility": "Compare approved changes and configuration snapshots with incident timing.",
+      "tools": [
+        "Change calendar",
+        "configuration diff reader"
+      ],
+      "boundary": "Cannot roll back or edit network configuration."
+    },
+    {
+      "name": "Runbook coordinator",
+      "responsibility": "Retrieve approved diagnostic steps and draft an operator execution plan.",
+      "tools": [
+        "Runbook search",
+        "incident draft API"
+      ],
+      "boundary": "Only allowlisted read diagnostics can run without separate production-change approval."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Operations support systems",
+      "role": "Supply alarms, resource inventory, service models, and authoritative incident identifiers."
+    },
+    {
+      "name": "Change and configuration platforms",
+      "role": "Retain approved changes, device snapshots, and operator execution records."
+    },
+    {
+      "name": "Controlled automation gateway",
+      "role": "Executes scoped diagnostics or approved changes with preconditions, rate limits, and receipts."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Open incident context",
+      "description": "Deduplicate alarm bursts, assign an incident commander, and establish observation windows and diagnostic budgets."
+    },
+    {
+      "title": "Correlate symptoms",
+      "description": "Group alarms using configured rules and retain representative raw events so compression cannot hide distinct failures."
+    },
+    {
+      "title": "Trace impact",
+      "description": "Query service dependencies with inventory freshness metadata and separate confirmed affected services from possible exposure."
+    },
+    {
+      "title": "Inspect changes",
+      "description": "Compare incident timing with approved changes and configuration differences; label causal hypotheses as provisional."
+    },
+    {
+      "title": "Stage diagnostic plan",
+      "description": "Present safe diagnostic steps, expected observations, rollback prerequisites, and uncertainty for operator selection."
+    },
+    {
+      "title": "Execute bounded action",
+      "description": "The gateway rechecks device state and approval scope, performs the authorized step, and evaluates service evidence before further action."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Network incident evidence coordination — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Network incident evidence coordination\"]\n    N1[\"Alarm correlation agent\"]\n    N2[\"Service impact agent\"]\n    N3[\"Change investigator\"]\n    N4[\"Runbook coordinator\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N1 --> N2\n    N0 --> N3\n    N2 --> N4\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Operations support systems\"\n    participant H as \"Accountable reviewer\"\nO->>S: Read alarms and service topology\n    S-->>O: Candidate protection path\n    O->>S: Validate live path health\n    S-->>O: Protection unavailable\n    O->>H: Block disruptive plan and show evidence\n    H-->>O: Select safe diagnostic path",
+      "caption": "Topology shows a protection path that has already failed. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Topology shows a protection path that has already failed.",
+      "detection": "Current device health disagrees with the stored dependency graph.",
+      "recovery": "Mark redundancy unknown and block plans that rely on the unavailable protection path."
+    },
+    {
+      "scenario": "Repeated remediation creates an oscillating configuration.",
+      "detection": "Action history detects alternating states or an exceeded iteration budget.",
+      "recovery": "Stop automation, preserve traces, and return control to the incident commander."
+    }
+  ],
+  "controls": [
+    "Never expose unrestricted device shells or configuration credentials to model prompts.",
+    "Bound diagnostics by device set, command allowlist, timeout, and incident budget.",
+    "Require operator approval for service-affecting changes and rollback execution.",
+    "Check topology freshness and live protection state before recommending disruption.",
+    "Preserve raw alarms and action receipts behind every compressed incident narrative."
+  ],
+  "metrics": [
+    {
+      "name": "Incident briefing latency",
+      "definition": "Time from incident declaration to a source-backed impact and hypothesis packet."
+    },
+    {
+      "name": "Impact precision",
+      "definition": "Services confirmed affected divided by services flagged as affected in audited incidents."
+    },
+    {
+      "name": "Diagnostic usefulness",
+      "definition": "Approved diagnostics producing a discriminating observation divided by diagnostics executed."
+    },
+    {
+      "name": "Automation containment",
+      "definition": "Attempts blocked for exceeded device, command, or iteration scope divided by attempted actions."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Aggressive alarm grouping",
+      "benefit": "Reduces operator overload during bursts.",
+      "cost": "Can conceal independent faults unless raw evidence remains inspectable."
+    },
+    {
+      "decision": "Graph-based impact analysis",
+      "benefit": "Connects technical symptoms to services.",
+      "cost": "Accuracy depends on inventory and live-state freshness."
+    },
+    {
+      "decision": "Approval-gated remediation",
+      "benefit": "Preserves accountable production control.",
+      "cost": "Operator availability becomes part of restoration latency."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Historical outage replay",
+      "acceptance": "Operators validate alarm grouping, service impact, and unsupported-causality detection across incident classes."
+    },
+    {
+      "phase": "Read-only operations pilot",
+      "acceptance": "One region permits bounded diagnostics after command allowlist and data-access tests pass."
+    },
+    {
+      "phase": "Approved remediation pilot",
+      "acceptance": "A small runbook set launches after oscillation, stale-topology, and rollback-precondition exercises succeed."
+    }
+  ],
+  "related": [
+    4,
+    15,
+    42,
+    44,
+    46,
+    55,
+    59,
+    67
+  ],
+  "references": [
+    {
+      "title": "OPC Foundation: Unified Architecture",
+      "url": "https://opcfoundation.org/about/opc-technologies/opc-ua/"
+    },
+    {
+      "title": "CloudEvents specification project",
+      "url": "https://cloudevents.io/"
+    },
+    {
+      "title": "OpenTelemetry: Traces",
+      "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+    }
+  ]
+}

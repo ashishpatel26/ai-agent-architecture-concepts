@@ -1,0 +1,178 @@
+{
+  "id": 51,
+  "title": "State Rollbacks",
+  "slug": "state-rollbacks",
+  "category": 2,
+  "summary": "Restore a coherent workflow checkpoint while explicitly compensating business effects that a database rollback cannot undo.",
+  "overview": [
+    "State rollback returns an agent workflow to a previously valid logical state after an incorrect plan, failed validation, or operator intervention. The rollback boundary must distinguish local transactional data, durable workflow history, and effects already committed in external systems. Rewinding the conversation does not cancel a shipment or reverse a payment.",
+    "A useful architecture treats recovery as a new, auditable transition. Snapshots provide a starting point; an event history explains changes; compensating commands repair reversible effects. Irreversible actions create a forward-recovery boundary requiring reconciliation or human judgment. Deterministic replay is possible only for recorded inputs and outcomes, not by asking a stochastic model to repeat its earlier reasoning."
+  ],
+  "production": {
+    "poc": "A prototype can reset an in-memory state object, but it should already label every tool as read-only, reversible, or irreversible.",
+    "production": "Production records checkpoint versions, effect identifiers, and compensation status before exposing a recovery command to operators.",
+    "scale": "Enterprise workflows need retention policies, schema migration of old checkpoints, concurrent-writer fencing, and recovery drills covering several external owners."
+  },
+  "components": [
+    {
+      "name": "Checkpoint store",
+      "role": "Persists versioned workflow snapshots with the last committed event position."
+    },
+    {
+      "name": "Effect ledger",
+      "role": "Records requested operations, external receipts, idempotency keys, and compensation eligibility."
+    },
+    {
+      "name": "Recovery coordinator",
+      "role": "Acquires workflow ownership and constructs an ordered recovery plan."
+    },
+    {
+      "name": "Compensation adapters",
+      "role": "Implement domain-specific undo operations with independent retries and verification."
+    },
+    {
+      "name": "Audit journal",
+      "role": "Preserves the original execution and the reason for every recovery decision."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Stop new work",
+      "description": "Fence the current workflow owner so that a late worker cannot continue committing changes."
+    },
+    {
+      "title": "Select boundary",
+      "description": "Choose a validated checkpoint and enumerate all later local mutations and external effects."
+    },
+    {
+      "title": "Classify effects",
+      "description": "Separate reversible reservations from irreversible actions and ambiguous timeouts requiring external lookup."
+    },
+    {
+      "title": "Compensate in order",
+      "description": "Undo dependent reversible operations in reverse dependency order, recording each result durably."
+    },
+    {
+      "title": "Restore logical state",
+      "description": "Create a new workflow revision based on the checkpoint after compensation invariants pass."
+    },
+    {
+      "title": "Resume with evidence",
+      "description": "Continue from the recovery revision or route unresolved effects to an operator with the full ledger."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Recovery across a business boundary",
+      "type": "flowchart",
+      "code": "flowchart TD\n A[\"Failed fulfillment plan\"] --> B[\"Fence active worker\"]\n B --> C[\"Read checkpoint and effect ledger\"]\n C --> D[\"Release stock reservation\"]\n C --> E[\"Shipment already dispatched\"]\n D --> F[\"Create recovered revision\"]\n E --> G[\"Human reconciliation\"]\n G --> F",
+      "caption": "Reversible reservations can be compensated; a dispatched shipment requires a separate business resolution."
+    },
+    {
+      "title": "Recovery state transitions",
+      "type": "state",
+      "code": "stateDiagram-v2\n [*] --> Running\n Running --> Frozen: Recovery requested\n Frozen --> Compensating: Reversible effects exist\n Frozen --> Reconciliation: Irreversible or unknown effect\n Compensating --> Reconciliation: Compensation unresolved\n Compensating --> Recovered: Invariants verified\n Reconciliation --> Recovered: Business resolution recorded\n Recovered --> Running: New revision resumes",
+      "caption": "Recovery remains visibly incomplete while any effect needs reconciliation."
+    }
+  ],
+  "useCase": {
+    "industry": "Retail",
+    "title": "Recovering a partially executed fulfillment plan",
+    "situation": "An order agent reserves stock, books a carrier, and requests payment capture across separate services.",
+    "problem": "A warehouse exception arrives after the carrier booking but before the workflow reaches its completion checkpoint.",
+    "requirement": "Recover the order without losing receipts or booking the same carrier twice.",
+    "architecture": "A versioned order workflow uses a reservation ledger and explicit carrier-cancellation adapter.",
+    "runtime": [
+      "The coordinator freezes the order revision and queries the carrier using its original booking key.",
+      "It cancels a confirmed unused booking, releases inventory, and creates a revised fulfillment task."
+    ],
+    "failure": "If the carrier already collected the parcel, the workflow enters reconciliation instead of claiming that rollback succeeded.",
+    "impact": "Track unresolved effects, compensation age, and recovery completion time; the target is a verifiably consistent order, not a clean-looking transcript."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Frequent checkpoints",
+      "benefit": "Reduce replay distance and recovery work.",
+      "cost": "Increase storage writes and schema-management burden."
+    },
+    {
+      "decision": "Automatic compensation",
+      "benefit": "Restores reversible workflows without operator delay.",
+      "cost": "Requires business-specific semantics and may itself fail."
+    },
+    {
+      "decision": "Immutable history",
+      "benefit": "Supports investigation and trustworthy reconciliation.",
+      "cost": "Retains sensitive operational evidence that needs access and retention controls."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Compensation times out",
+      "detection": "The ledger remains pending while the external service reports an uncertain result.",
+      "recovery": "Query by operation key before retrying compensation."
+    },
+    {
+      "scenario": "Stale worker commits after rollback",
+      "detection": "A revision mismatch or fencing-token violation appears in the commit log.",
+      "recovery": "Reject the stale write and stop the superseded worker."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Deleting failed history",
+      "fix": "Append a recovery revision and preserve the original evidence."
+    },
+    {
+      "mistake": "Treating every action as reversible",
+      "fix": "Document irreversible boundaries and provide forward-recovery procedures."
+    },
+    {
+      "mistake": "Replaying model calls to reconstruct facts",
+      "fix": "Replay stored decisions and tool receipts; explicitly generate a new plan when needed."
+    }
+  ],
+  "whenToUse": [
+    "Choose this for multi-step workflows with meaningful recoverable checkpoints.",
+    "Use it when operators must repair a running process without restarting all work.",
+    "Apply it when reversible reservations span several business systems."
+  ],
+  "whenNotToUse": [
+    "Avoid rollback semantics for completed irreversible actions.",
+    "Do not add it to a stateless classification endpoint with no durable effects.",
+    "Avoid automatic recovery when compensation rules have not been agreed by system owners."
+  ],
+  "checklist": [
+    "Classify every tool effect by reversibility.",
+    "Persist checkpoint schema and workflow revision.",
+    "Fence previous owners before recovery.",
+    "Make each compensation independently idempotent.",
+    "Test ambiguous external outcomes during rollback.",
+    "Alert on compensation age and unresolved effects."
+  ],
+  "related": [
+    3,
+    12,
+    16,
+    41,
+    57,
+    58
+  ],
+  "keywords": [
+    "compensation",
+    "checkpoint",
+    "recovery revision",
+    "effect ledger",
+    "fencing"
+  ],
+  "references": [
+    {
+      "title": "PostgreSQL: Write-Ahead Logging",
+      "url": "https://www.postgresql.org/docs/current/wal-intro.html"
+    },
+    {
+      "title": "AWS Builders Library: Making retries safe with idempotent APIs",
+      "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+    }
+  ]
+}

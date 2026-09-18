@@ -1,0 +1,171 @@
+{
+  "id": 44,
+  "title": "Human-in-the-Loop (HITL)",
+  "slug": "human-in-the-loop-hitl",
+  "category": 2,
+  "summary": "Place accountable human decisions at explicit workflow boundaries, presenting sufficient evidence and preserving approval scope through execution.",
+  "overview": [
+    "Human-in-the-loop architecture asks a person to provide judgment, approval, clarification, or correction at a defined point in an agent workflow. The value comes from matching human responsibility to the decision, not from adding an approve button to every output. Reviewers need the proposed action, relevant evidence, uncertainty, alternatives, and consequences.",
+    "Approval is a versioned authorization artifact. Bind it to the exact action and parameters, authenticate the reviewer, and recheck material changes before execution. A human's presence does not guarantee safety: overloaded reviewers can rubber-stamp requests, and poorly designed interfaces can hide the information needed for an informed decision."
+  ],
+  "production": {
+    "poc": "A prototype can pause and show a proposed action to a domain expert. Observe what evidence the reviewer actually needs to accept or reject it.",
+    "production": "Production creates durable review tasks, role-based assignment, expiry, escalation, and clear reject or edit semantics. Record the approved parameter version and resume through a validated boundary.",
+    "scale": "At scale, prioritize reviews by risk and uncertainty, monitor queue age, and evaluate reviewer disagreement and automation bias. Reserve human attention for decisions where it materially improves the outcome."
+  },
+  "components": [
+    {
+      "name": "Review trigger",
+      "role": "Determines which conditions require judgment or approval under explicit policy."
+    },
+    {
+      "name": "Decision package",
+      "role": "Presents the proposal, source evidence, uncertainty, and expected consequences."
+    },
+    {
+      "name": "Review queue",
+      "role": "Assigns work to authorized people and tracks age, escalation, and service expectations."
+    },
+    {
+      "name": "Approval record",
+      "role": "Binds the authenticated decision to exact parameters, versions, and validity limits."
+    },
+    {
+      "name": "Execution gate",
+      "role": "Rechecks approval scope and current preconditions before performing the action."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Detect review condition",
+      "description": "Apply risk, policy, or uncertainty rules to the proposed next action."
+    },
+    {
+      "title": "Prepare evidence",
+      "description": "Assemble a concise decision package with inspectable sources and unresolved issues."
+    },
+    {
+      "title": "Suspend durably",
+      "description": "Persist the waiting state and release active worker resources."
+    },
+    {
+      "title": "Capture decision",
+      "description": "Authenticate the reviewer and record approve, reject, edit, or request-more-information explicitly."
+    },
+    {
+      "title": "Revalidate scope",
+      "description": "Compare current parameters and business state with the approved version."
+    },
+    {
+      "title": "Execute or revise",
+      "description": "Continue only within approval scope, then record the actual outcome for reviewer feedback."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Approval bound to a specific action",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant A as Agent\n participant Q as Review queue\n participant H as Authorized reviewer\n participant G as Execution gate\n participant T as Business tool\n A->>Q: Proposed action and evidence version\n Q->>H: Review package\n H->>Q: Approve exact parameters\n Q->>G: Signed-in decision and scope\n G->>G: Recheck state and approval validity\n G->>T: Execute approved operation\n T-->>G: Authoritative result\n G-->>Q: Record outcome",
+      "caption": "The execution gate verifies that the action still matches what the reviewer actually approved."
+    }
+  ],
+  "useCase": {
+    "industry": "Energy operations",
+    "title": "Reviewing an equipment maintenance recommendation",
+    "situation": "A utility assistant analyzes maintenance records and proposes taking a pump out of service for inspection.",
+    "problem": "A technically plausible recommendation can overlook operational dependencies or current site constraints known to experienced staff.",
+    "requirement": "The assistant must support the responsible engineer's decision without directly controlling plant equipment.",
+    "architecture": "A review package includes evidence, uncertainty, affected assets, and proposed work-order parameters, with execution restricted to authorized administrative actions.",
+    "runtime": [
+      "The assistant detects a recurring fault pattern and creates a review task instead of issuing an equipment command.",
+      "The engineer edits the inspection window; the system validates and records the revised work-order scope before creation."
+    ],
+    "failure": "If asset status changes after approval, the execution gate pauses and requests renewed review rather than applying stale authorization.",
+    "impact": "Track review quality, queue age, parameter changes, stale-approval rejection, and outcomes after review. Human oversight must remain meaningful and adequately supported."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Targeted review",
+      "benefit": "Domain judgment can address uncertainty and contextual gaps.",
+      "cost": "Human queues add latency and staffing cost."
+    },
+    {
+      "decision": "Exact approval binding",
+      "benefit": "Execution remains within reviewed scope.",
+      "cost": "Small material changes may require another review."
+    },
+    {
+      "decision": "Risk-based routing",
+      "benefit": "Attention focuses on consequential decisions.",
+      "cost": "Trigger quality must be evaluated to avoid missed cases."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A reviewer approves without required authority",
+      "detection": "Role validation fails at decision capture or execution.",
+      "recovery": "Reject the approval and reassign the task."
+    },
+    {
+      "scenario": "The proposal changes after approval",
+      "detection": "Parameter hash or business version differs.",
+      "recovery": "Invalidate approval and present the updated decision package."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Showing only the model's confident summary",
+      "fix": "Include evidence, uncertainty, and consequences."
+    },
+    {
+      "mistake": "Treating approval as unlimited future authority",
+      "fix": "Bind it to specific parameters and validity."
+    },
+    {
+      "mistake": "Ignoring review fatigue",
+      "fix": "Measure workload and reserve mandatory review for meaningful boundaries."
+    }
+  ],
+  "whenToUse": [
+    "Consequential decisions require accountable human judgment.",
+    "Domain context cannot be fully encoded in rules.",
+    "A reviewer can inspect evidence before action."
+  ],
+  "whenNotToUse": [
+    "The review is ceremonial and cannot affect execution.",
+    "No qualified reviewer can respond within the task deadline.",
+    "Simple deterministic validation already resolves the issue."
+  ],
+  "checklist": [
+    "Define precise review triggers.",
+    "Provide inspectable evidence and alternatives.",
+    "Authenticate and authorize reviewers.",
+    "Bind approval to exact parameters.",
+    "Expire stale or changed approvals.",
+    "Monitor queue age and review quality."
+  ],
+  "related": [
+    16,
+    18,
+    23,
+    27,
+    43
+  ],
+  "keywords": [
+    "HITL",
+    "approval",
+    "review queue",
+    "human oversight",
+    "approval scope"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: interrupts",
+      "url": "https://docs.langchain.com/oss/python/langgraph/interrupts"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

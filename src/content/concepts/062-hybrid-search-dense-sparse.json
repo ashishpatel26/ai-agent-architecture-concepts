@@ -1,0 +1,171 @@
+{
+  "id": 62,
+  "title": "Hybrid Search (Dense + Sparse)",
+  "slug": "hybrid-search-dense-sparse",
+  "category": 3,
+  "summary": "Combine lexical precision with semantic recall, then fuse candidate rankings under one authorization and evaluation contract.",
+  "overview": [
+    "Hybrid search combines sparse retrieval, such as term-based scoring, with dense vector retrieval. Sparse signals preserve exact identifiers and unusual terminology; dense signals connect paraphrases and related meanings. Neither channel dominates every enterprise query, so the architecture retrieves complementary evidence before selecting a final context.",
+    "The main design choice is fusion. Reciprocal rank fusion uses rank positions without assuming comparable raw scores. Weighted score fusion needs normalization and calibration because lexical and vector scores have different distributions. Filters, document versions, and deduplication must be aligned across both channels so fusion does not reintroduce unauthorized or obsolete evidence."
+  ],
+  "production": {
+    "poc": "Begin with separate lexical and dense baselines on questions containing both paraphrases and exact part numbers.",
+    "production": "Production standardizes document identity, metadata filters, fusion parameters, and candidate budgets before adding a reranker.",
+    "scale": "At scale, measure retrieval quality by query class, maintain both indexes consistently, and budget parallel lookup and fusion latency."
+  },
+  "components": [
+    {
+      "name": "Lexical index",
+      "role": "Finds exact names, identifiers, and distinctive terms."
+    },
+    {
+      "name": "Dense index",
+      "role": "Finds passages related in meaning through query and document embeddings."
+    },
+    {
+      "name": "Query coordinator",
+      "role": "Applies common constraints and dispatches bounded searches."
+    },
+    {
+      "name": "Fusion layer",
+      "role": "Deduplicates document identities and combines ranks or calibrated scores."
+    },
+    {
+      "name": "Relevance evaluator",
+      "role": "Measures recall, ranking quality, and downstream evidence coverage."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Normalize the query",
+      "description": "Preserve meaningful identifiers while handling harmless formatting differences."
+    },
+    {
+      "title": "Apply common scope",
+      "description": "Resolve authorization and freshness constraints once for both retrieval channels."
+    },
+    {
+      "title": "Search in parallel",
+      "description": "Fetch bounded lexical and dense candidate lists with independent timing information."
+    },
+    {
+      "title": "Fuse candidates",
+      "description": "Combine ranks or normalized scores and retain each candidate’s source-channel evidence."
+    },
+    {
+      "title": "Rerank if needed",
+      "description": "Score the fused shortlist against the full question and remove redundant passages."
+    },
+    {
+      "title": "Assemble context",
+      "description": "Select cited evidence within a token budget and record retrieval diagnostics for evaluation."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Two complementary retrieval channels",
+      "type": "flowchart",
+      "code": "flowchart LR\n Q[\"Question and allowed scope\"] --> L[\"Lexical index\"]\n Q --> D[\"Dense vector index\"]\n L --> F[\"Rank fusion and deduplication\"]\n D --> F\n F --> R[\"Optional cross-encoder\"]\n R --> C[\"Evidence context\"]",
+      "caption": "Fusion happens after both retrieval paths apply the same scope and document identity rules."
+    }
+  ],
+  "useCase": {
+    "industry": "Industrial distribution",
+    "title": "Finding a replacement component",
+    "situation": "A distributor assistant searches catalogs and service notes for replacement components.",
+    "problem": "Exact part numbers retrieve well lexically, while descriptions such as heat-resistant valve require semantic matching.",
+    "requirement": "Find compatible evidence for mixed queries without losing rare identifiers.",
+    "architecture": "Catalog records and service passages share stable IDs across lexical and dense indexes.",
+    "runtime": [
+      "A query containing a legacy part number and a functional description runs through both channels.",
+      "Fusion preserves the exact-match manual and adds semantically relevant compatibility notes."
+    ],
+    "failure": "If one index is behind the source revision, candidates from that revision are excluded or marked incomplete before answering.",
+    "impact": "Evaluate exact-identifier recall and paraphrase recall separately; aggregate relevance can conceal a serious regression in either workload."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Rank fusion",
+      "benefit": "Avoids raw-score comparability assumptions.",
+      "cost": "Ignores some magnitude information within each channel."
+    },
+    {
+      "decision": "Weighted fusion",
+      "benefit": "Allows query-specific channel emphasis.",
+      "cost": "Requires calibration and drift monitoring."
+    },
+    {
+      "decision": "Parallel retrieval",
+      "benefit": "Limits serial latency.",
+      "cost": "Consumes two index paths per request."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "One channel dominates numerically",
+      "detection": "Nearly all final results come from one score scale.",
+      "recovery": "Use rank fusion or normalize with evaluated calibration."
+    },
+    {
+      "scenario": "Duplicate chunks crowd the context",
+      "detection": "Several hits refer to the same passage or revision.",
+      "recovery": "Deduplicate by stable evidence identity before final selection."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Adding unnormalized scores",
+      "fix": "Treat fusion as a calibrated ranking decision."
+    },
+    {
+      "mistake": "Using different ACL filters per index",
+      "fix": "Resolve and apply one authoritative scope."
+    },
+    {
+      "mistake": "Measuring only answer fluency",
+      "fix": "Evaluate retrieval recall and citation support directly."
+    }
+  ],
+  "whenToUse": [
+    "Use for corpora mixing prose and exact identifiers.",
+    "Use when dense-only retrieval misses rare terms.",
+    "Use when lexical-only retrieval misses paraphrases."
+  ],
+  "whenNotToUse": [
+    "Avoid dual indexes without measured retrieval benefit.",
+    "Do not fuse results with incompatible permission semantics.",
+    "Avoid unlimited candidate lists that overwhelm reranking."
+  ],
+  "checklist": [
+    "Create stable cross-index document IDs.",
+    "Align authorization filters.",
+    "Choose and document fusion semantics.",
+    "Evaluate identifier and paraphrase slices.",
+    "Deduplicate before context assembly.",
+    "Monitor index-version divergence."
+  ],
+  "related": [
+    63,
+    65,
+    66,
+    69,
+    76,
+    79
+  ],
+  "keywords": [
+    "hybrid search",
+    "BM25",
+    "dense retrieval",
+    "reciprocal rank fusion"
+  ],
+  "references": [
+    {
+      "title": "Milvus: Multi-vector hybrid search",
+      "url": "https://milvus.io/docs/multi-vector-search.md"
+    },
+    {
+      "title": "Sentence Transformers: Retrieve and re-rank",
+      "url": "https://www.sbert.net/examples/sentence_transformer/applications/retrieve_rerank/README.html"
+    }
+  ]
+}

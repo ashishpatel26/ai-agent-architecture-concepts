@@ -1,0 +1,171 @@
+{
+  "id": 50,
+  "title": "Exponential Backoff with Jitter",
+  "slug": "exponential-backoff-with-jitter",
+  "category": 2,
+  "summary": "Retry transient failures with bounded exponential delays and randomized timing, preserving operation identity and respecting the remaining task deadline.",
+  "overview": [
+    "Exponential backoff increases the delay between repeated attempts so a struggling dependency has time to recover. Jitter randomizes that delay to prevent many clients from retrying together. A common full-jitter policy samples uniformly between zero and the capped exponential delay, but the exact algorithm should be documented and tested.",
+    "Retry only failures that may improve and only operations that are safe to repeat. Authentication errors, invalid arguments, and permanent policy denials usually need correction or termination. For commands with uncertain outcomes, idempotency and reconciliation come before retry convenience. Backoff reduces synchronized pressure; it does not create additional dependency capacity."
+  ],
+  "production": {
+    "poc": "A prototype can simulate transient failures and verify that attempts spread over time. Include a hard maximum attempt count and total elapsed budget.",
+    "production": "Production classifies retryable errors, honors applicable server retry guidance, preserves operation keys, and chooses one layer to own retries. Nested SDK, gateway, and agent retries can multiply traffic unexpectedly.",
+    "scale": "At scale, combine backoff with retry budgets, circuit breakers, and admission control. Measure attempts per original request and dependency load during recovery, not only the percentage eventually succeeding."
+  },
+  "components": [
+    {
+      "name": "Retry classifier",
+      "role": "Determines whether the observed error is transient, permanent, throttled, or outcome-uncertain."
+    },
+    {
+      "name": "Backoff scheduler",
+      "role": "Computes capped exponential delays and applies the selected jitter distribution."
+    },
+    {
+      "name": "Retry budget",
+      "role": "Limits attempts and aggregate retry traffic within task and service capacity."
+    },
+    {
+      "name": "Deadline check",
+      "role": "Rejects another attempt when delay and useful execution cannot fit the remaining window."
+    },
+    {
+      "name": "Operation ledger",
+      "role": "Preserves command identity and reconciles effects across repeated attempts."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Classify failure",
+      "description": "Inspect transport status, service error semantics, and whether a side effect may already have occurred."
+    },
+    {
+      "title": "Check safety",
+      "description": "Confirm read semantics, downstream idempotency, or completed reconciliation before repeating a command."
+    },
+    {
+      "title": "Compute delay",
+      "description": "Calculate the capped exponential interval and apply documented jitter and relevant server guidance."
+    },
+    {
+      "title": "Check budgets",
+      "description": "Ensure attempt count, retry allocation, and remaining task deadline permit another useful call."
+    },
+    {
+      "title": "Schedule asynchronously",
+      "description": "Wait without occupying scarce execution resources where the runtime supports durable scheduling."
+    },
+    {
+      "title": "Attempt and record",
+      "description": "Reuse operation identity, record outcome and delay, then stop or continue under the same bounded policy."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Bounded retry with randomized delay",
+      "type": "flowchart",
+      "code": "flowchart LR\n C[\"Dependency call\"] --> E[\"Classify failure\"]\n E --> P[\"Permanent failure\"]\n E --> I[\"Idempotency or reconciliation check\"]\n I --> B[\"Attempt and deadline budget\"]\n B --> J[\"Capped exponential delay with jitter\"]\n J --> C\n B --> S[\"Stop or defer\"]\n E --> R[\"Record successful result\"]",
+      "caption": "A retry requires both semantic safety and remaining budget before randomized scheduling."
+    }
+  ],
+  "useCase": {
+    "industry": "Logistics integration",
+    "title": "Recovering from carrier tracking throttling",
+    "situation": "A delivery platform's agents query carrier tracking APIs after a regional weather disruption increases customer requests.",
+    "problem": "Immediate retries synchronize across workers and intensify throttling, delaying every shipment investigation.",
+    "requirement": "The assistant must recover transient tracking reads without exhausting the carrier or the user-facing deadline.",
+    "architecture": "A carrier-specific retry policy classifies throttling, applies server guidance and jittered backoff, and consumes a shared retry budget.",
+    "runtime": [
+      "A throttled request schedules a randomized later attempt while the agent retains the shipment and request identity.",
+      "If the remaining deadline is too short, the task returns a deferred status instead of starting an attempt that cannot usefully finish."
+    ],
+    "failure": "If the same policy is applied to a shipment-changing command, the adapter first requires idempotency or reconciliation rather than assuming read-like safety.",
+    "impact": "Track attempts per original request, retry delay, throttle rate, deadline exhaustion, and carrier recovery load under burst tests."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Exponential delay",
+      "benefit": "Repeated pressure falls as failures persist.",
+      "cost": "Individual requests may take longer to recover."
+    },
+    {
+      "decision": "Jitter",
+      "benefit": "Clients are less likely to retry in synchronized bursts.",
+      "cost": "Timing becomes variable and tests need distribution-aware assertions."
+    },
+    {
+      "decision": "Shared retry budgets",
+      "benefit": "Retries cannot consume unlimited service capacity.",
+      "cost": "Some recoverable requests must fail or defer during widespread outages."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Multiple layers each retry several times",
+      "detection": "Traces show multiplicative attempts for one business request.",
+      "recovery": "Assign retry ownership and disable or coordinate nested policies."
+    },
+    {
+      "scenario": "A delay exceeds the remaining deadline",
+      "detection": "Scheduler would wake after the task has expired.",
+      "recovery": "Stop or defer without issuing another call."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Retrying every non-success response",
+      "fix": "Classify errors using actual operation semantics."
+    },
+    {
+      "mistake": "Adding the same fixed delay to every worker",
+      "fix": "Use a documented jitter distribution."
+    },
+    {
+      "mistake": "Changing idempotency keys on retry",
+      "fix": "Preserve the original business operation identity."
+    }
+  ],
+  "whenToUse": [
+    "Failures are plausibly transient or caused by throttling.",
+    "Repeated operations are idempotent or safely reconciled.",
+    "Recovery can fit bounded time and capacity budgets."
+  ],
+  "whenNotToUse": [
+    "The error is permanent or requires new user input.",
+    "Repeating the operation can create uncontrolled side effects.",
+    "Retries would exceed the user's deadline or overload the service."
+  ],
+  "checklist": [
+    "Define retryable errors per operation.",
+    "Choose one retry owner across layers.",
+    "Document base delay, cap, and jitter.",
+    "Honor applicable server retry guidance.",
+    "Preserve operation keys and deadline context.",
+    "Load-test synchronized failure and recovery."
+  ],
+  "related": [
+    33,
+    41,
+    42,
+    48,
+    49
+  ],
+  "keywords": [
+    "exponential backoff",
+    "jitter",
+    "retry budget",
+    "throttling",
+    "retry amplification"
+  ],
+  "references": [
+    {
+      "title": "AWS: timeouts, retries, and backoff with jitter",
+      "url": "https://d1.awsstatic.com/builderslibrary/pdfs/timeouts-retries-and-backoff-with-jitter.pdf"
+    },
+    {
+      "title": "AWS SDKs: retry behavior",
+      "url": "https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "id": 35,
+  "title": "Adversarial Prompt Testing",
+  "slug": "adversarial-prompt-testing",
+  "category": 1,
+  "summary": "Continuously test adversarial inputs against the application’s actual trust boundaries, measuring unauthorized effects and preserving reproducible regression cases.",
+  "overview": [
+    "Adversarial prompt testing deliberately probes how an agent behaves when inputs attempt to violate its intended boundaries. Tests should cover direct prompts, retrieved documents, tool results, attachments, conversation history, and encoded or multilingual content. The objective is to find operational failures, not merely collect unusual model responses.",
+    "Define the adversary's access and desired consequence. A supplier controlling one PDF has different capabilities from an authenticated user with tool access. Use isolated test environments and synthetic sensitive data, then assess whether the system disclosed protected information, invoked unauthorized tools, or misrepresented completion."
+  ],
+  "production": {
+    "poc": "A prototype can start with a small threat-model-driven set of attacks and benign controls. Record reproducible inputs rather than relying on live improvisation alone.",
+    "production": "Production runs regression cases against every material prompt, model, retrieval, or tool change. Test the complete application because a model refusal can coexist with a leaked tool result.",
+    "scale": "At scale, combine curated cases, generated variants, and expert review. Track coverage by attack surface and consequence, and prioritize confirmed boundary failures over raw counts of suspicious outputs."
+  },
+  "components": [
+    {
+      "name": "Threat model",
+      "role": "Defines attacker control, protected assets, trust boundaries, and unacceptable outcomes."
+    },
+    {
+      "name": "Attack corpus",
+      "role": "Stores versioned payloads, source placement, prerequisites, and expected safe behavior."
+    },
+    {
+      "name": "Isolated harness",
+      "role": "Executes realistic workflows using synthetic secrets and nonproduction tool endpoints."
+    },
+    {
+      "name": "Outcome detector",
+      "role": "Checks data exposure, tool invocations, destination access, and state changes."
+    },
+    {
+      "name": "Regression triage",
+      "role": "Converts confirmed failures into fixes, ownership, and stable prevention tests."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Choose boundary",
+      "description": "Specify what the attacker controls and which unauthorized effect the test attempts."
+    },
+    {
+      "title": "Construct scenario",
+      "description": "Place the payload in a realistic source with necessary permissions and benign surrounding context."
+    },
+    {
+      "title": "Execute application",
+      "description": "Run the same retrieval, model, tool, and output paths used by the product."
+    },
+    {
+      "title": "Observe consequences",
+      "description": "Inspect tool calls, data flows, state mutations, and visible responses."
+    },
+    {
+      "title": "Triage evidence",
+      "description": "Distinguish actual violations from harmless quotations or expected refusals."
+    },
+    {
+      "title": "Retest fixes",
+      "description": "Preserve the minimal reproducer and verify both attack resistance and legitimate task behavior."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Adversarial testing observes actual effects",
+      "type": "flowchart",
+      "code": "flowchart LR\n T[\"Threat model\"] --> C[\"Versioned attack cases\"]\n C --> H[\"Isolated application harness\"]\n H --> M[\"Model and retrieval\"]\n M --> G[\"Test tool gateway\"]\n G --> O[\"Effect observation\"]\n M --> O\n O --> R[\"Failure triage\"]\n R --> F[\"Control fix\"]\n F --> C",
+      "caption": "Success criteria inspect unauthorized consequences across the application, not just the wording of the final answer."
+    }
+  ],
+  "useCase": {
+    "industry": "Industrial procurement",
+    "title": "Testing malicious supplier attachments",
+    "situation": "A procurement platform summarizes attachments submitted by external suppliers and can query internal comparison records.",
+    "problem": "The team has tested direct jailbreak prompts but has not tested instructions hidden in proposal text or extracted image content.",
+    "requirement": "The assistant must resist attempts to expose competing bids or alter approved evaluation criteria.",
+    "architecture": "An isolated harness uses synthetic bids, controlled supplier documents, and tool endpoints that record every attempted action.",
+    "runtime": [
+      "A test proposal embeds instructions to retrieve a competitor's price and send it to a supplier-controlled destination.",
+      "The harness checks whether retrieval authorization and egress policy block the attempt, even if the model repeats part of the instruction."
+    ],
+    "failure": "If a bypass succeeds, the team repairs the relevant boundary and retains the exact artifact as a regression case.",
+    "impact": "Track confirmed exfiltration or unauthorized-action rate, attack-surface coverage, false-positive blocking, and time to verified remediation."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Generated attack variants",
+      "benefit": "Broader phrasing and encoding combinations can be explored.",
+      "cost": "Many variants are redundant or unrealistic."
+    },
+    {
+      "decision": "End-to-end testing",
+      "benefit": "Real integration weaknesses become visible.",
+      "cost": "Tests cost more and require safe representative environments."
+    },
+    {
+      "decision": "Strict outcome checks",
+      "benefit": "Findings focus on meaningful boundary failures.",
+      "cost": "Some subtle information leakage requires expert review."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Tests pass because a mock omits the risky tool",
+      "detection": "Harness coverage review reveals a missing production capability.",
+      "recovery": "Add a safe equivalent and rerun relevant scenarios."
+    },
+    {
+      "scenario": "A fix blocks legitimate documents",
+      "detection": "Benign control cases regress after the change.",
+      "recovery": "Refine the control while preserving the confirmed boundary protection."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Counting refusals as the only success signal",
+      "fix": "Inspect tools, data movement, and persisted state."
+    },
+    {
+      "mistake": "Testing only the chat input",
+      "fix": "Include every untrusted content source."
+    },
+    {
+      "mistake": "Using real customer secrets in attacks",
+      "fix": "Use synthetic canaries and controlled nonproduction systems."
+    }
+  ],
+  "whenToUse": [
+    "Agents process attacker-influenced content.",
+    "Tools or private data create meaningful consequences.",
+    "Changes can alter trust-boundary behavior."
+  ],
+  "whenNotToUse": [
+    "There is no defined threat model or protected asset.",
+    "The proposed test would affect live third-party systems.",
+    "A benchmark score is being treated as permanent immunity."
+  ],
+  "checklist": [
+    "Document attacker capabilities per case.",
+    "Use synthetic sensitive data and safe tools.",
+    "Cover retrieval and tool-output injection.",
+    "Observe actual effects and data flows.",
+    "Retain minimal reproducible failures.",
+    "Run benign controls after every mitigation."
+  ],
+  "related": [
+    24,
+    29,
+    31,
+    32,
+    60
+  ],
+  "keywords": [
+    "adversarial testing",
+    "red teaming",
+    "prompt attack",
+    "regression corpus",
+    "trust boundary"
+  ],
+  "references": [
+    {
+      "title": "OWASP: LLM prompt injection prevention",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

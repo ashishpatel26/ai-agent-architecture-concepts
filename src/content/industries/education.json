@@ -1,0 +1,195 @@
+{
+  "slug": "education",
+  "name": "Education",
+  "sector": "Public and social services",
+  "icon": "graduation-cap",
+  "title": "Student support case coordination",
+  "summary": "Coordinate academic records, support resources, and appointment options while staff retain consequential student decisions.",
+  "situation": "Illustrative architecture: A university support office receives a student's request involving course registration, an approaching deadline, and difficulty accessing campus services. Advisers need a current view of relevant records and available support. Agents prepare options and referrals without determining admissions, discipline, disability eligibility, or academic outcomes.",
+  "problem": "Support requests span systems with different permissions and sensitive personal information. Inferring a disability or risk category from conversational text can create harmful labels. Outdated course rules can also lead to an incorrect promise about progression or fees.",
+  "whyAgents": "Academic-record, policy, resource, and case-coordination specialists retrieve only the information needed for the student's stated request. The workflow distinguishes official academic decisions from assistance and leaves sensitive disclosures under explicit access controls.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Evaluate whether students reach appropriate staff with fewer repeated explanations while protecting their information. Faster answers are insufficient if policy applicability, referral acceptance, or the student's stated preferences are lost.",
+  "agents": [
+    {
+      "name": "Academic context agent",
+      "responsibility": "Retrieve permitted enrollment facts and relevant registration events.",
+      "tools": [
+        "Student information read API",
+        "course catalog query"
+      ],
+      "boundary": "Cannot change grades, enrollment, or academic standing."
+    },
+    {
+      "name": "Policy retrieval agent",
+      "responsibility": "Find current deadlines and requirements applicable to the student's program.",
+      "tools": [
+        "Academic policy search",
+        "calendar registry"
+      ],
+      "boundary": "Cannot grant exceptions or interpret missing records as ineligibility."
+    },
+    {
+      "name": "Resource navigator",
+      "responsibility": "Locate available advising and support services using explicit student preferences.",
+      "tools": [
+        "Service directory",
+        "appointment availability API"
+      ],
+      "boundary": "Cannot infer sensitive conditions or assign a diagnostic label."
+    },
+    {
+      "name": "Adviser packet agent",
+      "responsibility": "Draft a source-backed case summary and proposed referrals.",
+      "tools": [
+        "Support case draft API",
+        "approved communication templates"
+      ],
+      "boundary": "Staff approve referrals, communications, and any academic exception request."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Student information system",
+      "role": "Owns enrollment, program identity, grades, and authoritative academic decisions."
+    },
+    {
+      "name": "Policy and service directories",
+      "role": "Provide effective calendars, program rules, service availability, and approved contact routes."
+    },
+    {
+      "name": "Advising platform",
+      "role": "Retains consent context, assigned adviser, protected notes, and approved follow-up tasks."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Authenticate request",
+      "description": "Verify student identity and capture the specific assistance requested without requiring unrelated sensitive disclosures."
+    },
+    {
+      "title": "Bind permitted context",
+      "description": "Resolve adviser role, program scope, and purpose before retrieving academic or protected support records."
+    },
+    {
+      "title": "Retrieve current rules",
+      "description": "Match program and term to effective deadlines and policies, exposing ambiguity instead of promising an exception."
+    },
+    {
+      "title": "Find suitable resources",
+      "description": "Query available services against explicit preferences, access requirements, and scheduling constraints."
+    },
+    {
+      "title": "Prepare adviser review",
+      "description": "Show official facts, cited rules, unanswered questions, and optional referrals without inferring student traits or outcomes."
+    },
+    {
+      "title": "Record agreed follow-up",
+      "description": "Save approved appointments or tasks with student consent where required and track whether a responsible staff member accepts the handoff."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Student support case coordination — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Student support case coordination\"]\n    N1[\"Academic context agent\"]\n    N2[\"Policy retrieval agent\"]\n    N3[\"Resource navigator\"]\n    N4[\"Adviser packet agent\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N0 --> N2\n    N2 --> N3\n    N1 --> N4\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Student information system\"\n    participant H as \"Accountable reviewer\"\nO->>S: Read program and current term\n    S-->>O: Current enrollment context\n    O->>H: Present policy and referral options\n    H-->>O: Approve support handoff\n    O->>S: Record receiving-service acceptance\n    S-->>O: Acceptance pending\n    O->>H: Retain case ownership until accepted",
+      "caption": "A policy search returns last year's deadline. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A policy search returns last year's deadline.",
+      "detection": "Term and effective-date checks conflict with the student's current registration period.",
+      "recovery": "Reject the stale rule and route unresolved deadline questions to the registrar or adviser."
+    },
+    {
+      "scenario": "A case summary includes unrelated protected notes.",
+      "detection": "Purpose and field-level access validation flags information outside the request scope.",
+      "recovery": "Remove the material, record the access incident for authorized review, and rebuild the packet with minimum necessary context."
+    }
+  ],
+  "controls": [
+    "Apply purpose-specific access to academic, disability, financial, and counseling records.",
+    "Do not infer sensitive traits or assign risk labels from ordinary support conversations.",
+    "Keep admissions, grades, discipline, and eligibility decisions with authorized staff.",
+    "Display term and program applicability for every policy citation.",
+    "Require an accepted staff handoff for urgent or unresolved support requests."
+  ],
+  "metrics": [
+    {
+      "name": "Policy applicability",
+      "definition": "Audited citations matching the student's program and term divided by audited citations."
+    },
+    {
+      "name": "Case preparation time",
+      "definition": "Elapsed time from authenticated request to adviser-reviewable options and outstanding questions."
+    },
+    {
+      "name": "Handoff acceptance",
+      "definition": "Referred cases accepted by the responsible service within its defined window divided by referred cases."
+    },
+    {
+      "name": "Unnecessary data exposure",
+      "definition": "Audited case packets containing out-of-purpose information divided by audited packets."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Purpose-limited retrieval",
+      "benefit": "Protects sensitive student information.",
+      "cost": "Advisers may need a separate authorized request for additional context."
+    },
+    {
+      "decision": "Resource navigation specialists",
+      "benefit": "Make fragmented services easier to discover.",
+      "cost": "Directory freshness becomes an operational responsibility."
+    },
+    {
+      "decision": "Staff-owned decisions",
+      "benefit": "Preserves accountability for student consequences.",
+      "cost": "Capacity constraints still affect appointment and exception queues."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Synthetic student scenarios",
+      "acceptance": "Staff verify program rules, sensitive-record boundaries, and unsupported eligibility conclusions."
+    },
+    {
+      "phase": "Read-only adviser pilot",
+      "acceptance": "One office reviews draft cases and confirms that every referral has an accountable recipient."
+    },
+    {
+      "phase": "Approved scheduling support",
+      "acceptance": "Appointments and follow-up tasks launch after stale-calendar, consent-change, and unaccepted-handoff tests pass."
+    }
+  ],
+  "related": [
+    21,
+    23,
+    25,
+    28,
+    32,
+    44,
+    68
+  ],
+  "references": [
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    },
+    {
+      "title": "NIST SP 800-207: Zero Trust Architecture",
+      "url": "https://csrc.nist.gov/pubs/sp/800/207/final"
+    },
+    {
+      "title": "Temporal: Workflow execution",
+      "url": "https://docs.temporal.io/workflow-execution"
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "id": 57,
+  "title": "Crash-Safe Memory",
+  "slug": "crash-safe-memory",
+  "category": 2,
+  "summary": "Persist agent progress and effect receipts so a replacement worker can resume safely after an abrupt process or machine failure.",
+  "overview": [
+    "Crash-safe memory preserves the workflow facts needed for correct recovery after volatile process state disappears. It includes accepted inputs, state revisions, pending commands, tool receipts, and completion markers. Saving conversation text alone cannot establish whether an external operation happened before a crash.",
+    "The critical design question is the commit boundary. Durable state must precede acknowledgment, and external effects need idempotency or reconciliation when they cannot share a transaction with workflow storage. Write-ahead logging protects a database transaction under its configured durability assumptions; it does not automatically make the surrounding distributed workflow exactly once."
+  ],
+  "production": {
+    "poc": "A prototype should survive a forced process kill between two tool calls without losing the accepted task.",
+    "production": "Production persists revisions and effect identifiers, coordinates queue acknowledgment with durable commits, and tests duplicate delivery.",
+    "scale": "Enterprise scale defines recovery point and recovery time objectives, replication behavior, backup restoration, and schema compatibility for old unfinished workflows."
+  },
+  "components": [
+    {
+      "name": "Durable state database",
+      "role": "Stores workflow revisions and committed task progress."
+    },
+    {
+      "name": "Command outbox",
+      "role": "Records intended external work in the same transaction as its originating state change."
+    },
+    {
+      "name": "Receipt ledger",
+      "role": "Associates tool results with stable operation identifiers."
+    },
+    {
+      "name": "Recovery worker",
+      "role": "Acquires a lease and reconstructs pending work after failure."
+    },
+    {
+      "name": "Snapshot archive",
+      "role": "Provides recoverable history beyond a single running database instance."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Accept durably",
+      "description": "Commit the task identifier and initial state before acknowledging receipt to the caller."
+    },
+    {
+      "title": "Record intent",
+      "description": "Write the next state and tool command together using a transaction or equivalent atomic boundary."
+    },
+    {
+      "title": "Execute command",
+      "description": "Deliver the command with a stable idempotency key and retain its external receipt."
+    },
+    {
+      "title": "Commit outcome",
+      "description": "Persist validated results and mark the command complete before advancing the workflow."
+    },
+    {
+      "title": "Recover ownership",
+      "description": "A replacement worker acquires a fenced lease and reads the last committed revision."
+    },
+    {
+      "title": "Resolve uncertainty",
+      "description": "Reconcile incomplete commands against external receipts before deciding whether execution may repeat."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Durable intent and recovery",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant W as Agent worker\n participant D as Durable database\n participant T as Tool service\n participant R as Recovery worker\n W->>D: Commit state and command intent\n W->>T: Execute with operation key\n T-->>W: Receipt\n W->>D: Commit receipt and progress\n R->>D: Read pending commands after crash\n R->>T: Reconcile operation key\n T-->>R: Existing outcome",
+      "caption": "A crash between the tool result and database commit is resolved by operation identity, not blind replay."
+    },
+    {
+      "title": "Ambiguous effect recovery",
+      "type": "state",
+      "code": "stateDiagram-v2\n [*] --> IntentCommitted\n IntentCommitted --> EffectSubmitted\n EffectSubmitted --> ReceiptCommitted: Result persisted\n EffectSubmitted --> OutcomeUnknown: Worker crashes\n OutcomeUnknown --> Reconciling: Recovery lease acquired\n Reconciling --> ReceiptCommitted: Existing effect found\n Reconciling --> IntentCommitted: Safe retry established\n Reconciling --> HumanReview: External outcome unresolved\n ReceiptCommitted --> [*]",
+      "caption": "Unknown is a durable recovery state and must not be silently converted to failed."
+    }
+  ],
+  "useCase": {
+    "industry": "Banking operations",
+    "title": "Surviving a crash during account-maintenance review",
+    "situation": "An internal agent verifies supporting documents and submits approved account-maintenance requests.",
+    "problem": "A worker can crash after submission but before recording the response.",
+    "requirement": "Recover the review without submitting the maintenance request twice.",
+    "architecture": "The workflow database stores command intent, a stable case key, and the maintenance-system receipt.",
+    "runtime": [
+      "The replacement worker finds a pending submission for the case.",
+      "It queries the maintenance system by the original key and records the existing receipt."
+    ],
+    "failure": "If the external system cannot identify the submission, the case pauses for reconciliation instead of assuming failure.",
+    "impact": "Measure recovered task completeness, duplicate-effect incidents, and reconciliation age; memory durability is useful only when business effects remain coherent."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Synchronous durable commit",
+      "benefit": "Reduces acknowledged-progress loss.",
+      "cost": "Adds write latency to each boundary."
+    },
+    {
+      "decision": "Checkpoint batching",
+      "benefit": "Improves write throughput.",
+      "cost": "Increases replay distance and possible unacknowledged work."
+    },
+    {
+      "decision": "Replicated storage",
+      "benefit": "Improves resilience to node loss.",
+      "cost": "Requires explicit consistency and failover assumptions."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Acknowledgment precedes persistence",
+      "detection": "An accepted task disappears after restart.",
+      "recovery": "Persist acceptance before acknowledging and replay durable ingress records."
+    },
+    {
+      "scenario": "Lease split brain",
+      "detection": "Two workers attempt the same revision.",
+      "recovery": "Reject stale fencing tokens and reconcile any external effects."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Persisting only model messages",
+      "fix": "Store workflow state, tool intent, and effect receipts."
+    },
+    {
+      "mistake": "Assuming database durability covers APIs",
+      "fix": "Design idempotency and reconciliation across the external boundary."
+    },
+    {
+      "mistake": "Never testing abrupt termination",
+      "fix": "Inject kills at every commit boundary and inspect recovered invariants."
+    }
+  ],
+  "whenToUse": [
+    "Use for long-running or high-value workflows.",
+    "Use with at-least-once queues and replaceable workers.",
+    "Use when accepted work must survive machine loss."
+  ],
+  "whenNotToUse": [
+    "Avoid durable orchestration for disposable stateless inference.",
+    "Do not promise zero data loss without storage guarantees.",
+    "Avoid automatic replay of ambiguous non-idempotent commands."
+  ],
+  "checklist": [
+    "Define the durable acknowledgment boundary.",
+    "Persist command identity before execution.",
+    "Fence recovered workers.",
+    "Test crashes between effect and receipt commit.",
+    "Document replication and backup recovery objectives.",
+    "Exercise restoration of unfinished workflow schemas."
+  ],
+  "related": [
+    12,
+    16,
+    38,
+    41,
+    51,
+    58
+  ],
+  "keywords": [
+    "durable state",
+    "write-ahead log",
+    "outbox",
+    "recovery",
+    "effect receipt"
+  ],
+  "references": [
+    {
+      "title": "PostgreSQL: Write-Ahead Logging",
+      "url": "https://www.postgresql.org/docs/current/wal-intro.html"
+    },
+    {
+      "title": "AWS Builders Library: Making retries safe with idempotent APIs",
+      "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+    }
+  ]
+}

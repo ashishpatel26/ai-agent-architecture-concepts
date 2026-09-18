@@ -1,0 +1,171 @@
+{
+  "id": 32,
+  "title": "Model Bias Auditing",
+  "slug": "model-bias-auditing",
+  "category": 1,
+  "summary": "Measure whether model behavior and downstream decisions differ across relevant groups, investigate causes, and validate mitigations within the actual application context.",
+  "overview": [
+    "Bias auditing examines systematic differences in errors, coverage, treatment, or outcomes across relevant populations. The unit of analysis may be a model prediction, a generated summary, an agent's escalation behavior, or a complete human-assisted process. A balanced training dataset alone does not establish fair operation.",
+    "Choose metrics from the decision context and potential harms. Different fairness criteria can conflict, and protected-group data may require specific governance. Audit both the model and the workflow: unequal retrieval coverage, language quality, or reviewer behavior can create disparities even when the same model serves every user."
+  ],
+  "production": {
+    "poc": "A prototype should identify affected groups and plausible harms before selecting metrics. Use reviewed examples to expose obvious representational and coverage problems.",
+    "production": "Production defines subgroup evaluation, uncertainty intervals, data handling, and an escalation path for material disparities. Keep human judgment and business policy visible in the analysis.",
+    "scale": "At scale, monitor intersectional groups and changing populations without overinterpreting tiny samples. Reaudit after model, prompt, retrieval, policy, or user-population changes."
+  },
+  "components": [
+    {
+      "name": "Audit scope",
+      "role": "Defines the decision, affected groups, plausible harms, and relevant comparison criteria."
+    },
+    {
+      "name": "Governed evaluation data",
+      "role": "Supports subgroup analysis with documented provenance and permitted attribute use."
+    },
+    {
+      "name": "Disaggregated metrics",
+      "role": "Measure error, coverage, refusal, escalation, and outcome differences with uncertainty."
+    },
+    {
+      "name": "Investigation workflow",
+      "role": "Separates model, data, retrieval, and process causes of observed disparities."
+    },
+    {
+      "name": "Mitigation review",
+      "role": "Tests proposed changes for benefit, side effects, and remaining limitations."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Map the decision",
+      "description": "Identify where model output influences people and which outcomes require comparison."
+    },
+    {
+      "title": "Select groups and metrics",
+      "description": "Choose context-relevant dimensions under approved data-governance rules."
+    },
+    {
+      "title": "Measure baseline",
+      "description": "Evaluate representative cases with subgroup counts and uncertainty estimates."
+    },
+    {
+      "title": "Investigate disparity",
+      "description": "Inspect examples and trace differences to evidence, model behavior, thresholds, or human processes."
+    },
+    {
+      "title": "Test mitigation",
+      "description": "Compare alternative prompts, data, retrieval, or workflow changes without assuming one metric captures all harms."
+    },
+    {
+      "title": "Monitor recurrence",
+      "description": "Track deployment drift and document unresolved limitations and accountable owners."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Bias audit across model and workflow",
+      "type": "flowchart",
+      "code": "flowchart LR\n D[\"Governed evaluation cases\"] --> E[\"Application execution\"]\n E --> M[\"Disaggregated outcome metrics\"]\n M --> I[\"Cause investigation\"]\n I --> R[\"Retrieval and data changes\"]\n I --> P[\"Model or policy changes\"]\n I --> H[\"Human workflow changes\"]\n R --> V[\"Mitigation validation\"]\n P --> V\n H --> V\n V --> M",
+      "caption": "Observed disparities require causal investigation across the application rather than automatic attribution to model weights."
+    }
+  ],
+  "useCase": {
+    "industry": "Human resources technology",
+    "title": "Auditing an employee policy assistant",
+    "situation": "A global employer offers an assistant that explains leave and workplace policies in several languages.",
+    "problem": "Employees using less-represented languages receive more incomplete answers and unnecessary escalations despite equivalent questions.",
+    "requirement": "The assistant must provide comparable access to accurate policy information while preserving regional policy differences.",
+    "architecture": "The audit compares matched intents across languages and locations, with reviewed labels for correctness, completeness, and escalation appropriateness.",
+    "runtime": [
+      "Evaluation traces reveal whether disparities arise from missing translated documents, retrieval ranking, or answer generation.",
+      "The team tests improved source coverage and retrieval before changing model prompts, then validates all affected groups."
+    ],
+    "failure": "If a subgroup has too little data for a stable conclusion, the report states the uncertainty and uses targeted review rather than declaring parity.",
+    "impact": "Track subgroup error and escalation rates with sample sizes, and assess whether the employee's underlying information need was met."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Detailed segmentation",
+      "benefit": "Hidden disparities become visible.",
+      "cost": "Small groups produce uncertain estimates and privacy challenges."
+    },
+    {
+      "decision": "Multiple fairness metrics",
+      "benefit": "Different harms can be examined explicitly.",
+      "cost": "Metrics may conflict and require accountable choices."
+    },
+    {
+      "decision": "Targeted mitigation",
+      "benefit": "Specific causes can be addressed efficiently.",
+      "cost": "Improvements for one group may create new regressions elsewhere."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "An aggregate improvement masks a subgroup decline",
+      "detection": "Disaggregated metrics show a significant direction change.",
+      "recovery": "Pause rollout for the affected path and investigate examples."
+    },
+    {
+      "scenario": "Proxy labels encode historical unequal treatment",
+      "detection": "Data review finds that expected outcomes reproduce prior process bias.",
+      "recovery": "Reassess labels with appropriate domain and stakeholder review."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Declaring fairness from equal overall accuracy",
+      "fix": "Examine relevant errors, coverage, and downstream outcomes."
+    },
+    {
+      "mistake": "Ignoring uncertainty for small groups",
+      "fix": "Report counts and uncertainty instead of precise unsupported conclusions."
+    },
+    {
+      "mistake": "Treating all disparities as model-only defects",
+      "fix": "Inspect data, retrieval, thresholds, and human decisions."
+    }
+  ],
+  "whenToUse": [
+    "AI output influences access, treatment, or consequential decisions.",
+    "Users span populations with different data coverage.",
+    "The organization can govern relevant evaluation data responsibly."
+  ],
+  "whenNotToUse": [
+    "A metric is selected without understanding the decision context.",
+    "Group attributes are collected without an approved purpose.",
+    "An audit is expected to certify absence of all bias."
+  ],
+  "checklist": [
+    "Define affected groups and plausible harms.",
+    "Document metric choices and conflicts.",
+    "Report sample sizes and uncertainty.",
+    "Audit retrieval and workflow contributions.",
+    "Validate mitigation across all relevant segments.",
+    "Set review triggers for material changes."
+  ],
+  "related": [
+    27,
+    31,
+    35,
+    40,
+    93
+  ],
+  "keywords": [
+    "bias audit",
+    "fairness",
+    "disaggregated metrics",
+    "intersectionality",
+    "evaluation uncertainty"
+  ],
+  "references": [
+    {
+      "title": "Fairlearn: assessment",
+      "url": "https://fairlearn.org/main/user_guide/assessment/index.html"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

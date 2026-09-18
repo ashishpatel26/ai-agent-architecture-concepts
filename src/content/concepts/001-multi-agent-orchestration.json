@@ -1,0 +1,177 @@
+{
+  "id": 1,
+  "title": "Multi-Agent Orchestration",
+  "slug": "multi-agent-orchestration",
+  "category": 0,
+  "summary": "Coordinate specialist agents through explicit ownership, shared contracts, and bounded execution so a business task produces one accountable result.",
+  "overview": [
+    "Multi-agent orchestration assigns parts of a request to autonomous workers and controls how their results become a final decision. The architectural unit is a task contract, with inputs, allowed tools, evidence requirements, deadline, and completion criteria. Adding personas without independent capabilities creates conversation overhead rather than useful specialization.",
+    "The orchestrator owns coordination; domain systems retain authority over business records. Agent messages are untrusted proposals until validated. Shared state should store typed findings and artifact references, while private working context stays with each worker. This separation makes disagreement inspectable and prevents one specialist from silently rewriting another specialist's evidence."
+  ],
+  "production": {
+    "poc": "A prototype can run specialists sequentially in one process. First measure whether specialization improves task quality against a single capable agent using identical tools.",
+    "production": "Production introduces deadlines, per-worker permissions, a durable task ledger, and explicit partial-result handling. Assign one component responsibility for final acceptance and customer communication.",
+    "scale": "At enterprise scale, isolate worker pools by capability and tenant, cap fan-out, and measure critical-path latency. A faster worker has little value when aggregation always waits for the slowest optional branch."
+  },
+  "components": [
+    {
+      "name": "Coordinator",
+      "role": "Decomposes accepted requests and owns task status, deadlines, cancellation, and final assembly."
+    },
+    {
+      "name": "Specialist workers",
+      "role": "Apply domain tools under scoped credentials and return structured findings with evidence identifiers."
+    },
+    {
+      "name": "Task ledger",
+      "role": "Persists assignments, attempts, dependencies, and immutable output references for recovery."
+    },
+    {
+      "name": "Result validator",
+      "role": "Checks contracts and conflicting claims before the coordinator publishes an answer."
+    },
+    {
+      "name": "Policy gateway",
+      "role": "Enforces tool authorization independently of the model's requested action."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Establish scope",
+      "description": "Authenticate the requester and record the decision needed, exclusions, deadline, and evidence freshness constraints."
+    },
+    {
+      "title": "Assign bounded work",
+      "description": "Create explicit specialist contracts with maximum calls, artifact schemas, and narrow data access."
+    },
+    {
+      "title": "Dispatch dependencies",
+      "description": "Run independent investigations concurrently and delay dependent tasks until required artifacts validate."
+    },
+    {
+      "title": "Merge evidence",
+      "description": "Join findings by business entity and source version; preserve contradictions as unresolved observations."
+    },
+    {
+      "title": "Resolve exceptions",
+      "description": "Request targeted clarification or route conflict to an accountable reviewer without restarting successful branches."
+    },
+    {
+      "title": "Publish outcome",
+      "description": "Validate the complete response, commit final status, and cancel outstanding optional work."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Specialist coordination with an acceptance gate",
+      "type": "flowchart",
+      "code": "flowchart LR\n R[\"Case request\"] --> O[\"Coordinator\"]\n O --> F[\"Fraud specialist\"]\n O --> C[\"Coverage specialist\"]\n O --> D[\"Document specialist\"]\n F --> V[\"Evidence and conflict validator\"]\n C --> V\n D --> V\n V --> H[\"Adjuster decision\"]\n O --> L[\"Durable task ledger\"]\n V --> L",
+      "caption": "Independent investigations converge on a validator; the human decision remains outside worker autonomy."
+    },
+    {
+      "title": "Worker timeout and partial aggregation",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant O as Coordinator\n participant W as Specialist worker\n participant L as Task ledger\n participant V as Acceptance validator\n O->>L: Persist bounded assignment\n O->>W: Execute with evidence contract\n W-->>O: Validated partial findings\n O->>L: Record findings and expired deadline\n O->>V: Assess required and optional coverage\n V-->>O: Incomplete result with missing evidence\n O->>W: Cancel remaining optional work",
+      "caption": "Partial findings remain attributable; a timeout cannot silently satisfy a mandatory specialist requirement."
+    }
+  ],
+  "useCase": {
+    "industry": "Insurance",
+    "title": "Coordinating a complex property claim",
+    "situation": "A commercial insurer receives a warehouse claim containing photographs, policy amendments, repair estimates, and a police report.",
+    "problem": "One broad prompt mixes coverage interpretation with document extraction and can confuse suspicion with a verified finding.",
+    "requirement": "The assistant must assemble an evidence-backed assessment while reserving settlement authority for the adjuster.",
+    "architecture": "Separate coverage, fraud-screening, and document agents share claim identifiers through a coordinator, with read access tailored to each role.",
+    "runtime": [
+      "Claim intake launches document extraction and coverage retrieval; fraud screening consumes validated incident facts rather than raw model guesses.",
+      "The coordinator presents agreements, contradictions, missing evidence, and source references in the adjuster's work queue."
+    ],
+    "failure": "If document extraction fails, the case remains incomplete with its successful coverage analysis retained; no settlement instruction is issued.",
+    "impact": "Measure analyst review time, unsupported-claim rate, critical-path duration, and calls per completed assessment. These are evaluation targets, not promised business outcomes."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Parallel specialists",
+      "benefit": "Independent evidence gathering can shorten elapsed time.",
+      "cost": "Concurrent model calls increase peak spend and coordination load."
+    },
+    {
+      "decision": "Central coordination",
+      "benefit": "One owner can enforce budgets and acceptance rules.",
+      "cost": "The coordinator becomes a capacity and availability boundary."
+    },
+    {
+      "decision": "Shared typed artifacts",
+      "benefit": "Consistent contracts simplify recovery and auditing.",
+      "cost": "Schema changes require versioning across independently deployed workers."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Workers disagree on policy validity",
+      "detection": "Validator finds conflicting effective dates attached to the same contract.",
+      "recovery": "Fetch the authoritative policy version and escalate any remaining ambiguity."
+    },
+    {
+      "scenario": "One worker never completes",
+      "detection": "Task ledger shows an expired lease or deadline.",
+      "recovery": "Retry only safe work or publish an explicitly incomplete assessment."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Creating an agent for every prompt",
+      "fix": "Separate workers only where tools, ownership, parallelism, or evaluation differ."
+    },
+    {
+      "mistake": "Broadcasting the entire case to every worker",
+      "fix": "Send minimum required context and enforce access at retrieval time."
+    },
+    {
+      "mistake": "Allowing unlimited delegation",
+      "fix": "Cap delegation depth, total calls, and per-case expenditure."
+    }
+  ],
+  "whenToUse": [
+    "Tasks require distinct tools or expertise with measurable quality benefits.",
+    "Independent investigations can execute concurrently under separate permissions.",
+    "An explicit owner must reconcile conflicting evidence."
+  ],
+  "whenNotToUse": [
+    "One structured model call already meets the required quality.",
+    "A deterministic pipeline fully defines every operation.",
+    "Coordination latency exceeds the value of specialist analysis."
+  ],
+  "checklist": [
+    "Define specialist input and output contracts.",
+    "Assign final acceptance to one coordinator.",
+    "Set fan-out and delegation-depth limits.",
+    "Test contradictory and missing worker results.",
+    "Trace every assignment to its parent request.",
+    "Cancel optional work after case completion."
+  ],
+  "related": [
+    4,
+    5,
+    7,
+    12,
+    55
+  ],
+  "keywords": [
+    "coordination",
+    "specialist agents",
+    "fan-out",
+    "task ledger",
+    "aggregation"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: workflows and agents",
+      "url": "https://docs.langchain.com/oss/python/langgraph/workflows-agents"
+    },
+    {
+      "title": "Agent2Agent protocol specification v0.3.0",
+      "url": "https://a2a-protocol.org/v0.3.0/specification/"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "id": 3,
+  "title": "Agentic State Machines",
+  "slug": "agentic-state-machines",
+  "category": 0,
+  "summary": "Make agent progress an explicit set of states, guarded transitions, and durable events so every action has a permitted execution context.",
+  "overview": [
+    "An agentic state machine defines named states and the events that can move a run between them. States represent operational facts such as awaiting evidence, ready for review, or committed; they should not claim to expose the model's private reasoning. Transition guards enforce business invariants outside the model.",
+    "The model can propose an event or classify an observation, but deterministic transition code decides whether it is legal. Persist the state version alongside the transition event to prevent concurrent workers from both advancing the same run. State design is therefore a concurrency and authorization decision as much as an orchestration technique."
+  ],
+  "production": {
+    "poc": "A proof of concept often uses booleans such as approved and finished. Replace ambiguous combinations with a small explicit state model before adding external writes.",
+    "production": "Production adds transition guards, optimistic concurrency, expiration events, and an operator view. Terminal states must explain whether work succeeded, failed, or was cancelled.",
+    "scale": "Enterprise deployments require machine-version migration and compatibility for old runs. A new release cannot assume that every persisted execution starts at the first state."
+  },
+  "components": [
+    {
+      "name": "State definition",
+      "role": "Names legal states, terminal states, accepted events, and transition guards."
+    },
+    {
+      "name": "Transition service",
+      "role": "Atomically verifies expected state version and records the next state."
+    },
+    {
+      "name": "Event inbox",
+      "role": "Deduplicates callbacks and delivers observations to the correct execution instance."
+    },
+    {
+      "name": "Action dispatcher",
+      "role": "Starts side effects only after the relevant transition is durably accepted."
+    },
+    {
+      "name": "State inspector",
+      "role": "Exposes current state, blocked conditions, and permitted operator interventions."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Create instance",
+      "description": "Bind workflow version, business identifier, and initial state in durable storage."
+    },
+    {
+      "title": "Receive event",
+      "description": "Authenticate its source and deduplicate its event identifier before considering a transition."
+    },
+    {
+      "title": "Evaluate guard",
+      "description": "Check required evidence, authority, and expected state version using trusted services."
+    },
+    {
+      "title": "Commit transition",
+      "description": "Atomically record the accepted event and next state; reject competing stale updates."
+    },
+    {
+      "title": "Dispatch action",
+      "description": "Start the permitted task through an outbox or equivalent reliable boundary."
+    },
+    {
+      "title": "Handle completion",
+      "description": "Convert success, rejection, timeout, or cancellation into explicit subsequent events."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Controlled supplier onboarding states",
+      "type": "state",
+      "code": "stateDiagram-v2\n [*] --> Collecting\n Collecting --> Assessing: Required documents received\n Assessing --> Reviewing: Assessment validated\n Assessing --> Collecting: Evidence missing\n Reviewing --> Activating: Authorized approval\n Reviewing --> Rejected: Reviewer rejects\n Activating --> Active: Directory confirms creation\n Activating --> Reconciling: Outcome unknown\n Reconciling --> Active: Existing supplier verified\n Active --> [*]\n Rejected --> [*]",
+      "caption": "An uncertain activation enters reconciliation instead of blindly issuing another creation request."
+    },
+    {
+      "title": "Competing callbacks use versioned transitions",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant A as Callback A\n participant B as Callback B\n participant S as Transition service\n participant D as State store\n A->>S: Approval for state version 7\n B->>S: Cancellation for state version 7\n S->>D: Commit approval if version is 7\n D-->>S: Accepted as version 8\n S->>D: Commit cancellation if version is 7\n D-->>S: Version conflict\n S-->>B: Reload current state and apply policy",
+      "caption": "Conditional writes expose conflicting events so the application can resolve them under explicit transition policy."
+    }
+  ],
+  "useCase": {
+    "industry": "Enterprise operations",
+    "title": "Supplier onboarding with explicit approval",
+    "situation": "A multinational distributor onboards suppliers across procurement, finance, and compliance teams.",
+    "problem": "Email-driven status changes permit activation before bank-detail verification or after an approval has expired.",
+    "requirement": "The agent must gather documents and assess completeness while activation remains gated by verified review.",
+    "architecture": "A durable state machine coordinates collection, assessment, approval, activation, and ambiguous-outcome reconciliation.",
+    "runtime": [
+      "A document callback moves a supplier from collection to assessment only when all required document types are present.",
+      "An approved assessment enables activation; the directory's confirmed identifier is required before the state becomes active."
+    ],
+    "failure": "If the activation call times out, the run enters reconciliation and checks for an existing supplier before any retry.",
+    "impact": "Monitor time spent in each state, rejected transitions, stale approvals, and reconciliation backlog to reveal process bottlenecks."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Explicit states",
+      "benefit": "Illegal action sequences become testable and visible.",
+      "cost": "Excessive state granularity can make evolution cumbersome."
+    },
+    {
+      "decision": "Atomic transitions",
+      "benefit": "Concurrent callbacks cannot silently overwrite progress.",
+      "cost": "Contention and storage availability affect advancement."
+    },
+    {
+      "decision": "Versioned machines",
+      "benefit": "In-flight work remains interpretable across releases.",
+      "cost": "Migration logic and operational tooling require maintenance."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Duplicate approval arrives after cancellation",
+      "detection": "Transition guard sees a terminal state and rejects the event.",
+      "recovery": "Record the rejected callback without reopening the supplier."
+    },
+    {
+      "scenario": "Worker crashes after transition commit",
+      "detection": "State advances but no task completion appears.",
+      "recovery": "Redeliver the outbox action using the original operation identity."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Using free-form text as workflow state",
+      "fix": "Store an enumerated state and separate explanatory notes."
+    },
+    {
+      "mistake": "Letting the model bypass a guard",
+      "fix": "Evaluate authority and prerequisites in application code."
+    },
+    {
+      "mistake": "Changing state names without migration",
+      "fix": "Pin machine versions and explicitly map compatible transitions."
+    }
+  ],
+  "whenToUse": [
+    "Actions require strict ordering and durable approval boundaries.",
+    "Callbacks and workers may race to update one business process.",
+    "Operators need clear recovery options for interrupted runs."
+  ],
+  "whenNotToUse": [
+    "A stateless read request has no meaningful lifecycle.",
+    "A simple DAG already describes all allowed execution paths.",
+    "No owner can define the business invariants for transitions."
+  ],
+  "checklist": [
+    "Name terminal states and their business meaning.",
+    "Require expected versions on transition writes.",
+    "Deduplicate incoming events before transitions.",
+    "Test every forbidden transition explicitly.",
+    "Design recovery from action outcome uncertainty.",
+    "Define migration behavior for old running instances."
+  ],
+  "related": [
+    2,
+    12,
+    16,
+    41,
+    51
+  ],
+  "keywords": [
+    "state machine",
+    "transition guard",
+    "workflow version",
+    "optimistic concurrency",
+    "lifecycle"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: persistence",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    },
+    {
+      "title": "LangGraph: interrupts",
+      "url": "https://docs.langchain.com/oss/python/langgraph/interrupts"
+    }
+  ]
+}

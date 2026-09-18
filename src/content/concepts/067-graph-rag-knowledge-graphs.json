@@ -1,0 +1,174 @@
+{
+  "id": 67,
+  "title": "Graph RAG / Knowledge Graphs",
+  "slug": "graph-rag-knowledge-graphs",
+  "category": 3,
+  "summary": "Combine entity relationships with source passages to answer connection-oriented questions that isolated similarity matches cannot resolve.",
+  "overview": [
+    "Graph RAG uses an explicit relationship representation to guide retrieval or synthesis. A knowledge graph can represent suppliers, facilities, products, incidents, and their connections; linked source passages provide the evidence behind each node or edge. Some GraphRAG approaches additionally build community summaries for corpus-wide questions. These are design choices, not a single interchangeable algorithm.",
+    "The graph is a derived evidence structure, not unquestionable truth. Entity resolution, relation extraction, temporal validity, and provenance determine its usefulness. A graph traversal can expose a possible path, but the answer must distinguish asserted relationships from inferred connections and must respect permissions on every contributing source."
+  ],
+  "production": {
+    "poc": "A prototype models one narrow relationship question and manually checks extracted entities and edges.",
+    "production": "Production attaches provenance, confidence, validity intervals, and access metadata while evaluating both extraction and retrieval.",
+    "scale": "Enterprise scale requires incremental graph updates, entity merge governance, traversal limits, and recomputation rules for summaries affected by source changes."
+  },
+  "components": [
+    {
+      "name": "Entity resolver",
+      "role": "Maps mentions to stable identities while preserving ambiguous matches."
+    },
+    {
+      "name": "Relation extractor",
+      "role": "Produces typed edges with source evidence and temporal attributes."
+    },
+    {
+      "name": "Graph store",
+      "role": "Supports bounded traversal and relationship filtering."
+    },
+    {
+      "name": "Passage index",
+      "role": "Retrieves original text supporting graph nodes and edges."
+    },
+    {
+      "name": "Graph-guided retriever",
+      "role": "Combines traversal results, source passages, and optional community summaries."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Ingest evidence",
+      "description": "Parse documents and retain immutable source identifiers and access metadata."
+    },
+    {
+      "title": "Resolve entities",
+      "description": "Link mentions conservatively and quarantine uncertain merges."
+    },
+    {
+      "title": "Build supported relations",
+      "description": "Store typed edges with evidence, validity, and extraction version."
+    },
+    {
+      "title": "Plan traversal",
+      "description": "Choose allowed relation types, depth, and temporal scope for the question."
+    },
+    {
+      "title": "Retrieve supporting passages",
+      "description": "Fetch authorized source text for the selected path or community."
+    },
+    {
+      "title": "Synthesize with qualifications",
+      "description": "Cite relationships and identify uncertainty instead of presenting inferred edges as established facts."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Graph paths backed by source evidence",
+      "type": "flowchart",
+      "code": "flowchart LR\n D[\"Supplier reports\"] --> X[\"Entity and relation extraction\"]\n X --> G[\"Temporal knowledge graph\"]\n D --> P[\"Source passage index\"]\n Q[\"Dependency question\"] --> T[\"Bounded graph traversal\"]\n G --> T\n T --> E[\"Evidence fetch\"]\n P --> E\n E --> A[\"Cited relationship answer\"]",
+      "caption": "Graph traversal identifies connections; original passages remain the basis for claims."
+    },
+    {
+      "title": "Repairing graph evidence after source change",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant S as Source registry\n participant X as Extraction pipeline\n participant G as Graph store\n participant R as Retriever\n S->>X: Source revision or deletion\n X->>G: Invalidate dependent edges\n X->>G: Write validated replacement relations\n R->>G: Query at requested validity time\n G-->>R: Paths with current provenance\n R->>S: Fetch authorized supporting passages",
+      "caption": "Graph updates must follow source lineage so obsolete relationships and summaries can be repaired."
+    }
+  ],
+  "useCase": {
+    "industry": "Supply chain",
+    "title": "Tracing a shared upstream dependency",
+    "situation": "A manufacturer investigates whether several delayed parts depend on the same upstream processing facility.",
+    "problem": "Part-level document search finds separate supplier notes but does not connect their facility references.",
+    "requirement": "Expose the dependency path with dated evidence and uncertainty.",
+    "architecture": "A graph connects suppliers, facilities, and parts; each edge links to an approved source passage.",
+    "runtime": [
+      "The question resolves affected part IDs and traverses supplier-to-facility edges.",
+      "The agent fetches supporting notes and reports a shared facility only where the evidence supports it."
+    ],
+    "failure": "An ambiguous facility name remains two possible entities until reviewed, preventing a false shared-dependency conclusion.",
+    "impact": "Measure supported-path precision, entity-resolution errors, and evidence freshness; graph density alone is not a quality metric."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Explicit relationships",
+      "benefit": "Support multi-hop dependency questions.",
+      "cost": "Require extraction and identity maintenance."
+    },
+    {
+      "decision": "Community summaries",
+      "benefit": "Help answer corpus-wide themes.",
+      "cost": "Can obscure source-level detail and become stale."
+    },
+    {
+      "decision": "Strict provenance",
+      "benefit": "Makes relationships auditable.",
+      "cost": "Increases storage and retrieval work."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Incorrect entity merge",
+      "detection": "Unrelated organizations share an apparent dependency.",
+      "recovery": "Split the entity and recompute affected edges and summaries."
+    },
+    {
+      "scenario": "Expired relation remains active",
+      "detection": "A traversal uses an obsolete supplier relationship.",
+      "recovery": "Filter by validity interval and reconcile source updates."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Treating extracted edges as facts",
+      "fix": "Retain source evidence and uncertainty."
+    },
+    {
+      "mistake": "Allowing unbounded traversal",
+      "fix": "Limit depth, relation types, and result cardinality."
+    },
+    {
+      "mistake": "Ignoring permissions on summaries",
+      "fix": "Authorize every contributing source or build scope-specific summaries."
+    }
+  ],
+  "whenToUse": [
+    "Use for dependency, ownership, and relationship questions.",
+    "Use when repeated entity connections matter across documents.",
+    "Use for corpus-level synthesis with maintained provenance."
+  ],
+  "whenNotToUse": [
+    "Avoid graphs for simple isolated fact lookup.",
+    "Avoid automatic entity merging without quality controls.",
+    "Do not deploy when source relationships cannot be kept current."
+  ],
+  "checklist": [
+    "Define a narrow graph schema.",
+    "Preserve edge-level provenance.",
+    "Represent ambiguous identities.",
+    "Version temporal relationships.",
+    "Enforce traversal and access limits.",
+    "Evaluate supported paths against expert labels."
+  ],
+  "related": [
+    21,
+    38,
+    62,
+    66,
+    68,
+    76
+  ],
+  "keywords": [
+    "Graph RAG",
+    "knowledge graph",
+    "entity resolution",
+    "provenance",
+    "multi-hop retrieval"
+  ],
+  "references": [
+    {
+      "title": "Microsoft GraphRAG: Indexing overview",
+      "url": "https://microsoft.github.io/graphrag/index/overview/"
+    }
+  ]
+}

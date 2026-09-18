@@ -1,0 +1,173 @@
+{
+  "id": 12,
+  "title": "State Persistence",
+  "slug": "state-persistence",
+  "category": 0,
+  "summary": "Persist the minimum authoritative execution state needed to recover an agent run, maintain concurrency safety, and explain completed work.",
+  "overview": [
+    "State persistence records an agent execution beyond the lifetime of a process or conversation connection. Useful state includes the current workflow position, validated observations, artifact references, pending operations, budgets, and version information. A conversation transcript alone rarely contains enough information to restart safely after a tool call or concurrent update.",
+    "Separate authoritative workflow state from disposable caches and long-term user memory. Checkpoints describe what the runtime knows, while business systems describe which external effects actually occurred. Recovery must reconcile these views rather than assume that replaying a saved prompt reproduces the same decisions or side effects."
+  ],
+  "production": {
+    "poc": "A prototype may keep messages in memory while testing interaction design. Introduce durable checkpoints as soon as losing a run creates material rework or ambiguous external actions.",
+    "production": "Production requires atomic updates, encryption, retention policies, and a consistent execution identifier. Checkpoints should be written at meaningful boundaries with known replay behavior.",
+    "scale": "At scale, partition state by tenant and execution, control hot-record contention, and migrate schemas deliberately. Large raw tool payloads belong in an artifact store with references, not repeatedly copied checkpoint documents."
+  },
+  "components": [
+    {
+      "name": "Checkpoint store",
+      "role": "Persists versioned execution state and supports atomic conditional updates."
+    },
+    {
+      "name": "Artifact repository",
+      "role": "Holds large immutable evidence and output objects referenced by checkpoints."
+    },
+    {
+      "name": "Execution identity",
+      "role": "Connects thread, run, task, and external operation identifiers without conflating them."
+    },
+    {
+      "name": "Recovery coordinator",
+      "role": "Loads compatible state and reconciles pending or uncertain effects before resuming."
+    },
+    {
+      "name": "Retention controller",
+      "role": "Applies deletion, archival, and tenant-specific data handling rules to stored state."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Create execution",
+      "description": "Assign a stable run identifier and persist initial inputs, permissions context, and schema version."
+    },
+    {
+      "title": "Apply observation",
+      "description": "Validate a tool result and update the state using an expected-version check."
+    },
+    {
+      "title": "Checkpoint boundary",
+      "description": "Save completed work and pending operation identities before advancing dependent stages."
+    },
+    {
+      "title": "Recover ownership",
+      "description": "A replacement worker claims the run with a lease or fencing token."
+    },
+    {
+      "title": "Reconcile effects",
+      "description": "Query external operation status for commands whose outcomes were not durably recorded."
+    },
+    {
+      "title": "Resume and retain",
+      "description": "Continue from a compatible checkpoint, then apply completion retention and deletion rules."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Checkpoint state and external effects",
+      "type": "flowchart",
+      "code": "flowchart LR\n W[\"Agent worker\"] --> C[\"Versioned checkpoint store\"]\n W --> A[\"Immutable artifact store\"]\n W --> T[\"Business tool\"]\n T --> O[\"Operation ledger\"]\n C --> R[\"Recovery coordinator\"]\n O --> R\n A --> R\n R --> N[\"Replacement worker\"]\n N --> C",
+      "caption": "Recovery combines saved runtime knowledge with authoritative evidence of external effects."
+    },
+    {
+      "title": "Crash recovery around a business command",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant W as Original worker\n participant C as Checkpoint store\n participant T as Business service\n participant R as Recovery worker\n W->>C: Persist pending operation identity\n W->>T: Execute command with operation identity\n T->>T: Commit business effect\n Note over W: Worker stops before recording response\n R->>C: Load pending operation\n R->>T: Query original operation status\n T-->>R: Existing committed result\n R->>C: Record result and resume next stage",
+      "caption": "A pending checkpoint requires reconciliation; replaying the command with a new identity could duplicate the effect."
+    }
+  ],
+  "useCase": {
+    "industry": "Banking operations",
+    "title": "Resuming a document collection case",
+    "situation": "A banking operations team gathers business-account documents over several days, with customers and reviewers responding asynchronously.",
+    "problem": "A chat-only implementation loses which documents were validated and can repeatedly ask customers for already accepted evidence.",
+    "requirement": "The assistant must resume the case accurately after deployment or worker failure without duplicating document requests.",
+    "architecture": "A checkpoint store tracks required and accepted documents, while encrypted artifacts retain originals and an operation ledger records sent requests.",
+    "runtime": [
+      "A new document is validated and its artifact reference is committed with the current case version.",
+      "When another reviewer resumes the case, the agent loads accepted evidence and reconciles pending outbound requests before proposing next steps."
+    ],
+    "failure": "If two workers update the same case, one conditional write fails and reloads the current state instead of overwriting new evidence.",
+    "impact": "Track recovery success, state conflicts, checkpoint size, and repeated customer requests. Retention must follow the organization's approved case-data policy."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Frequent checkpoints",
+      "benefit": "Less work is lost during process failure.",
+      "cost": "Storage writes and serialization add latency."
+    },
+    {
+      "decision": "Rich saved context",
+      "benefit": "Recovery needs fewer repeated reads.",
+      "cost": "Sensitive data exposure and schema migration complexity increase."
+    },
+    {
+      "decision": "Strong concurrency control",
+      "benefit": "Workers cannot silently overwrite each other.",
+      "cost": "Hot executions may require retries or serialized ownership."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Checkpoint schema changes during a long case",
+      "detection": "Loader detects an unsupported schema version.",
+      "recovery": "Migrate explicitly or route the run to a compatible worker."
+    },
+    {
+      "scenario": "Checkpoint commits before external outcome is known",
+      "detection": "Pending operation remains unresolved on recovery.",
+      "recovery": "Reconcile with the business system before continuing."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Persisting only chat messages",
+      "fix": "Store typed workflow position, operation identities, and accepted evidence."
+    },
+    {
+      "mistake": "Treating a cache as durable truth",
+      "fix": "Choose storage guarantees that match recovery requirements."
+    },
+    {
+      "mistake": "Saving secrets in every checkpoint",
+      "fix": "Store protected references and retrieve short-lived credentials at execution."
+    }
+  ],
+  "whenToUse": [
+    "Runs span process restarts or long user pauses.",
+    "External effects require reliable recovery and reconciliation.",
+    "Operators need a durable account of accepted evidence."
+  ],
+  "whenNotToUse": [
+    "The request is stateless and safely recomputable.",
+    "Stored context creates unnecessary data retention exposure.",
+    "No stable execution identity can be maintained."
+  ],
+  "checklist": [
+    "Define authoritative state fields and owners.",
+    "Version checkpoint schemas.",
+    "Use conditional writes or fenced ownership.",
+    "Keep large artifacts outside checkpoint records.",
+    "Test recovery around every command boundary.",
+    "Document retention and deletion propagation."
+  ],
+  "related": [
+    3,
+    6,
+    16,
+    57,
+    95
+  ],
+  "keywords": [
+    "checkpoint",
+    "durable state",
+    "recovery",
+    "schema migration",
+    "execution identity"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: persistence",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    }
+  ]
+}

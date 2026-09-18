@@ -1,0 +1,26 @@
+import { ArrowRight, Bot, Building2, KeyRound, Plug, Workflow } from 'lucide-react';
+import { conceptById, conceptPath, href, type IndustrySummary } from '../lib/catalog';
+import type { Industry } from '../lib/content-types';
+import { useResource } from '../lib/useResource';
+import MermaidDiagram from '../ui/MermaidDiagram';
+import { FailureCards, References, ReferenceSection, ResourceLoading, RuntimeFlow, TableOfContents, TradeoffTable } from '../ui/ReferenceParts';
+import { Breadcrumb, pad } from '../ui/primitives';
+const toc=[{id:'business',label:'Business situation'},{id:'agents',label:'Agent team'},{id:'systems',label:'Enterprise systems'},{id:'architecture',label:'Architecture diagrams'},{id:'runtime',label:'Runtime flow'},{id:'failures',label:'Failure recovery'},{id:'controls',label:'Control boundaries'},{id:'metrics',label:'Operational metrics'},{id:'tradeoffs',label:'Tradeoffs'},{id:'rollout',label:'Rollout plan'},{id:'concepts',label:'Connected concepts'},{id:'references',label:'Primary references'}];
+export default function IndustryPage({summary}:{summary:IndustrySummary}){
+  const {data:industry,error,retry}=useResource<Industry>('industries',summary.slug);
+  if(!industry)return <ResourceLoading title={summary.title} error={error} retry={retry}/>;
+  return <div className="industry-lesson" id="page-top"><Breadcrumb items={[{label:'Industry architectures',path:'industries/'},{label:industry.name}]}/><header className="lesson-header"><div className="lesson-eyebrow"><span><Building2 size={15}/>{industry.name}</span><span>INDUSTRY BLUEPRINT</span></div><h1>{industry.title}</h1><p>{industry.summary}</p><div className="lesson-meta"><span><Bot size={15}/>{industry.agents.length} specialist agents</span><span><Plug size={15}/>{industry.systems.length} enterprise systems</span><a href={href(`studio/?industry=${industry.slug}`)} className="button small primary">Explore in the studio<ArrowRight size={14}/></a></div></header><div className="reference-layout"><article className="reference-body">
+    <ReferenceSection id="business" kicker="THE BUSINESS CONTEXT" title="A real design problem"><div className="use-case-note">Illustrative reference architecture · Validate controls and requirements for your organization.</div><p>{industry.situation}</p><h3>The operational problem</h3><p>{industry.problem}</p><h3>Why a multi-agent system?</h3><p>{industry.whyAgents}</p><div className="callout"><strong>The intended outcome</strong><p>{industry.outcome}</p></div></ReferenceSection>
+    <ReferenceSection id="agents" title="Meet the specialist agents"><div className="agent-team">{industry.agents.map((agent,i)=><article key={i}><div className="agent-heading"><span><Bot size={21}/></span><div><small>AGENT {pad(i+1)}</small><h3>{agent.name}</h3></div></div><p>{agent.responsibility}</p><div className="agent-tools">{agent.tools.map(tool=><span key={tool}>{tool}</span>)}</div><div className="authority-boundary"><KeyRound size={15}/><span><strong>Authority boundary</strong>{agent.boundary}</span></div></article>)}</div></ReferenceSection>
+    <ReferenceSection id="systems" title="Enterprise integrations"><div className="component-grid">{industry.systems.map(system=><div key={system.name}><Plug size={18}/><h3>{system.name}</h3><p>{system.role}</p></div>)}</div></ReferenceSection>
+    <ReferenceSection id="architecture" kicker="LOGIC, MESSAGES, AND BOUNDARIES" title="The architecture, mapped">{industry.diagrams.map((diagram,i)=><MermaidDiagram key={i} diagram={diagram}/>)}</ReferenceSection>
+    <ReferenceSection id="runtime" title="Follow the runtime flow"><RuntimeFlow steps={industry.flow}/></ReferenceSection>
+    <ReferenceSection id="failures" title="When the happy path ends"><FailureCards items={industry.failures}/></ReferenceSection>
+    <ReferenceSection id="controls" title="Security & decision boundaries"><ul className="control-list">{industry.controls.map((text,i)=><li key={i}><KeyRound size={17}/><span>{text}</span></li>)}</ul></ReferenceSection>
+    <ReferenceSection id="metrics" title="Measure operational behavior"><p>These are measurement definitions, not promised improvements. Establish a baseline and acceptance targets using representative workloads.</p><div className="metrics-grid">{industry.metrics.map(metric=><div key={metric.name}><Workflow size={18}/><h3>{metric.name}</h3><p>{metric.definition}</p></div>)}</div></ReferenceSection>
+    <ReferenceSection id="tradeoffs" title="The decisions you take on"><TradeoffTable items={industry.tradeoffs}/></ReferenceSection>
+    <ReferenceSection id="rollout" title="From observation to controlled action"><ol className="rollout-plan">{industry.rollout.map((stage,i)=><li key={i}><span>{pad(i+1)}</span><div><h3>{stage.phase}</h3><p>{stage.acceptance}</p></div></li>)}</ol></ReferenceSection>
+    <ReferenceSection id="concepts" title="The concepts behind the architecture"><div className="related-grid">{industry.related.map(id=>{const c=conceptById(id);return c&&<a key={id} href={href(conceptPath(c))}><span>{pad(id)}</span><div><strong>{c.title}</strong></div><ArrowRight size={16}/></a>;})}</div></ReferenceSection>
+    <ReferenceSection id="references" title="Primary references"><References items={industry.references}/></ReferenceSection>
+  </article><TableOfContents items={toc}/></div></div>;
+}

@@ -1,0 +1,177 @@
+{
+  "id": 16,
+  "title": "Task Interruption & Resumption",
+  "slug": "task-interruption-resumption",
+  "category": 0,
+  "summary": "Pause a durable execution at a defined boundary and resume it with validated input, current authority, and reconciled external effects.",
+  "overview": [
+    "Interruption and resumption allow an agent run to wait for a person, missing evidence, a business event, or an operational repair without occupying a worker indefinitely. A durable interrupt records why the run stopped, what input can resume it, and which execution version is waiting. Suspension is a workflow state, not a blocked thread.",
+    "Resumption must account for time. Permissions may expire, records may change, and a pending tool call may finish while the run is paused. Validate the resume token and new input, reload current policy, and reconcile outstanding operations before continuing. Do not assume that replaying a paused node is side-effect free."
+  ],
+  "production": {
+    "poc": "A prototype can pause before a read-only step and manually supply a resume value. Test what code executes again when the runtime restarts that boundary.",
+    "production": "Production persists interrupt metadata, authenticates responders, and defines expiry, cancellation, and stale-input behavior. Place irreversible actions after validated resume boundaries or protect them with idempotency.",
+    "scale": "At scale, waiting runs should consume storage rather than active worker slots. Build queues for expired interrupts and maintain compatibility for executions paused across several deployments."
+  },
+  "components": [
+    {
+      "name": "Interrupt controller",
+      "role": "Creates a durable waiting state with reason, required input, deadline, and execution version."
+    },
+    {
+      "name": "Checkpoint store",
+      "role": "Saves accepted progress and pending operation identities at the suspension boundary."
+    },
+    {
+      "name": "Resume gateway",
+      "role": "Authenticates the responder and validates resume identity, input schema, and authority."
+    },
+    {
+      "name": "Reconciliation service",
+      "role": "Checks changed business records and uncertain external operations before continuation."
+    },
+    {
+      "name": "Expiry scheduler",
+      "role": "Cancels or escalates abandoned waits according to explicit business policy."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Reach safe boundary",
+      "description": "Complete or checkpoint preceding work and identify any outstanding side effects."
+    },
+    {
+      "title": "Persist interrupt",
+      "description": "Record the expected resume input and state version before releasing the worker."
+    },
+    {
+      "title": "Notify owner",
+      "description": "Expose the pending action through a durable work queue or authenticated interface."
+    },
+    {
+      "title": "Validate response",
+      "description": "Reject stale, duplicate, unauthorized, or malformed resume attempts."
+    },
+    {
+      "title": "Refresh assumptions",
+      "description": "Recheck permissions, source versions, deadlines, and previously uncertain tool outcomes."
+    },
+    {
+      "title": "Continue execution",
+      "description": "Claim fresh ownership and resume from the documented replay boundary with the accepted input."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Durable pause and validated continuation",
+      "type": "sequence",
+      "code": "sequenceDiagram\n participant W as Agent worker\n participant C as Checkpoint store\n participant H as Review queue\n participant G as Resume gateway\n participant R as Replacement worker\n W->>C: Persist waiting state and resume contract\n W->>H: Publish review task\n H->>G: Authorized decision with state version\n G->>C: Validate and commit resume input\n G->>R: Schedule continuation\n R->>C: Load checkpoint and pending operations\n R->>R: Refresh policy and reconcile effects\n R->>C: Commit next execution state",
+      "caption": "The waiting execution holds no worker, and the responder cannot resume an arbitrary or stale state."
+    },
+    {
+      "title": "Resume rejects stale decisions",
+      "type": "flowchart",
+      "code": "flowchart LR\n I[\"Resume submission\"] --> A[\"Authenticate responder\"]\n A --> V[\"Match interrupt and state version\"]\n V --> P[\"Recheck current authority\"]\n P --> B[\"Recheck business assumptions\"]\n B --> R[\"Schedule continuation\"]\n V --> S[\"Stale decision record\"]\n P --> D[\"Denied resume\"]\n B --> N[\"Renewed review required\"]",
+      "caption": "A valid old link is insufficient when execution state, authority, or material business facts have changed."
+    }
+  ],
+  "useCase": {
+    "industry": "Construction",
+    "title": "Pausing a purchase request for engineering evidence",
+    "situation": "A construction procurement team requests specialized equipment, but engineering certification arrives after the initial assessment.",
+    "problem": "Keeping the agent session open wastes capacity, while restarting from scratch repeats supplier checks and loses review context.",
+    "requirement": "The assistant must pause with a precise evidence request and resume when the authorized engineer supplies the certificate.",
+    "architecture": "A durable interrupt stores the missing certification requirement, approved supplier evidence, and the current purchase-request version.",
+    "runtime": [
+      "The agent finishes available checks and publishes an engineering task with a resume identifier.",
+      "On submission, the gateway verifies the engineer's authority, validates the certificate, and confirms that equipment specifications have not changed."
+    ],
+    "failure": "If the purchase request changed during the wait, the old resume input is retained as evidence but affected checks run again before approval.",
+    "impact": "Measure waiting age, stale-resume rejection, resumed-run success, and repeated work to distinguish business delay from runtime inefficiency."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Durable suspension",
+      "benefit": "Long waits do not occupy scarce worker capacity.",
+      "cost": "Checkpoint retention and lifecycle tooling become necessary."
+    },
+    {
+      "decision": "Fresh validation",
+      "benefit": "Resumption respects changed authority and business facts.",
+      "cost": "Some earlier work must be repeated after long pauses."
+    },
+    {
+      "decision": "Replay-based continuation",
+      "benefit": "Runtime recovery can remain simple.",
+      "cost": "Code before the interrupt may execute again and needs careful side-effect handling."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A reviewer submits the same decision twice",
+      "detection": "Resume gateway finds the state version already advanced.",
+      "recovery": "Return the recorded outcome without scheduling another continuation."
+    },
+    {
+      "scenario": "A paused execution outlives its workflow version",
+      "detection": "Loader cannot interpret the old interrupt contract.",
+      "recovery": "Use a compatible worker or an explicit migration path."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Pausing after an unrecorded command",
+      "fix": "Persist operation identity and reconcile the outcome before suspension."
+    },
+    {
+      "mistake": "Trusting any bearer of a resume link",
+      "fix": "Authenticate the actor and recheck decision authority."
+    },
+    {
+      "mistake": "Assuming local variables survive deployment",
+      "fix": "Persist every value required for continuation."
+    }
+  ],
+  "whenToUse": [
+    "Tasks wait for people or external evidence.",
+    "Long pauses should survive process replacement.",
+    "Resume input can be validated against a defined contract."
+  ],
+  "whenNotToUse": [
+    "The task can complete within one short stateless request.",
+    "Continuation would rely on unrecoverable process-local resources.",
+    "No owner or expiry policy exists for waiting work."
+  ],
+  "checklist": [
+    "Document the exact replay boundary.",
+    "Persist interrupt reason and expected input.",
+    "Authenticate and version resume attempts.",
+    "Recheck authority after long waits.",
+    "Reconcile pending external operations.",
+    "Expire or escalate abandoned interrupts."
+  ],
+  "related": [
+    3,
+    6,
+    12,
+    44,
+    57
+  ],
+  "keywords": [
+    "interrupt",
+    "resume",
+    "durable wait",
+    "stale approval",
+    "replay boundary"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: interrupts",
+      "url": "https://docs.langchain.com/oss/python/langgraph/interrupts"
+    },
+    {
+      "title": "LangGraph: persistence",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    }
+  ]
+}

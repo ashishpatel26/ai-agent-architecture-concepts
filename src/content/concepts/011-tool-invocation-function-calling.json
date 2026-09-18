@@ -1,0 +1,171 @@
+{
+  "id": 11,
+  "title": "Tool Invocation & Function Calling",
+  "slug": "tool-invocation-function-calling",
+  "category": 0,
+  "summary": "Convert model-proposed operations into validated, authorized tool calls with stable schemas and explicit treatment of side effects.",
+  "overview": [
+    "Tool invocation connects a language model to application capabilities through structured operation requests. The model proposes a function name and arguments; the application resolves, validates, authorizes, and executes that request. Producing syntactically valid arguments does not prove that the operation is permitted, sensible, or safe to retry.",
+    "Treat the tool layer as a business API boundary. Narrow tools with clear preconditions and typed results are easier to evaluate than unrestricted shell, SQL, or HTTP access. Distinguish read operations from commands, and represent pending, failed, and uncertain outcomes explicitly so the agent cannot interpret an empty response as successful execution."
+  ],
+  "production": {
+    "poc": "A prototype exposes a few read-only functions with hand-checked arguments. Evaluate tool selection and argument correctness separately from final-answer quality.",
+    "production": "Production introduces schema validation, scoped credentials, operation deadlines, result normalization, and idempotency for commands. Business invariants remain in the tool service even when the model follows instructions reliably.",
+    "scale": "At scale, tool registries require version compatibility, deprecation policies, and per-capability telemetry. Large tool catalogs should be filtered to relevant authorized capabilities to reduce selection errors and prompt overhead."
+  },
+  "components": [
+    {
+      "name": "Tool registry",
+      "role": "Defines stable operation names, argument schemas, side-effect classifications, and supported versions."
+    },
+    {
+      "name": "Invocation validator",
+      "role": "Rejects unknown fields, invalid types, unsafe ranges, and unresolved business identifiers."
+    },
+    {
+      "name": "Authorization gateway",
+      "role": "Checks the user's delegated authority against the specific resource and requested action."
+    },
+    {
+      "name": "Execution adapter",
+      "role": "Applies deadlines, credentials, retry rules, and operation identity to the actual business API."
+    },
+    {
+      "name": "Result normalizer",
+      "role": "Returns typed success, error, pending, or uncertain outcomes with source identifiers."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Expose capabilities",
+      "description": "Select only tools relevant to the task and permitted for the authenticated requester."
+    },
+    {
+      "title": "Receive proposal",
+      "description": "Parse the model's structured function request without evaluating arbitrary generated code."
+    },
+    {
+      "title": "Validate arguments",
+      "description": "Resolve identifiers and enforce schema, amount, date, and business-precondition checks."
+    },
+    {
+      "title": "Authorize action",
+      "description": "Recheck resource-specific permissions and require approval where the workflow demands it."
+    },
+    {
+      "title": "Execute bounded call",
+      "description": "Invoke the adapter with deadline and operation identity, recording the actual outcome."
+    },
+    {
+      "title": "Return observation",
+      "description": "Supply normalized evidence to the agent and reconcile unknown command outcomes before retrying."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "A tool call is a controlled API request",
+      "type": "flowchart",
+      "code": "flowchart LR\n M[\"Model proposal\"] --> S[\"Schema validator\"]\n S --> A[\"Resource authorization\"]\n A --> I[\"Idempotency and deadline\"]\n I --> T[\"Business API\"]\n T --> N[\"Outcome normalizer\"]\n N --> M\n S --> R[\"Rejected proposal\"]\n A --> R\n I --> L[\"Operation ledger\"]",
+      "caption": "Validation, authority, and execution controls are enforced outside the model."
+    }
+  ],
+  "useCase": {
+    "industry": "Retail",
+    "title": "Handling a damaged-item replacement",
+    "situation": "A retailer's support assistant helps agents replace damaged products when an order is eligible under policy.",
+    "problem": "A model can identify the right intent but propose the wrong order line, quantity, or delivery address.",
+    "requirement": "The assistant must retrieve verified order facts and create a replacement only within the customer's entitlement.",
+    "architecture": "Separate lookup and replacement tools expose narrow schemas; the command adapter checks eligibility and uses a stable replacement operation key.",
+    "runtime": [
+      "The assistant retrieves the order, identifies the damaged line, and proposes a replacement quantity with source references.",
+      "The gateway validates entitlement and address confirmation, then the order system returns the replacement identifier as authoritative evidence."
+    ],
+    "failure": "If the creation request times out, the adapter queries the operation ledger before permitting another command.",
+    "impact": "Monitor wrong-tool selection, argument rejection, unauthorized attempts, and duplicate-command prevention alongside customer resolution time."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Narrow tools",
+      "benefit": "Smaller contracts improve validation and evaluation.",
+      "cost": "More adapters may be required for complex workflows."
+    },
+    {
+      "decision": "Rich schemas",
+      "benefit": "Invalid arguments are caught before business execution.",
+      "cost": "Schema validity cannot establish factual or policy correctness."
+    },
+    {
+      "decision": "Central gateway",
+      "benefit": "Authorization and telemetry remain consistent.",
+      "cost": "Gateway availability and version management become shared dependencies."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Model fabricates an order identifier",
+      "detection": "Lookup or ownership validation finds no authorized matching record.",
+      "recovery": "Request clarification using verified records only."
+    },
+    {
+      "scenario": "Tool returns malformed success data",
+      "detection": "Result schema validation fails despite an HTTP success status.",
+      "recovery": "Mark the outcome uncertain and reconcile with the system of record."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Executing arbitrary function names from model text",
+      "fix": "Resolve only registered capability identifiers."
+    },
+    {
+      "mistake": "Using one privileged credential for all callers",
+      "fix": "Apply delegated or resource-scoped authorization."
+    },
+    {
+      "mistake": "Retrying every command after timeout",
+      "fix": "Reconcile outcomes and use idempotency before retries."
+    }
+  ],
+  "whenToUse": [
+    "Agents need current facts or controlled business operations.",
+    "Capabilities can be expressed as bounded typed contracts.",
+    "Application code can independently enforce business rules."
+  ],
+  "whenNotToUse": [
+    "Static generation needs no external capabilities.",
+    "Only unrestricted privileged execution is available.",
+    "A critical command cannot expose verifiable completion semantics."
+  ],
+  "checklist": [
+    "Classify every tool as read or command.",
+    "Validate arguments and results independently.",
+    "Check authorization for each resource.",
+    "Assign stable keys to retryable commands.",
+    "Document uncertain-outcome recovery.",
+    "Evaluate tool selection and argument accuracy separately."
+  ],
+  "related": [
+    9,
+    22,
+    23,
+    41,
+    49
+  ],
+  "keywords": [
+    "function calling",
+    "tool schema",
+    "capability gateway",
+    "argument validation",
+    "side effects"
+  ],
+  "references": [
+    {
+      "title": "JSON Schema: understanding JSON Schema",
+      "url": "https://json-schema.org/understanding-json-schema/"
+    },
+    {
+      "title": "Amazon EC2: ensuring idempotency",
+      "url": "https://docs.aws.amazon.com/ec2/latest/devguide/ec2-api-idempotency.html"
+    }
+  ]
+}

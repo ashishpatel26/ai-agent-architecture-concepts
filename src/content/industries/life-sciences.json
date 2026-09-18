@@ -1,0 +1,195 @@
+{
+  "slug": "life-sciences",
+  "name": "Life Sciences",
+  "sector": "Health and science",
+  "icon": "flask",
+  "title": "Clinical study deviation evidence assembly",
+  "summary": "Assemble protocol deviation evidence for study teams while preserving source records and qualified reviewer decisions.",
+  "situation": "Illustrative architecture: A clinical study operations team receives visit exceptions across sites, laboratory feeds, and electronic data capture. Reviewers need to distinguish missing data from a potential protocol deviation and document their assessment. The agents assist records management and operational review, not participant care or trial eligibility decisions.",
+  "problem": "Protocol amendments differ by site activation date, and late lab results can change the evidence available at review. Flattening these timelines into a summary risks applying the wrong requirement or implying a clinical conclusion unsupported by source data.",
+  "whyAgents": "Specialists independently align protocol versions, reconcile visit events, gather approved source references, and assemble the review packet. Their separation supports explicit evidence ownership and prevents a drafting agent from amending captured clinical observations.",
+  "outcome": "The intended result is a reviewable operational decision with source evidence and explicit ownership. Evaluate preparation effort together with source traceability and reviewer correction frequency. The proposed architecture does not establish regulatory compliance; study owners must map their actual procedures, systems, and oversight requirements before deployment.",
+  "agents": [
+    {
+      "name": "Protocol version agent",
+      "responsibility": "Determine the applicable approved protocol and site activation interval.",
+      "tools": [
+        "Protocol repository",
+        "amendment registry"
+      ],
+      "boundary": "Cannot interpret clinical exceptions or change approved requirements."
+    },
+    {
+      "name": "Visit reconciliation agent",
+      "responsibility": "Compare scheduled and recorded visit events with source timestamps.",
+      "tools": [
+        "Clinical data capture read API",
+        "visit calendar"
+      ],
+      "boundary": "Cannot modify case report forms or impute missing observations."
+    },
+    {
+      "name": "Laboratory evidence agent",
+      "responsibility": "Match incoming results to permitted study subjects and visits.",
+      "tools": [
+        "Laboratory feed reader",
+        "specimen tracking API"
+      ],
+      "boundary": "Cannot assess participant safety or recommend treatment."
+    },
+    {
+      "name": "Deviation packet agent",
+      "responsibility": "Draft the chronology, conflicting evidence, and reviewer questions.",
+      "tools": [
+        "Quality case draft API",
+        "provenance manifest"
+      ],
+      "boundary": "Cannot classify final deviation severity or submit external reports."
+    }
+  ],
+  "systems": [
+    {
+      "name": "Clinical data capture platform",
+      "role": "Authoritative captured observations, queries, and correction history."
+    },
+    {
+      "name": "Study and protocol management systems",
+      "role": "Supply site assignments, approved amendments, and effective activation dates."
+    },
+    {
+      "name": "Laboratory and quality systems",
+      "role": "Provide specimen events and controlled review records without granting model write access to source evidence."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Register exception",
+      "description": "Create a study-scoped event using subject pseudonym, site, visit, and source revision; preserve the original signal."
+    },
+    {
+      "title": "Resolve protocol interval",
+      "description": "Match the site's activation history to the event date and expose unresolved amendment applicability for reviewer attention."
+    },
+    {
+      "title": "Reconcile chronology",
+      "description": "Compare scheduled visits, collection timestamps, receipt timestamps, and late corrections without conflating their meanings."
+    },
+    {
+      "title": "Collect evidence",
+      "description": "Retrieve the minimum permitted study records and build a provenance manifest that points back to controlled originals."
+    },
+    {
+      "title": "Draft assessment packet",
+      "description": "Describe the possible deviation, missing evidence, and contradictory facts; reserve clinical significance and final classification for qualified reviewers."
+    },
+    {
+      "title": "Record disposition",
+      "description": "Save the approved assessment with reviewer identity and source versions; subsequent source corrections reopen dependent review sections."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Clinical study deviation evidence assembly — logical architecture",
+      "type": "flowchart",
+      "code": "flowchart LR\n    N0[\"Clinical study deviation evidence assembly\"]\n    N1[\"Protocol version agent\"]\n    N2[\"Visit reconciliation agent\"]\n    N3[\"Laboratory evidence agent\"]\n    N4[\"Deviation packet agent\"]\n    N5[\"Evidence ledger\"]\n    N6[\"Human decision\"]\n    N7[\"Authorized adapter\"]\nN0 --> N1\n    N0 --> N2\n    N2 --> N3\n    N1 --> N4\n    N3 --> N4\n    N4 --> N5\n    N5 --> N6\n    N6 --> N7",
+      "caption": "Specialists produce bounded findings; the evidence ledger preserves source versions and human decisions before an authorized adapter changes a system of record."
+    },
+    {
+      "title": "Failure and decision sequence",
+      "type": "sequence",
+      "code": "sequenceDiagram\n    participant O as \"Case orchestrator\"\n    participant S as \"Clinical data capture platform\"\n    participant H as \"Accountable reviewer\"\nO->>S: Read visit evidence revision\n    S-->>O: Current study observations\n    O->>H: Present deviation chronology\n    H-->>O: Approve documented assessment\n    S-->>O: Late corrected observation\n    O->>H: Open linked amendment review",
+      "caption": "A site activation date is missing for an amendment. The workflow records unresolved work and resumes only after the source state and reviewer authority are checked."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A site activation date is missing for an amendment.",
+      "detection": "Protocol interval resolver cannot select one valid version.",
+      "recovery": "Block protocol comparison and assign the unresolved date to study operations before drafting conclusions."
+    },
+    {
+      "scenario": "A laboratory result arrives after the packet was signed.",
+      "detection": "Source event version advances for an evidence item linked to the assessment.",
+      "recovery": "Notify the responsible reviewer, preserve the signed record, and open a linked amendment assessment."
+    }
+  ],
+  "controls": [
+    "Use study pseudonyms in prompts and isolate reidentification mappings from agent access.",
+    "Enforce site and study entitlements on all source queries and exports.",
+    "Preserve source records and corrections; agent drafts never overwrite captured observations.",
+    "Require qualified review of deviation classification and any participant-impacting decision.",
+    "Record amendment version, site activation interval, and evidence cutoff in every packet."
+  ],
+  "metrics": [
+    {
+      "name": "Evidence traceability",
+      "definition": "Reviewed packet assertions with resolvable controlled source references divided by audited assertions."
+    },
+    {
+      "name": "Version resolution rate",
+      "definition": "Exceptions with unambiguous applicable protocol versions divided by all registered exceptions."
+    },
+    {
+      "name": "Review preparation time",
+      "definition": "Elapsed time from exception registration to reviewer-ready chronology, segmented by site and event class."
+    },
+    {
+      "name": "Reopened assessment rate",
+      "definition": "Assessments reopened for late or corrected evidence divided by completed assessments."
+    }
+  ],
+  "tradeoffs": [
+    {
+      "decision": "Event-time protocol matching",
+      "benefit": "Preserves historical applicability across amendments.",
+      "cost": "Requires accurate site activation metadata and correction procedures."
+    },
+    {
+      "decision": "Pseudonymized processing",
+      "benefit": "Limits exposure of participant identity.",
+      "cost": "Some reconciliation work must remain in a separately authorized service."
+    },
+    {
+      "decision": "Immutable signed packets",
+      "benefit": "Makes review history inspectable.",
+      "cost": "Late evidence requires linked amendments rather than convenient overwrites."
+    }
+  ],
+  "rollout": [
+    {
+      "phase": "Archived study exercise",
+      "acceptance": "Reviewers validate amendment selection and chronology on representative exceptions with known dispositions."
+    },
+    {
+      "phase": "Read-only site pilot",
+      "acceptance": "One study permits draft packets after pseudonymization, source access, and correction-history tests pass."
+    },
+    {
+      "phase": "Controlled quality integration",
+      "acceptance": "Approved dispositions enter the quality system only after late-evidence reopening and audit reconstruction are demonstrated."
+    }
+  ],
+  "related": [
+    12,
+    21,
+    28,
+    30,
+    38,
+    44,
+    68
+  ],
+  "references": [
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    },
+    {
+      "title": "HL7 FHIR R5: Security and privacy considerations",
+      "url": "https://www.hl7.org/fhir/security.html"
+    },
+    {
+      "title": "Temporal: Workflow execution",
+      "url": "https://docs.temporal.io/workflow-execution"
+    }
+  ]
+}

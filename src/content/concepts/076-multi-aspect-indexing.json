@@ -1,0 +1,167 @@
+{
+  "id": 76,
+  "title": "Multi-Aspect Indexing",
+  "slug": "multi-aspect-indexing",
+  "category": 3,
+  "summary": "Index different views of the same source so queries can match its content, purpose, entities, and structure without losing source identity.",
+  "overview": [
+    "Multi-aspect indexing creates several retrieval representations for one source object. A technical document may have body-text embeddings, a concise summary, extracted questions, a title vector, and structured entity fields. Each representation emphasizes a different route by which users describe the same evidence.",
+    "These views should converge on one authoritative source identity and revision. Generated summaries or questions can improve discovery but must not become independent evidence. Combining aspects requires calibrated fusion and deduplication; otherwise documents with more representations receive an unfair ranking advantage simply because they appear more often."
+  ],
+  "production": {
+    "poc": "A prototype compares body-only retrieval with one additional aspect on labeled query types.",
+    "production": "Production versions every derived view, records source lineage, and evaluates whether each aspect contributes unique relevant hits.",
+    "scale": "At scale, control indexing fan-out, rebuild all dependent aspects on source changes, and monitor representation-specific drift and storage cost."
+  },
+  "components": [
+    {
+      "name": "Source registry",
+      "role": "Assigns stable document and revision identifiers across all views."
+    },
+    {
+      "name": "Aspect builders",
+      "role": "Generate body, title, summary, question, or entity representations."
+    },
+    {
+      "name": "Multi-vector index",
+      "role": "Stores aspect-specific vectors and shared metadata."
+    },
+    {
+      "name": "Fusion policy",
+      "role": "Combines aspect rankings without counting duplicates as independent evidence."
+    },
+    {
+      "name": "Source resolver",
+      "role": "Fetches the authoritative passage behind a matched representation."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Choose useful aspects",
+      "description": "Map observed query patterns to representations with a clear retrieval purpose."
+    },
+    {
+      "title": "Build derived views",
+      "description": "Generate each aspect from the same approved source revision."
+    },
+    {
+      "title": "Index with lineage",
+      "description": "Store aspect type, embedding version, source identity, and access metadata."
+    },
+    {
+      "title": "Search relevant aspects",
+      "description": "Dispatch only the views appropriate to the query under a bounded budget."
+    },
+    {
+      "title": "Fuse by source",
+      "description": "Combine rankings and deduplicate at the authoritative document or passage level."
+    },
+    {
+      "title": "Fetch real evidence",
+      "description": "Supply source text rather than generated index summaries as the basis for factual answers."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Several representations, one source",
+      "type": "flowchart",
+      "code": "flowchart TD\n S[\"Versioned equipment report\"] --> B[\"Body embedding\"]\n S --> T[\"Title and entity view\"]\n S --> Q[\"Generated question view\"]\n B --> F[\"Aspect-aware fusion\"]\n T --> F\n Q --> F\n F --> D[\"Deduplicate source identity\"]\n D --> E[\"Fetch original evidence\"]",
+      "caption": "Derived representations improve discoverability while the original report remains the source of truth."
+    }
+  ],
+  "useCase": {
+    "industry": "Insurance underwriting",
+    "title": "Finding evidence across varied report language",
+    "situation": "Underwriters search inspection reports by property feature, risk question, or report title.",
+    "problem": "One body embedding misses queries phrased as underwriting questions rather than report descriptions.",
+    "requirement": "Improve discovery while keeping every answer linked to the actual inspection evidence.",
+    "architecture": "The index stores body passages, title/entity views, and generated question representations with shared source IDs.",
+    "runtime": [
+      "A query about roof condition matches a generated question view.",
+      "The resolver retrieves the original inspection passage and its date before drafting the answer."
+    ],
+    "failure": "If the generated view invents a property feature, source validation prevents it from supporting the final claim.",
+    "impact": "Measure marginal recall from each aspect, duplicate-hit rate, and indexing cost; remove views that add volume without useful retrieval coverage."
+  },
+  "tradeoffs": [
+    {
+      "decision": "More representations",
+      "benefit": "Cover different query vocabularies.",
+      "cost": "Increase storage, generation, and update cost."
+    },
+    {
+      "decision": "Aspect-aware routing",
+      "benefit": "Avoids searching every view.",
+      "cost": "Requires reliable query classification."
+    },
+    {
+      "decision": "Source-level fusion",
+      "benefit": "Prevents duplicate evidence inflation.",
+      "cost": "Needs explicit weighting and identity management."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "One aspect remains on an old revision",
+      "detection": "Search discovers evidence no longer present in the source.",
+      "recovery": "Invalidate all dependent views and rebuild the revision set."
+    },
+    {
+      "scenario": "Generated questions hallucinate facts",
+      "detection": "High-ranking views imply unsupported attributes.",
+      "recovery": "Treat generated views only as retrieval hints and verify source text."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Counting every view as separate evidence",
+      "fix": "Fuse and deduplicate by authoritative source."
+    },
+    {
+      "mistake": "Creating aspects without query evidence",
+      "fix": "Add views only for measured retrieval gaps."
+    },
+    {
+      "mistake": "Updating body vectors alone",
+      "fix": "Track the dependency graph of every derived representation."
+    }
+  ],
+  "whenToUse": [
+    "Use when users describe the same content in several distinct ways.",
+    "Use for structured reports with meaningful titles and entities.",
+    "Use when additional views improve measured recall."
+  ],
+  "whenNotToUse": [
+    "Avoid many views for already easy exact lookup.",
+    "Do not cite generated index text as primary evidence.",
+    "Avoid unbounded representation expansion."
+  ],
+  "checklist": [
+    "Assign shared source and revision IDs.",
+    "Record aspect and embedding versions.",
+    "Evaluate marginal recall per aspect.",
+    "Deduplicate before evidence assembly.",
+    "Invalidate every view on source change.",
+    "Budget indexing cost per source object."
+  ],
+  "related": [
+    62,
+    64,
+    65,
+    67,
+    75,
+    92
+  ],
+  "keywords": [
+    "multi-aspect indexing",
+    "multi-vector retrieval",
+    "derived views",
+    "source identity"
+  ],
+  "references": [
+    {
+      "title": "Milvus: Multi-vector hybrid search",
+      "url": "https://milvus.io/docs/multi-vector-search.md"
+    }
+  ]
+}

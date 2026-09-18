@@ -1,0 +1,167 @@
+{
+  "id": 2,
+  "title": "Directed Acyclic Graphs (DAGs)",
+  "slug": "directed-acyclic-graphs-dags",
+  "category": 0,
+  "summary": "Represent bounded agent work as explicit dependencies, enabling reproducible scheduling, parallel branches, and precise restart boundaries.",
+  "overview": [
+    "A directed acyclic graph models tasks as nodes and dependencies as edges without allowing a path back to an earlier node. It fits workflows whose overall structure is known before execution, even when individual nodes use probabilistic models. The graph exposes the critical path and makes prerequisites visible to schedulers and reviewers.",
+    "A DAG is not a complete model for open-ended agent behavior. Replanning and repeated critique require a bounded subworkflow or an external state machine. Separate the graph definition from each execution instance so retries, artifact versions, and task status do not mutate the intended dependency structure."
+  ],
+  "production": {
+    "poc": "A prototype may implement dependencies as ordinary function calls. Draw the actual graph to expose accidental serialization and missing validation steps.",
+    "production": "Production persists node outcomes and schedules only ready nodes. Make artifact identity include relevant input versions so cached output cannot survive a material source change.",
+    "scale": "At scale, prioritize critical-path tasks, enforce pool limits, and partition large graphs. A wide fan-out can overwhelm a shared model endpoint even when the scheduler has abundant capacity."
+  },
+  "components": [
+    {
+      "name": "Graph definition",
+      "role": "Specifies typed node inputs, dependency edges, and terminal success conditions."
+    },
+    {
+      "name": "Scheduler",
+      "role": "Finds ready nodes and allocates constrained worker capacity without violating dependencies."
+    },
+    {
+      "name": "Artifact store",
+      "role": "Retains immutable outputs with input hashes and schema versions for reuse."
+    },
+    {
+      "name": "Execution ledger",
+      "role": "Tracks node attempts, terminal outcomes, and graph-level completion separately."
+    },
+    {
+      "name": "Join policy",
+      "role": "Defines whether downstream work requires all branches or a permitted subset."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Compile graph",
+      "description": "Validate references, reject cycles, and identify disconnected nodes before accepting an execution."
+    },
+    {
+      "title": "Bind inputs",
+      "description": "Pin source document and configuration versions to produce reproducible execution identity."
+    },
+    {
+      "title": "Schedule roots",
+      "description": "Queue independent nodes with concurrency limits for their particular tools and model providers."
+    },
+    {
+      "title": "Validate outputs",
+      "description": "Check each result before marking its dependency satisfied; quarantine invalid artifacts."
+    },
+    {
+      "title": "Release successors",
+      "description": "Start downstream nodes only when their declared join policy is met."
+    },
+    {
+      "title": "Close execution",
+      "description": "Commit the final artifact or expose blocked nodes and their precise upstream causes."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Procurement review dependency graph",
+      "type": "flowchart",
+      "code": "flowchart TD\n I[\"Tender package\"] --> P[\"Parse specifications\"]\n I --> C[\"Retrieve supplier credentials\"]\n P --> T[\"Technical comparison\"]\n P --> F[\"Commercial normalization\"]\n C --> R[\"Supplier risk review\"]\n T --> J[\"Validated evidence join\"]\n F --> J\n R --> J\n J --> A[\"Procurement recommendation\"]",
+      "caption": "Technical and commercial analysis share parsed inputs while supplier verification follows an independent branch."
+    }
+  ],
+  "useCase": {
+    "industry": "Procurement",
+    "title": "Reviewing an industrial equipment tender",
+    "situation": "A manufacturer must compare bids with inconsistent price schedules, engineering specifications, and supplier documentation.",
+    "problem": "An ad hoc script repeats expensive parsing after any downstream failure and cannot explain which checks were omitted.",
+    "requirement": "The assistant must create a comparable evidence package with every mandatory review completed before recommendation.",
+    "architecture": "A versioned DAG separates extraction, specification matching, price normalization, credentials verification, and final scoring.",
+    "runtime": [
+      "A new bid package creates immutable input artifacts; independent parsing and supplier checks start together.",
+      "Validated extraction releases technical and commercial branches, then a mandatory join produces the reviewer package."
+    ],
+    "failure": "If currency normalization fails, technical findings remain available, but commercial ranking is blocked until the affected node succeeds.",
+    "impact": "Track critical-path duration, reusable-node rate, queue delay, and incomplete mandatory branches. Procurement approval remains a separate controlled action."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Static dependencies",
+      "benefit": "Reviewers can understand and test the workflow before execution.",
+      "cost": "Unexpected investigations need an explicit extension mechanism."
+    },
+    {
+      "decision": "Artifact reuse",
+      "benefit": "Successful expensive nodes need not rerun after downstream failure.",
+      "cost": "Correct cache keys and retention become operational responsibilities."
+    },
+    {
+      "decision": "Wide parallelism",
+      "benefit": "Independent analyses can finish sooner.",
+      "cost": "Provider quotas and memory pressure can move the bottleneck elsewhere."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A required branch is marked optional",
+      "detection": "Recommendation appears without a mandatory risk assessment.",
+      "recovery": "Validate join policies against acceptance tests and block release."
+    },
+    {
+      "scenario": "Cached output refers to an older bid",
+      "detection": "Input digest differs from artifact provenance.",
+      "recovery": "Invalidate that node and its dependent successors."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Embedding invisible dependencies inside prompts",
+      "fix": "Declare required artifacts as graph edges."
+    },
+    {
+      "mistake": "Treating skipped nodes as successful",
+      "fix": "Represent skipped, failed, and completed states independently."
+    },
+    {
+      "mistake": "Retrying the whole graph after one failure",
+      "fix": "Restart only failed nodes and invalidated descendants."
+    }
+  ],
+  "whenToUse": [
+    "Work has stable prerequisites and explicit terminal artifacts.",
+    "Expensive independent stages benefit from controlled parallel execution.",
+    "Reviewers require evidence that every mandatory check ran."
+  ],
+  "whenNotToUse": [
+    "The agent must repeatedly revise its overall task structure.",
+    "A simple sequence provides adequate scheduling visibility.",
+    "Inputs change continuously without meaningful snapshot boundaries."
+  ],
+  "checklist": [
+    "Reject cyclic and disconnected graph definitions.",
+    "Version the graph and every artifact schema.",
+    "Specify all-branch versus partial join policies.",
+    "Measure the actual critical path in traces.",
+    "Test node restart without duplicate external writes.",
+    "Bound concurrency for each shared dependency."
+  ],
+  "related": [
+    3,
+    6,
+    8,
+    12,
+    58
+  ],
+  "keywords": [
+    "DAG",
+    "dependency graph",
+    "critical path",
+    "join policy",
+    "artifact cache"
+  ],
+  "references": [
+    {
+      "title": "LangGraph: workflows and agents",
+      "url": "https://docs.langchain.com/oss/python/langgraph/workflows-agents"
+    }
+  ]
+}

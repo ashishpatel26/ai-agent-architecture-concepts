@@ -1,0 +1,187 @@
+{
+  "id": 110,
+  "title": "Memory Lifecycle & Forgetting",
+  "slug": "memory-lifecycle-forgetting",
+  "category": 5,
+  "summary": "Govern how agent memories are created, corrected, expired, and removed across source records, summaries, embeddings, caches, and backups.",
+  "overview": [
+    "Agent memory is a managed data product rather than an indefinitely growing conversation history. Each retained fact or artifact needs a purpose, owner, source, access scope, and lifecycle. Forgetting means making information unavailable through the defined serving paths and managing retained copies according to explicit policy; deleting one chat message is rarely the whole operation.",
+    "Distinguish short-lived working context from durable user preferences, task records, and shared knowledge. Derived summaries can preserve information after the source changes, while embeddings and caches can continue surfacing stale facts. Use provenance and dependency tracking so corrections and deletion requests propagate to the artifacts that depend on the original material."
+  ],
+  "production": {
+    "poc": "A proof of concept can retain only session context and document why any information must survive the session.",
+    "production": "Production requires memory classification, write policy, source provenance, expiry, correction handling, access filtering, and a tested deletion or suppression workflow.",
+    "scale": "Enterprise scale adds derived-artifact inventories, asynchronous deletion tracking, retention exceptions, backup restoration controls, tenant boundaries, and verification that removed content cannot reappear in serving indexes."
+  },
+  "components": [
+    {
+      "name": "Memory write gate",
+      "role": "Checks purpose, sensitivity, user scope, and allowed retention before creating durable memory."
+    },
+    {
+      "name": "Provenance registry",
+      "role": "Links memory items to source records and downstream summaries, embeddings, caches, and exports."
+    },
+    {
+      "name": "Serving filter",
+      "role": "Enforces current access, validity, expiry, and suppression before memory enters a prompt."
+    },
+    {
+      "name": "Lifecycle orchestrator",
+      "role": "Coordinates correction, expiry, deletion, and acknowledged cleanup across dependent stores."
+    },
+    {
+      "name": "Verification and restore controls",
+      "role": "Test serving-path removal and prevent old backups or replay jobs from resurrecting suppressed records."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Classify proposed memory",
+      "description": "Identify whether the item is transient context, a durable preference, an operational record, or shared knowledge with a defined purpose."
+    },
+    {
+      "title": "Authorize retention",
+      "description": "Apply the write policy and attach owner, source, scope, creation time, expiry, and correction mechanism before persistence."
+    },
+    {
+      "title": "Serve current information",
+      "description": "Filter retrieved memory by current access and validity, preferring authoritative source updates over stale generated summaries."
+    },
+    {
+      "title": "Register lifecycle change",
+      "description": "Accept a correction, expiry, or deletion request and immediately suppress affected serving records where the policy requires it."
+    },
+    {
+      "title": "Propagate to derivatives",
+      "description": "Traverse provenance links to update or remove summaries, embeddings, caches, and exports while tracking acknowledgements and exceptions."
+    },
+    {
+      "title": "Verify durable outcome",
+      "description": "Probe retrieval paths, record completion evidence, and apply suppression records during backup restoration or index rebuild."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Source changes propagate through memory derivatives",
+      "type": "flowchart",
+      "code": "flowchart LR\n    S[\"Authorized source fact\"] --> G[\"Memory write gate\"]\n    G --> M[\"Scoped durable memory\"]\n    M --> D[\"Summaries embeddings and caches\"]\n    C[\"Correction expiry or deletion\"] --> P[\"Provenance lifecycle controller\"]\n    P --> F[\"Serving suppression\"]\n    P --> M\n    P --> D\n    P --> V[\"Verification and restore controls\"]",
+      "caption": "Serving suppression provides an immediate boundary while asynchronous cleanup removes or updates dependent artifacts."
+    }
+  ],
+  "useCase": {
+    "industry": "Travel and hospitality",
+    "title": "Correcting a retained traveler preference",
+    "situation": "Illustrative architecture: A traveler changes an earlier meal preference that appears in a profile, itinerary summary, search embedding, and support cache.",
+    "problem": "Deleting the profile field alone leaves the old preference available to future agents through derived stores.",
+    "requirement": "Update the preference consistently and prevent the superseded fact from reappearing during retrieval or restoration.",
+    "architecture": "A provenance registry links derivatives to the preference source; the serving filter suppresses the old version while lifecycle workers rebuild affected artifacts.",
+    "runtime": [
+      "Authenticate correction",
+      "version the source preference",
+      "suppress old memory",
+      "rebuild summaries",
+      "remove stale embeddings",
+      "verify retrieval and restore behavior"
+    ],
+    "failure": "A delayed index job tries to write the old preference again; source-version and suppression checks reject the stale derivative.",
+    "impact": "Measure correction propagation time, stale-memory retrieval rate, cleanup acknowledgement coverage, and restoration consistency without claiming that one delete call erases every retained copy."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Minimal durable memory",
+      "benefit": "Reduces exposure, staleness, and cleanup work.",
+      "cost": "Limits personalization and requires users to repeat some context."
+    },
+    {
+      "decision": "Provenance-linked derivatives",
+      "benefit": "Makes corrections and deletion more complete.",
+      "cost": "Adds metadata and dependency-management overhead."
+    },
+    {
+      "decision": "Immediate serving suppression",
+      "benefit": "Prevents continued use while cleanup runs.",
+      "cost": "Storage removal and backup handling still require separate completion tracking."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "A summary retains a fact after its source is deleted.",
+      "detection": "Deletion verification retrieves the suppressed fact from a derivative without a valid source.",
+      "recovery": "Quarantine the derivative, repair provenance coverage, and rerun cleanup across affected stores."
+    },
+    {
+      "scenario": "A backup restore resurrects expired memories.",
+      "detection": "Restore validation finds records covered by a newer suppression or expiry registry.",
+      "recovery": "Apply current lifecycle policy before exposing the restored store to serving traffic."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Treating all conversation text as useful long-term memory.",
+      "fix": "Retain only purpose-justified items with explicit scope and lifetime."
+    },
+    {
+      "mistake": "Deleting source rows without tracking embeddings and caches.",
+      "fix": "Maintain derivative lineage and require cleanup acknowledgements."
+    },
+    {
+      "mistake": "Confusing application memory deletion with removal from model training.",
+      "fix": "Document which systems retain information and handle model-data obligations through their separate governed processes."
+    }
+  ],
+  "whenToUse": [
+    "An agent retains personal preferences or task facts across sessions.",
+    "Source corrections must propagate through summaries and retrieval indexes.",
+    "Retention, access, or deletion obligations affect stored and derived information."
+  ],
+  "whenNotToUse": [
+    "A stateless workflow has no need to retain information after completion.",
+    "The system cannot explain why the proposed durable memory is necessary.",
+    "Retention and deletion promises exceed the actual control available over downstream processors."
+  ],
+  "checklist": [
+    "Classify memories by purpose, owner, sensitivity, and lifetime.",
+    "Gate durable writes and avoid retaining entire conversations by default.",
+    "Track sources and derived summaries, embeddings, caches, and exports.",
+    "Filter serving reads by current access, validity, expiry, and suppression.",
+    "Define correction and deletion propagation with explicit acknowledgements.",
+    "Test delayed jobs, index rebuilds, and backup restoration against current policy.",
+    "Explain retained exceptions and completion status accurately to authorized users."
+  ],
+  "related": [
+    12,
+    19,
+    21,
+    25,
+    34,
+    37,
+    38,
+    54,
+    61,
+    77
+  ],
+  "keywords": [
+    "memory lifecycle",
+    "forgetting",
+    "retention",
+    "deletion",
+    "provenance",
+    "stale memory",
+    "suppression"
+  ],
+  "references": [
+    {
+      "title": "NIST Privacy Framework",
+      "url": "https://www.nist.gov/privacy-framework"
+    },
+    {
+      "title": "W3C PROV overview",
+      "url": "https://www.w3.org/TR/prov-overview/"
+    },
+    {
+      "title": "NIST SP 800-207: Zero Trust Architecture",
+      "url": "https://csrc.nist.gov/pubs/sp/800/207/final"
+    }
+  ]
+}

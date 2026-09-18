@@ -1,0 +1,176 @@
+{
+  "id": 91,
+  "title": "GPU Cluster Orchestration (Kubernetes/KServe)",
+  "slug": "gpu-cluster-orchestration-kubernetes-kserve",
+  "category": 4,
+  "summary": "Coordinate accelerator placement, model readiness, autoscaling, and recovery as one serving system rather than treating GPUs as ordinary interchangeable CPU slots.",
+  "overview": [
+    "GPU cluster orchestration schedules model workloads onto compatible accelerators and maintains usable serving capacity through failures and demand changes. Kubernetes provides resource scheduling and lifecycle primitives; serving layers such as KServe add model-oriented deployment abstractions. Actual capabilities depend on the selected installation, runtime, and scaling integration.",
+    "Accelerator topology, memory, driver compatibility, artifact loading, and distributed worker coordination shape placement. A model requiring several devices may need all workers available together, while independent replicas can scale separately. Autoscaling must consider queueing and active token demand because utilization alone can remain high or low for misleading reasons."
+  ],
+  "production": {
+    "poc": "A prototype validates one model on the intended node type and confirms device allocation and readiness behavior.",
+    "production": "Production pins drivers and runtime images, separates startup from readiness, and configures disruption and rollout limits.",
+    "scale": "Enterprise scale adds topology-aware placement, quotas, priority classes, regional capacity plans, and recovery procedures for multi-device worker groups."
+  },
+  "components": [
+    {
+      "name": "Cluster scheduler",
+      "role": "Assigns pods to compatible nodes using declared accelerator resources and placement constraints."
+    },
+    {
+      "name": "Device integration",
+      "role": "Exposes accelerators and relevant allocation capabilities to the platform."
+    },
+    {
+      "name": "Model serving controller",
+      "role": "Manages model revisions, runtime configuration, and traffic readiness."
+    },
+    {
+      "name": "Autoscaling signals",
+      "role": "Translate backlog, latency, and active work into desired capacity."
+    },
+    {
+      "name": "Artifact and telemetry services",
+      "role": "Supply verified model bundles and observe accelerator, engine, and pod health."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Declare the serving contract",
+      "description": "Specify model bundle, hardware class, memory needs, and replica or distributed-worker structure."
+    },
+    {
+      "title": "Schedule compatible resources",
+      "description": "Apply node and topology constraints and wait for all required capacity."
+    },
+    {
+      "title": "Initialize the model",
+      "description": "Load verified artifacts and allow startup time before liveness enforcement."
+    },
+    {
+      "title": "Publish ready capacity",
+      "description": "Route requests only after warmup and resource admission checks pass."
+    },
+    {
+      "title": "Scale from workload signals",
+      "description": "Use queue and service metrics with stabilization to account for slow model startup."
+    },
+    {
+      "title": "Drain and recover",
+      "description": "Stop new work, checkpoint eligible tasks, and replace failed replicas or coordinated worker groups."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Model-aware accelerator orchestration",
+      "type": "flowchart",
+      "code": "flowchart TD\n D[\"Serving revision\"] --> C[\"Model serving controller\"]\n C --> K[\"Cluster scheduler\"]\n K --> A[\"Compatible accelerator nodes\"]\n A --> W[\"Model load and warmup\"]\n W --> R[\"Ready inference replicas\"]\n R --> Q[\"Queue and token telemetry\"]\n Q --> S[\"Autoscaling policy\"]\n S --> C",
+      "caption": "The controller should scale usable model capacity, accounting for initialization and placement constraints."
+    }
+  ],
+  "useCase": {
+    "industry": "Financial research",
+    "title": "Operating a shared private inference fleet",
+    "situation": "Several research teams share private model-serving capacity with different context lengths and data policies.",
+    "problem": "Large distributed jobs fragment accelerator capacity and interfere with interactive services.",
+    "requirement": "Place compatible workloads predictably while protecting interactive service objectives.",
+    "architecture": "The cluster separates workload priorities, enforces quotas, and schedules coordinated model workers with topology constraints.",
+    "runtime": [
+      "An interactive replica receives reserved capacity and completes warmup before entering service.",
+      "A larger research job waits until its full worker group can be placed rather than consuming unusable partial capacity."
+    ],
+    "failure": "If one distributed worker fails, the serving group is removed from routing and recovered as a coordinated unit.",
+    "impact": "Measure time to usable capacity, pending-resource age, disruption impact, and accepted throughput; allocated GPUs are not equivalent to healthy serving capacity."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Shared accelerator pool",
+      "benefit": "Improves fleet utilization.",
+      "cost": "Requires fairness, quotas, and isolation."
+    },
+    {
+      "decision": "Topology-aware placement",
+      "benefit": "Reduces communication overhead for distributed models.",
+      "cost": "Can increase scheduling wait and fragmentation."
+    },
+    {
+      "decision": "Aggressive autoscaling",
+      "benefit": "Responds to bursts.",
+      "cost": "May oscillate or lag because model startup is slow."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Driver-runtime mismatch",
+      "detection": "Pods start but accelerator initialization fails.",
+      "recovery": "Use tested node images and runtime compatibility gates."
+    },
+    {
+      "scenario": "Partial distributed placement",
+      "detection": "Some workers occupy resources while the model cannot serve.",
+      "recovery": "Use coordinated scheduling or admission for the complete group."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Scaling on CPU alone",
+      "fix": "Use inference workload and queue metrics."
+    },
+    {
+      "mistake": "Marking pods ready before model warmup",
+      "fix": "Gate traffic on actual serving capability."
+    },
+    {
+      "mistake": "Ignoring disruption of active generations",
+      "fix": "Drain and bound termination behavior explicitly."
+    }
+  ],
+  "whenToUse": [
+    "Use for shared or elastic self-hosted accelerator fleets.",
+    "Use for coordinated multi-device model serving.",
+    "Use when repeatable rollout and recovery matter."
+  ],
+  "whenNotToUse": [
+    "Avoid cluster complexity for a single stable workstation.",
+    "Do not assume every node has compatible accelerator features.",
+    "Avoid unbounded workloads without tenant quotas."
+  ],
+  "checklist": [
+    "Pin driver and runtime compatibility.",
+    "Declare accelerator and topology requirements.",
+    "Separate startup and readiness probes.",
+    "Set quotas and priority policies.",
+    "Scale using queue and token signals.",
+    "Test worker-group failure and graceful drain."
+  ],
+  "related": [
+    53,
+    56,
+    85,
+    88,
+    89,
+    95
+  ],
+  "keywords": [
+    "GPU orchestration",
+    "Kubernetes",
+    "KServe",
+    "topology",
+    "autoscaling"
+  ],
+  "references": [
+    {
+      "title": "KServe: Generative inference autoscaling examples",
+      "url": "https://kserve.github.io/website/docs/next/model-serving/generative-inference/llmisvc/autoscaling/llmisvc-autoscaling-examples"
+    },
+    {
+      "title": "Kubernetes: Liveness, readiness and startup probes",
+      "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/"
+    },
+    {
+      "title": "NVIDIA Triton: TensorRT-LLM backend",
+      "url": "https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html"
+    }
+  ]
+}

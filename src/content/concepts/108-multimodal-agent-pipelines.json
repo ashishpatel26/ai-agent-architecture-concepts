@@ -1,0 +1,185 @@
+{
+  "id": 108,
+  "title": "Multimodal Agent Pipelines",
+  "slug": "multimodal-agent-pipelines",
+  "category": 5,
+  "summary": "Combine text, images, audio, video, and structured observations while preserving modality-specific evidence and uncertainty.",
+  "overview": [
+    "A multimodal agent pipeline coordinates extraction, alignment, interpretation, and validation across different forms of evidence. Its central architectural problem is not merely accepting an image alongside text; it is preserving the relationship between an assertion and the original region, timestamp, speaker, measurement, or document span that supports it.",
+    "Different modalities fail differently. OCR can lose a minus sign, audio transcription can confuse speakers, and image analysis can overlook an obscured object. Use modality-specific quality checks and retain uncertainty through fusion. A confident text summary must not erase the weaknesses of its underlying evidence."
+  ],
+  "production": {
+    "poc": "A proof of concept can inspect a small set of known files and manually verify extracted regions, timestamps, and source references.",
+    "production": "Production requires validated media ingestion, bounded decoding, modality-specific quality checks, provenance links, and explicit abstention or human review for weak evidence.",
+    "scale": "Enterprise scale adds asynchronous processing, artifact storage policy, modality-specific model routing, cost controls, accessibility requirements, and evaluation cohorts covering capture conditions and languages."
+  },
+  "components": [
+    {
+      "name": "Media ingestion boundary",
+      "role": "Validates file type, size, provenance, permissions, and parser safety before processing."
+    },
+    {
+      "name": "Specialist extractors",
+      "role": "Produce OCR spans, audio segments, image regions, or structured measurements with quality metadata."
+    },
+    {
+      "name": "Alignment layer",
+      "role": "Associates extracted observations by document, time, object, or task context without inventing missing links."
+    },
+    {
+      "name": "Evidence fusion agent",
+      "role": "Builds a task-specific interpretation while retaining contradictions and source-level uncertainty."
+    },
+    {
+      "name": "Validation and review workspace",
+      "role": "Lets humans inspect original regions or clips and approve consequential conclusions."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Register source assets",
+      "description": "Assign immutable asset identities, access policy, capture metadata, and safe processing limits before decoding."
+    },
+    {
+      "title": "Extract by modality",
+      "description": "Run suitable OCR, transcription, vision, or structured-data adapters and record model and preprocessing versions."
+    },
+    {
+      "title": "Assess quality",
+      "description": "Detect unreadable pages, clipped audio, low-resolution regions, missing timestamps, or incompatible units before fusion."
+    },
+    {
+      "title": "Align evidence",
+      "description": "Join observations using explicit identifiers and temporal or spatial references, marking ambiguous correspondences rather than forcing matches."
+    },
+    {
+      "title": "Fuse bounded findings",
+      "description": "Generate claims with source anchors and uncertainty labels; keep conflicting modalities visible for review."
+    },
+    {
+      "title": "Validate and publish",
+      "description": "Check critical fields deterministically where possible, request human inspection when needed, and retain the approved evidence manifest with the output."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Evidence anchors survive multimodal fusion",
+      "type": "flowchart",
+      "code": "flowchart LR\n    I[\"Validated source assets\"] --> O[\"OCR spans\"]\n    I --> A[\"Audio segments\"]\n    I --> V[\"Image regions\"]\n    O --> Q[\"Quality and alignment checks\"]\n    A --> Q\n    V --> Q\n    Q --> F[\"Evidence fusion with uncertainty\"]\n    F --> H[\"Original-source review\"]\n    H --> M[\"Approved evidence manifest\"]",
+      "caption": "Each extractor keeps source coordinates or timestamps so reviewers can inspect the basis of a combined finding."
+    }
+  ],
+  "useCase": {
+    "industry": "Manufacturing",
+    "title": "Inspection evidence fusion",
+    "situation": "Illustrative architecture: A quality engineer reviews a photographed defect, an operator voice note, and numeric inspection measurements for one production unit.",
+    "problem": "The voice note references a different unit and the photograph does not show the measurement location clearly.",
+    "requirement": "Combine useful evidence without silently treating all assets as describing the same object or proving a defect cause.",
+    "architecture": "Extractors retain image coordinates and audio timecodes; alignment requires a verified serial identifier before the fusion agent creates an inspection packet.",
+    "runtime": [
+      "Validate uploads",
+      "extract observations",
+      "check capture quality",
+      "align serial references",
+      "show conflicting evidence",
+      "obtain engineer review"
+    ],
+    "failure": "The audio serial number conflicts with the barcode in the image; the pipeline separates the assets and asks for identity clarification.",
+    "impact": "Measure source-anchor coverage, critical-field accuracy, alignment errors, abstention quality, processing latency, and cost by modality and capture condition."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Specialist extraction stages",
+      "benefit": "Expose modality-specific failures and provenance.",
+      "cost": "Add orchestration, intermediate artifacts, and latency."
+    },
+    {
+      "decision": "Early unified-model interpretation",
+      "benefit": "Can capture relationships across modalities directly.",
+      "cost": "May make individual extraction errors harder to localize."
+    },
+    {
+      "decision": "Human source inspection",
+      "benefit": "Supports consequential decisions when evidence is ambiguous.",
+      "cost": "Requires usable region and clip navigation and reviewer capacity."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "OCR changes a negative measurement into a positive value.",
+      "detection": "Numeric validation and image-region review disagree with the extracted field.",
+      "recovery": "Mark the field uncertain and require source verification before any calculation uses it."
+    },
+    {
+      "scenario": "Audio and video timestamps drift during a long recording.",
+      "detection": "Alignment checks find increasing disagreement between synchronized reference events.",
+      "recovery": "Recalibrate the time mapping or split the recording into verified segments before fusion."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Discarding original media after generating summaries.",
+      "fix": "Retain governed originals and source anchors for review and correction."
+    },
+    {
+      "mistake": "Using one confidence score for the entire packet.",
+      "fix": "Track extraction quality, alignment certainty, and claim support separately."
+    },
+    {
+      "mistake": "Letting visible or spoken instructions control agent tools.",
+      "fix": "Treat media content as untrusted evidence and enforce tool policy outside interpretation."
+    }
+  ],
+  "whenToUse": [
+    "A task depends on relationships across images, documents, recordings, and structured records.",
+    "Reviewers need to inspect the exact source region or moment behind a claim.",
+    "Capture quality varies enough that uncertainty and abstention affect decisions."
+  ],
+  "whenNotToUse": [
+    "A reliable structured data source already contains every required fact.",
+    "The workflow cannot retain or lawfully process the required media under its policies.",
+    "The consequence requires a certified sensor or professional assessment that model interpretation cannot replace."
+  ],
+  "checklist": [
+    "Validate media type, size, permissions, and parser execution boundaries.",
+    "Preserve asset identity, source coordinates, timestamps, and preprocessing versions.",
+    "Evaluate extraction quality separately for each modality and capture condition.",
+    "Define explicit alignment keys and behavior for conflicting identifiers.",
+    "Carry uncertainty and contradictions through the final evidence packet.",
+    "Keep external media instructions outside the tool-authority boundary.",
+    "Provide source inspection and correction paths for consequential findings."
+  ],
+  "related": [
+    24,
+    28,
+    31,
+    38,
+    44,
+    76,
+    81,
+    87
+  ],
+  "keywords": [
+    "multimodal",
+    "OCR",
+    "audio",
+    "vision",
+    "evidence alignment",
+    "provenance",
+    "uncertainty"
+  ],
+  "references": [
+    {
+      "title": "W3C PROV overview",
+      "url": "https://www.w3.org/TR/prov-overview/"
+    },
+    {
+      "title": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    },
+    {
+      "title": "OpenTelemetry: Traces",
+      "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+    }
+  ]
+}

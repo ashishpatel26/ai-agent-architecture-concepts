@@ -1,0 +1,171 @@
+{
+  "id": 75,
+  "title": "Chunk Overlap Tuning",
+  "slug": "chunk-overlap-tuning",
+  "category": 3,
+  "summary": "Tune shared text between neighboring chunks to preserve boundary evidence without filling retrieval results with duplicates.",
+  "overview": [
+    "Chunk overlap repeats some source content across adjacent retrieval units so facts spanning a boundary remain recoverable. It is a hedge against imperfect segmentation, especially when paragraphs, definitions, or procedure steps extend across a fixed-size cut. Overlap is not a universal percentage: the right amount depends on document structure, tokenizer behavior, and retrieval tasks.",
+    "More overlap increases embedding and storage work and can make top results redundant. It may also bias ranking toward repeated text or inflate apparent evidence counts. Evaluate overlap jointly with chunk size, structural boundaries, parent expansion, and deduplication rather than optimizing it in isolation."
+  ],
+  "production": {
+    "poc": "A prototype tests several chunk-size and overlap pairs against questions whose answers cross boundaries.",
+    "production": "Production uses source offsets, stable chunk IDs, and duplicate-aware evaluation to distinguish real coverage from repeated passages.",
+    "scale": "At scale, tune by document family, estimate re-indexing costs, and track how overlap affects context tokens and retrieval diversity."
+  },
+  "components": [
+    {
+      "name": "Structure-aware splitter",
+      "role": "Prefers paragraphs, headings, and table boundaries where available."
+    },
+    {
+      "name": "Overlap policy",
+      "role": "Defines token or structural overlap by document class."
+    },
+    {
+      "name": "Chunk lineage store",
+      "role": "Preserves document revision and exact source ranges."
+    },
+    {
+      "name": "Duplicate-aware retriever",
+      "role": "Recognizes overlapping hits before context assembly."
+    },
+    {
+      "name": "Boundary evaluation set",
+      "role": "Tests whether answers survive segmentation without excessive duplication."
+    }
+  ],
+  "flow": [
+    {
+      "title": "Inspect source structure",
+      "description": "Identify the units that carry meaning, including headings, tables, and list conditions."
+    },
+    {
+      "title": "Select candidate settings",
+      "description": "Choose several chunk and overlap configurations within embedding limits."
+    },
+    {
+      "title": "Generate versioned chunks",
+      "description": "Record source offsets and revision identity for every chunk."
+    },
+    {
+      "title": "Evaluate boundary recall",
+      "description": "Test questions requiring information on both sides of a proposed cut."
+    },
+    {
+      "title": "Measure redundancy",
+      "description": "Count repeated source ranges in retrieved results and assembled context."
+    },
+    {
+      "title": "Deploy by document class",
+      "description": "Choose the smallest evaluated overlap that preserves needed evidence and retain a migration plan."
+    }
+  ],
+  "diagrams": [
+    {
+      "title": "Overlap and deduplication work together",
+      "type": "flowchart",
+      "code": "flowchart LR\n D[\"Structured source document\"] --> S[\"Boundary-aware splitter\"]\n S --> A[\"Chunk A with shared tail\"]\n S --> B[\"Chunk B with shared head\"]\n A --> I[\"Vector index\"]\n B --> I\n I --> R[\"Retrieved overlapping hits\"]\n R --> U[\"Merge source ranges\"]\n U --> C[\"Nonredundant evidence context\"]",
+      "caption": "Shared source ranges improve boundary recall but should not appear repeatedly in the final prompt."
+    }
+  ],
+  "useCase": {
+    "industry": "Construction engineering",
+    "title": "Retrieving specification conditions",
+    "situation": "A project assistant searches technical specifications containing requirements followed by exceptions on the next paragraph.",
+    "problem": "Fixed chunk boundaries separate a material requirement from its installation condition.",
+    "requirement": "Retrieve both parts while keeping duplicate specification text out of the answer context.",
+    "architecture": "A structure-aware splitter uses limited overlap and source-range deduplication.",
+    "runtime": [
+      "A query matches the requirement near a boundary.",
+      "The neighboring condition is present through overlap, and the context assembler merges shared ranges."
+    ],
+    "failure": "If a large table exceeds chunk limits, a dedicated table strategy preserves headers instead of relying on overlap alone.",
+    "impact": "Measure boundary-question accuracy, duplicated context ratio, and total index size; overlap should solve a demonstrated segmentation failure."
+  },
+  "tradeoffs": [
+    {
+      "decision": "Larger overlap",
+      "benefit": "Improves continuity near cuts.",
+      "cost": "Increases storage and duplicate retrieval."
+    },
+    {
+      "decision": "Structural boundaries",
+      "benefit": "Preserve meaningful units.",
+      "cost": "Require reliable parsing of varied formats."
+    },
+    {
+      "decision": "Per-document policies",
+      "benefit": "Fit different source styles.",
+      "cost": "Increase configuration and migration complexity."
+    }
+  ],
+  "failures": [
+    {
+      "scenario": "Repeated text dominates top-k",
+      "detection": "Most hits cover the same source range.",
+      "recovery": "Deduplicate by offsets and increase evidence diversity."
+    },
+    {
+      "scenario": "Table headers disappear",
+      "detection": "Values retrieve without their column meanings.",
+      "recovery": "Use table-aware chunking with repeated validated headers."
+    }
+  ],
+  "mistakes": [
+    {
+      "mistake": "Choosing overlap by habit",
+      "fix": "Tune against boundary-specific evaluation cases."
+    },
+    {
+      "mistake": "Measuring recall without deduplication",
+      "fix": "Count unique supporting source ranges."
+    },
+    {
+      "mistake": "Changing chunk settings without lineage",
+      "fix": "Version the chunking policy and rebuild consistently."
+    }
+  ],
+  "whenToUse": [
+    "Use when important facts cross chunk boundaries.",
+    "Use for imperfectly structured long documents.",
+    "Use alongside source-offset deduplication."
+  ],
+  "whenNotToUse": [
+    "Avoid large overlap for self-contained short records.",
+    "Do not expect overlap to repair broken document extraction.",
+    "Avoid optimizing overlap independently of chunk size."
+  ],
+  "checklist": [
+    "Create boundary-focused evaluation questions.",
+    "Record source ranges and revisions.",
+    "Test several chunk-size combinations.",
+    "Measure duplicate context tokens.",
+    "Preserve table headings explicitly.",
+    "Version chunking policies before re-indexing."
+  ],
+  "related": [
+    64,
+    65,
+    71,
+    76,
+    78,
+    92
+  ],
+  "keywords": [
+    "chunk overlap",
+    "segmentation",
+    "source offsets",
+    "boundary recall"
+  ],
+  "references": [
+    {
+      "title": "Sentence Transformers: Retrieve and re-rank",
+      "url": "https://www.sbert.net/examples/sentence_transformer/applications/retrieve_rerank/README.html"
+    },
+    {
+      "title": "Lost in the Middle: How Language Models Use Long Contexts",
+      "url": "https://arxiv.org/abs/2307.03172"
+    }
+  ]
+}
